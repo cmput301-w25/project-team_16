@@ -6,7 +6,7 @@
 | ----------- | ------ | --------------- |
 | [Derek Dubrule] | [dubrule1] | [derekjd1]     |
 | Harmanpreet Singh | harmanp8 | Harman-DevCloud     |
-| [Full Name] | [CCID] | [@username]     |
+| [Aaron Onate | [onate1] | [A-K-O]     |
 | [Full Name] | [CCID] | [@username]     |
 | [Full Name] | [CCID] | [@username]     |
 | [Full Name] | [CCID] | [@username]     |
