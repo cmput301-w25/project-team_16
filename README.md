@@ -5,7 +5,7 @@
 | Name        | CCID   | GitHub Username |
 | ----------- | ------ | --------------- |
 | [Derek Dubrule] | [dubrule1] | [derekjd1]     |
-| [Full Name] | [CCID] | [@username]     |
+| Harmanpreet Singh | harmanp8 | Harman-DevCloud     |
 | [Full Name] | [CCID] | [@username]     |
 | [Full Name] | [CCID] | [@username]     |
 | [Full Name] | [CCID] | [@username]     |
