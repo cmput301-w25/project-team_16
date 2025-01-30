@@ -4,7 +4,7 @@
 
 | Name        | CCID   | GitHub Username |
 | ----------- | ------ | --------------- |
-| [Full Name] | [CCID] | [@username]     |
+| [Derek Dubrule] | [dubrule1] | [derekjd1]     |
 | [Full Name] | [CCID] | [@username]     |
 | [Full Name] | [CCID] | [@username]     |
 | [Full Name] | [CCID] | [@username]     |
