@@ -8,7 +8,7 @@
 | Harmanpreet Singh | harmanp8 | Harman-DevCloud     |
 | [Aaron Onate | [onate1] | [A-K-O]     |
 | [Abdullah Aderinto] | [aderint1] | [aaderinto04]     |
-| [Full Name] | [CCID] | [@username]     |
+| [Ikenna Okeke] | [iokeke] | [IkennaOkeke]     |
 | [Full Name] | [CCID] | [@username]     |
 
 ## Project Description
