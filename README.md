@@ -9,7 +9,7 @@
 | [Aaron Onate | [onate1] | [A-K-O]     |
 | [Abdullah Aderinto] | [aderint1] | [aaderinto04]     |
 | [Ikenna Okeke] | [iokeke] | [IkennaOkeke]     |
-| [Full Name] | [CCID] | [@username]     |
+| [Michael Joshua Saul] | [msaul] | [onionrings29]     |
 
 ## Project Description
 
