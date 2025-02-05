@@ -42,11 +42,25 @@ jobs:
           echo "Issue ID: $ISSUE_ID"
           echo "ISSUE_ID=$ISSUE_ID" >> $GITHUB_ENV
 
+      - name: Get Project ID (Debugging)
+        run: |
+          echo "Fetching Project ID..."
+          PROJECT_ID=$(gh api graphql -f query='
+          query {
+            organization(login: "cmput301-w25") {
+              projectV2(number: 1) {  # Adjust project number
+                id
+              }
+            }
+          }' --jq '.data.organization.projectV2.id')
+
+          echo "Project ID: $PROJECT_ID"
+          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
+
       - name: Add Issue to Project
-        if: env.ISSUE_ID != ''
+        if: env.ISSUE_ID != '' && env.PROJECT_ID != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_ID: "92"  # Update with actual project ID
         run: |
           gh api graphql -F projectId="$PROJECT_ID" -F contentId="$ISSUE_ID" -f query='
           mutation($projectId: ID!, $contentId: ID!) {
@@ -59,10 +73,8 @@ jobs:
 
       - name: Get Status Field ID
         id: get_status_field
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_ID: "92"
         run: |
+          echo "Fetching Status Field ID..."
           STATUS_FIELD_ID=$(gh api graphql -F projectId="$PROJECT_ID" -f query='
           query($projectId: ID!) {
             node(id: $projectId) {
@@ -76,18 +88,12 @@ jobs:
             }
           }' --jq '.data.node.field.id')
 
-          if [ -z "$STATUS_FIELD_ID" ]; then
-            echo "Error: STATUS_FIELD_ID retrieval failed."
-            exit 1
-          fi
-
           echo "STATUS_FIELD_ID=$STATUS_FIELD_ID" >> $GITHUB_ENV
 
       - name: Update Issue Status
         if: env.ISSUE_ID != '' && env.STATUS_FIELD_ID != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_ID: "92"
         run: |
           gh api graphql -F projectId="$PROJECT_ID" -F itemId="$ISSUE_ID" -F statusFieldId="$STATUS_FIELD_ID" -f query='
           mutation($projectId: ID!, $itemId: ID!, $statusFieldId: ID!) {
