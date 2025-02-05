@@ -3,16 +3,17 @@ name: Add Unassigned Issues to Team_16's Scrum Board
 on:
   issues:
     types: [opened, edited, milestoned]
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   add-to-project:
     runs-on: ubuntu-latest
-    
-    # Provide GH_TOKEN globally to all steps.
+
+    # Make GH_TOKEN (the default GitHub token) available to all steps
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    # Ensure we have permissions for reading and writing issues and projects
     permissions:
       contents: read
       issues: write
@@ -20,36 +21,46 @@ jobs:
 
     steps:
       - name: Check if Issue is Unassigned
-        if: github.event.issue.assignees == null
+        if: github.event.issue.assignees == ''
         run: echo "Issue is unassigned. Proceeding..."
 
       - name: Get Issue ID
-        # Only run if the issue is unassigned and has the correct milestone title.
-        if: github.event.issue.assignees == null && github.event.issue.milestone && github.event.issue.milestone.title == 'First Checkpoint'
+        # Only run if no assignees AND milestone title is 'First Checkpoint'
+        if: github.event.issue.assignees == '' && github.event.issue.milestone.title == 'First Checkpoint'
         run: |
+          echo "Retrieving Issue ID..."
           ISSUE_NUMBER="${{ github.event.issue.number }}"
+          
           if [ -z "$ISSUE_NUMBER" ]; then
             echo "Error: ISSUE_NUMBER is empty."
             exit 1
           fi
 
-          ISSUE_ID=$(gh api graphql -F number="$ISSUE_NUMBER" -F owner="cmput301-w25" -F repo="project-team_16" -f query='
-          query($owner: String!, $repo: String!, $number: Int!) {
-            repository(owner: $owner, name: $repo) {
-              issue(number: $number) {
-                id
+          ISSUE_ID=$(gh api graphql \
+            -F number="$ISSUE_NUMBER" \
+            -F owner="cmput301-w25" \
+            -F repo="project-team_16" \
+            -f query='
+            query($owner: String!, $repo: String!, $number: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $number) {
+                  id
+                }
               }
             }
-          }' --jq '.data.repository.issue.id')
+            ' \
+            --jq '.data.repository.issue.id'
+          )
 
           if [ -z "$ISSUE_ID" ]; then
             echo "Error: ISSUE_ID retrieval failed."
             exit 1
           fi
 
+          echo "Issue ID: $ISSUE_ID"
           echo "ISSUE_ID=$ISSUE_ID" >> $GITHUB_ENV
 
-      - name: Get Project ID
+      - name: Get Project ID (Debugging)
         run: |
           echo "Fetching Project ID..."
           PROJECT_ID=$(gh api graphql -f query='
@@ -60,43 +71,53 @@ jobs:
               }
             }
           }' --jq '.data.organization.projectV2.id')
-          
+
           if [ -z "$PROJECT_ID" ]; then
             echo "Error: PROJECT_ID retrieval failed."
             exit 1
           fi
-          
+
           echo "Project ID: $PROJECT_ID"
           echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
 
       - name: Add Issue to Project
-        # Add the issue to the target project if both ISSUE_ID and PROJECT_ID are non-empty.
+        # Only run if both ISSUE_ID and PROJECT_ID are set
         if: env.ISSUE_ID != '' && env.PROJECT_ID != ''
         run: |
-          gh api graphql -F projectId="$PROJECT_ID" -F contentId="$ISSUE_ID" -f query='
-          mutation($projectId: ID!, $contentId: ID!) {
-            addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
-              item {
-                id
+          echo "Adding Issue to Project..."
+          gh api graphql \
+            -F projectId="$PROJECT_ID" \
+            -F contentId="$ISSUE_ID" \
+            -f query='
+            mutation($projectId: ID!, $contentId: ID!) {
+              addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+                item {
+                  id
+                }
               }
             }
-          }'
+            '
 
       - name: Get Status Field ID
         run: |
-          STATUS_FIELD_ID=$(gh api graphql -F projectId="$PROJECT_ID" -f query='
-          query($projectId: ID!) {
-            node(id: $projectId) {
-              ... on ProjectV2 {
-                fields(first: 10) {
-                  nodes {
-                    id
-                    name
+          echo "Fetching Status Field ID..."
+          STATUS_FIELD_ID=$(gh api graphql \
+            -F projectId="$PROJECT_ID" \
+            -f query='
+            query($projectId: ID!) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  field(name: "Status") {
+                    ... on ProjectV2Field {
+                      id
+                    }
                   }
                 }
               }
             }
-          }' --jq '.data.node.fields.nodes[] | select(.name=="Status") | .id')
+            ' \
+            --jq '.data.node.field.id'
+          )
 
           if [ -z "$STATUS_FIELD_ID" ]; then
             echo "Error: STATUS_FIELD_ID retrieval failed."
@@ -108,11 +129,25 @@ jobs:
       - name: Update Issue Status
         if: env.ISSUE_ID != '' && env.STATUS_FIELD_ID != ''
         run: |
-          gh api graphql -F projectId="$PROJECT_ID" -F itemId="$ISSUE_ID" -F statusFieldId="$STATUS_FIELD_ID" -f query='
-          mutation($projectId: ID!, $itemId: ID!, $statusFieldId: ID!) {
-            updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $statusFieldId, value: {text: "Project Part 2"}}) {
-              projectV2Item {
-                id
+          echo "Updating Issue Status..."
+          gh api graphql \
+            -F projectId="$PROJECT_ID" \
+            -F itemId="$ISSUE_ID" \
+            -F statusFieldId="$STATUS_FIELD_ID" \
+            -f query='
+            mutation($projectId: ID!, $itemId: ID!, $statusFieldId: ID!) {
+              updateProjectV2ItemFieldValue(
+                input: {
+                  projectId: $projectId,
+                  itemId: $itemId,
+                  fieldId: $statusFieldId,
+                  value: { text: "Project Part 2" }
+                }
+              ) {
+                projectV2Item {
+                  id
+                }
               }
             }
-          }'
+            '
+
