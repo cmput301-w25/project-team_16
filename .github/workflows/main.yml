@@ -8,9 +8,11 @@ on:
 jobs:
   add-to-project:
     runs-on: ubuntu-latest
-    # Set GH_TOKEN globally so all steps can use it.
+    
+    # Provide GH_TOKEN globally to all steps.
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     permissions:
       contents: read
       issues: write
@@ -68,6 +70,7 @@ jobs:
           echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
 
       - name: Add Issue to Project
+        # Add the issue to the target project if both ISSUE_ID and PROJECT_ID are non-empty.
         if: env.ISSUE_ID != '' && env.PROJECT_ID != ''
         run: |
           gh api graphql -F projectId="$PROJECT_ID" -F contentId="$ISSUE_ID" -f query='
@@ -113,4 +116,3 @@ jobs:
               }
             }
           }'
-
