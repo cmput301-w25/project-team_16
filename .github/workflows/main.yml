@@ -3,29 +3,37 @@ name: Add Unassigned Issues to Team_16's Scrum Board
 on:
   issues:
     types: [opened, edited, milestoned]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:  # Allow manual trigger as well
 
 jobs:
   add-to-project:
     runs-on: ubuntu-latest
 
-    # Make GH_TOKEN (the default GitHub token) available to all steps
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Ensure we have permissions for reading and writing issues and projects
+    # Ensure the GITHUB_TOKEN can read & write issues/projects
     permissions:
       contents: read
       issues: write
       repository-projects: write
 
+    # Make GH_TOKEN available to all steps
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
+      # 1) Explicitly authenticate the GitHub CLI with GH_TOKEN
+      - name: Authenticate GH CLI
+        run: |
+          echo "$GH_TOKEN" | gh auth login --with-token
+
+      # Optional: Debug token
+      - name: Debug GH_TOKEN
+        run: echo "GH_TOKEN is: $GH_TOKEN"
+
       - name: Check if Issue is Unassigned
         if: github.event.issue.assignees == ''
         run: echo "Issue is unassigned. Proceeding..."
 
       - name: Get Issue ID
-        # Only run if no assignees AND milestone title is 'First Checkpoint'
         if: github.event.issue.assignees == '' && github.event.issue.milestone.title == 'First Checkpoint'
         run: |
           echo "Retrieving Issue ID..."
@@ -81,10 +89,9 @@ jobs:
           echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
 
       - name: Add Issue to Project
-        # Only run if both ISSUE_ID and PROJECT_ID are set
         if: env.ISSUE_ID != '' && env.PROJECT_ID != ''
         run: |
-          echo "Adding Issue to Project..."
+          echo "Adding issue to project..."
           gh api graphql \
             -F projectId="$PROJECT_ID" \
             -F contentId="$ISSUE_ID" \
@@ -129,7 +136,7 @@ jobs:
       - name: Update Issue Status
         if: env.ISSUE_ID != '' && env.STATUS_FIELD_ID != ''
         run: |
-          echo "Updating Issue Status..."
+          echo "Updating issue status field..."
           gh api graphql \
             -F projectId="$PROJECT_ID" \
             -F itemId="$ISSUE_ID" \
@@ -141,7 +148,7 @@ jobs:
                   projectId: $projectId,
                   itemId: $itemId,
                   fieldId: $statusFieldId,
-                  value: { text: "Project Part 2" }
+                  value: {text: "Project Part 2"}
                 }
               ) {
                 projectV2Item {
@@ -150,4 +157,5 @@ jobs:
               }
             }
             '
+
 
