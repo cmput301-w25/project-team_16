@@ -1,22 +1,31 @@
-name: Add Issues to Team_16's Scrum Board
+name: Add Unassigned Issues to Team_16's Scrum Board
 
 on:
   issues:
     types: [opened, edited, milestoned]
-  workflow_dispatch:  # <-- This allows manual triggering
-
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
   add-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Add Issue to Project with Status
+      - name: Check if Issue is Unassigned
+        if: github.event.issue.assignees == ''
+        run: echo "Issue is unassigned. Proceeding..."
+
+      - name: Get Issue ID
+        if: github.event.issue.assignees == '' && github.event.issue.milestone.title == 'First Checkpoint'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_ID: "92"  # Your project ID
-          STATUS_FIELD: "Project Part 2"
         run: |
-          ISSUE_ID=$(gh api graphql -F number=${{ github.event.issue.number }} -F owner="cmput301-w25" -F repo="${{ github.event.repository.name }}" -f query='
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "Error: ISSUE_NUMBER is empty."
+            exit 1
+          fi
+
+          ISSUE_ID=$(gh api graphql -F number="$ISSUE_NUMBER" -F owner="cmput301-w25" -F repo="project-team_16" -f query='
           query($owner: String!, $repo: String!, $number: Int!) {
             repository(owner: $owner, name: $repo) {
               issue(number: $number) {
@@ -25,6 +34,20 @@ jobs:
             }
           }' --jq '.data.repository.issue.id')
 
+          if [ -z "$ISSUE_ID" ]; then
+            echo "Error: ISSUE_ID retrieval failed."
+            exit 1
+          fi
+
+          echo "Issue ID: $ISSUE_ID"
+          echo "ISSUE_ID=$ISSUE_ID" >> $GITHUB_ENV
+
+      - name: Add Issue to Project
+        if: env.ISSUE_ID != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_ID: "92"  # Update with actual project ID
+        run: |
           gh api graphql -F projectId="$PROJECT_ID" -F contentId="$ISSUE_ID" -f query='
           mutation($projectId: ID!, $contentId: ID!) {
             addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
@@ -34,7 +57,13 @@ jobs:
             }
           }'
 
-          ITEM_ID=$(gh api graphql -F projectId="$PROJECT_ID" -f query='
+      - name: Get Status Field ID
+        id: get_status_field
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_ID: "92"
+        run: |
+          STATUS_FIELD_ID=$(gh api graphql -F projectId="$PROJECT_ID" -f query='
           query($projectId: ID!) {
             node(id: $projectId) {
               ... on ProjectV2 {
@@ -47,9 +76,22 @@ jobs:
             }
           }' --jq '.data.node.field.id')
 
-          gh api graphql -F projectId="$PROJECT_ID" -F itemId="$ITEM_ID" -F status="$STATUS_FIELD" -f query='
-          mutation($projectId: ID!, $itemId: ID!, $status: String!) {
-            updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $status, value: {text: "Project Part 2"}}) {
+          if [ -z "$STATUS_FIELD_ID" ]; then
+            echo "Error: STATUS_FIELD_ID retrieval failed."
+            exit 1
+          fi
+
+          echo "STATUS_FIELD_ID=$STATUS_FIELD_ID" >> $GITHUB_ENV
+
+      - name: Update Issue Status
+        if: env.ISSUE_ID != '' && env.STATUS_FIELD_ID != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_ID: "92"
+        run: |
+          gh api graphql -F projectId="$PROJECT_ID" -F itemId="$ISSUE_ID" -F statusFieldId="$STATUS_FIELD_ID" -f query='
+          mutation($projectId: ID!, $itemId: ID!, $statusFieldId: ID!) {
+            updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $statusFieldId, value: {text: "Project Part 2"}}) {
               projectV2Item {
                 id
               }
