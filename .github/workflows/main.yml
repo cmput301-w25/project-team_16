@@ -3,24 +3,27 @@ name: Add Unassigned Issues to Team_16's Scrum Board
 on:
   issues:
     types: [opened, edited, milestoned]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   add-to-project:
     runs-on: ubuntu-latest
+    # Set GH_TOKEN globally so all steps can use it.
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: read
       issues: write
       repository-projects: write
+
     steps:
       - name: Check if Issue is Unassigned
         if: github.event.issue.assignees == null
         run: echo "Issue is unassigned. Proceeding..."
 
       - name: Get Issue ID
+        # Only run if the issue is unassigned and has the correct milestone title.
         if: github.event.issue.assignees == null && github.event.issue.milestone && github.event.issue.milestone.title == 'First Checkpoint'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ✅ Ensure GH_TOKEN is available
         run: |
           ISSUE_NUMBER="${{ github.event.issue.number }}"
           if [ -z "$ISSUE_NUMBER" ]; then
@@ -45,30 +48,27 @@ jobs:
           echo "ISSUE_ID=$ISSUE_ID" >> $GITHUB_ENV
 
       - name: Get Project ID
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ✅ Ensure GH_TOKEN is available
         run: |
           echo "Fetching Project ID..."
           PROJECT_ID=$(gh api graphql -f query='
           query {
             organization(login: "cmput301-w25") {
-              projectV2(number: 1) {  # Ensure correct project number
+              projectV2(number: 1) {
                 id
               }
             }
           }' --jq '.data.organization.projectV2.id')
-
+          
           if [ -z "$PROJECT_ID" ]; then
             echo "Error: PROJECT_ID retrieval failed."
             exit 1
           fi
-
+          
+          echo "Project ID: $PROJECT_ID"
           echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
 
       - name: Add Issue to Project
         if: env.ISSUE_ID != '' && env.PROJECT_ID != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ✅ Ensure GH_TOKEN is available
         run: |
           gh api graphql -F projectId="$PROJECT_ID" -F contentId="$ISSUE_ID" -f query='
           mutation($projectId: ID!, $contentId: ID!) {
@@ -80,8 +80,6 @@ jobs:
           }'
 
       - name: Get Status Field ID
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ✅ Ensure GH_TOKEN is available
         run: |
           STATUS_FIELD_ID=$(gh api graphql -F projectId="$PROJECT_ID" -f query='
           query($projectId: ID!) {
@@ -106,8 +104,6 @@ jobs:
 
       - name: Update Issue Status
         if: env.ISSUE_ID != '' && env.STATUS_FIELD_ID != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ✅ Ensure GH_TOKEN is available
         run: |
           gh api graphql -F projectId="$PROJECT_ID" -F itemId="$ISSUE_ID" -F statusFieldId="$STATUS_FIELD_ID" -f query='
           mutation($projectId: ID!, $itemId: ID!, $statusFieldId: ID!) {
@@ -117,3 +113,4 @@ jobs:
               }
             }
           }'
+
