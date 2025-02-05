@@ -1,0 +1,55 @@
+name: Add Issues to Team_16's Scrum Board
+
+on:
+  issues:
+    types: [opened, edited, milestoned]
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Issue to Project with Status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_ID: "92"  # Your project ID
+          STATUS_FIELD: "Project Part 2"
+        run: |
+          ISSUE_ID=$(gh api graphql -F number=${{ github.event.issue.number }} -F owner="cmput301-w25" -F repo="${{ github.event.repository.name }}" -f query='
+          query($owner: String!, $repo: String!, $number: Int!) {
+            repository(owner: $owner, name: $repo) {
+              issue(number: $number) {
+                id
+              }
+            }
+          }' --jq '.data.repository.issue.id')
+
+          gh api graphql -F projectId="$PROJECT_ID" -F contentId="$ISSUE_ID" -f query='
+          mutation($projectId: ID!, $contentId: ID!) {
+            addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+              item {
+                id
+              }
+            }
+          }'
+
+          ITEM_ID=$(gh api graphql -F projectId="$PROJECT_ID" -f query='
+          query($projectId: ID!) {
+            node(id: $projectId) {
+              ... on ProjectV2 {
+                field(name: "Status") {
+                  ... on ProjectV2Field {
+                    id
+                  }
+                }
+              }
+            }
+          }' --jq '.data.node.field.id')
+
+          gh api graphql -F projectId="$PROJECT_ID" -F itemId="$ITEM_ID" -F status="$STATUS_FIELD" -f query='
+          mutation($projectId: ID!, $itemId: ID!, $status: String!) {
+            updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $status, value: {text: "Project Part 2"}}) {
+              projectV2Item {
+                id
+              }
+            }
+          }'
