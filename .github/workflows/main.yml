@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Add Issue to Project with Status
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROJECT_ID: "92"  # Your project ID
           STATUS_FIELD: "Project Part 2"
         run: |
