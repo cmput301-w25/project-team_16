@@ -3,6 +3,8 @@ name: Add Issues to Team_16's Scrum Board
 on:
   issues:
     types: [opened, edited, milestoned]
+    workflow_dispatch:  # <-- This allows manual triggering
+
 
 jobs:
   add-to-project:
