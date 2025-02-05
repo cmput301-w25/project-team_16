@@ -5,7 +5,7 @@
 | Name        | CCID   | GitHub Username |
 | ----------- | ------ | --------------- |
 | [Derek Dubrule] | [dubrule1] | [derekjd1]     |
-| Harmanpreet Singh | harmanp8 | Harman-DevCloud     |
+| [Harmanpreet Singh] | [harmanp8] | [Harman-DevCloud]     |
 | [Aaron Onate | [onate1] | [A-K-O]     |
 | [Abdullah Aderinto] | [aderint1] | [aaderinto04]     |
 | [Ikenna Okeke] | [iokeke] | [IkennaOkeke]     |
