@@ -30,6 +30,6 @@
 ## Documentation
 
 - [Wiki Link]
-- [Scrum Board]
+- [[Scrum Board](https://github.com/orgs/cmput301-w25/projects/92)]
 - [UI Mockups]
 - [UML]
