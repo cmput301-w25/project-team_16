@@ -6,15 +6,28 @@
     android:padding="20dp"
     android:gravity="center">
 
-    <TextView
-        android:id="@+id/loginHeader"
+    <!-- Toolbar for back navigation -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login"
-        android:textSize="24sp"
+        android:background="@android:color/transparent"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="20dp" />
+        android:gravity="center" />
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Full Name" />
 
     <EditText
         android:id="@+id/username"
@@ -23,21 +36,18 @@
         android:hint="Username" />
 
     <EditText
+        android:id="@+id/email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress" />
+
+    <EditText
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
         android:inputType="textPassword" />
-
-    <Button
-        android:id="@+id/loginButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Login"
-        android:backgroundTint="@color/navy"
-        android:layout_marginTop="10dp"
-        android:padding="12dp"
-        android:textStyle="bold"/>
 
     <Button
         android:id="@+id/signUpButton"
@@ -49,14 +59,5 @@
         android:padding="12dp"
         android:textStyle="bold"/>
 
-    <Button
-        android:id="@+id/resetPasswordButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Forgot Password?"
-        android:backgroundTint="@color/navy"
-        android:layout_marginTop="10dp"
-        android:padding="12dp"
-        android:textStyle="bold"/>
 </LinearLayout>
 
