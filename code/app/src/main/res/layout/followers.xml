@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_background">
+
+    <!-- Followers Banner (No Margin) -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#1E293F"
+        android:padding="16dp">
+
+        <!-- Back Arrow Button -->
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_arrow_back"
+            android:tint="#F5F0E5"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"/>
+
+        <!-- Followers Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Followers"
+            android:textSize="20sp"
+            android:textColor="#F5F0E5"
+            android:textStyle="bold"
+            android:layout_centerInParent="true"/>
+    </RelativeLayout>
+
+    <!-- Search Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:background="@drawable/rounded_search_bar"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:elevation="4dp"
+        android:gravity="center_vertical">
+
+        <!-- Search Icon -->
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_search"
+            android:tint="#A1824A"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Search Input Field -->
+        <EditText
+            android:id="@+id/search_bar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:hint="Search for users..."
+            android:textColor="#000000"
+            android:textColorHint="#A1824A"
+            android:textSize="16sp"
+            android:singleLine="true"
+            android:background="@null"
+            android:paddingVertical="0dp"
+            android:gravity="center_vertical"/>
+    </LinearLayout>
+
+    <!-- Accepted & Pending Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp">
+
+        <!-- Accepted Button (Active) -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_accepted"
+            android:layout_width="140dp"
+            android:layout_height="48dp"
+            android:text="Accepted"
+            android:textColor="#4A2C2C"
+            android:textSize="16sp"
+            android:backgroundTint="@null"
+            android:background="@drawable/active_button"
+            android:layout_marginEnd="12dp"/>
+
+        <!-- Pending Button (Inactive) -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_pending"
+            android:layout_width="140dp"
+            android:layout_height="48dp"
+            android:text="Pending"
+            android:textColor="#4A2C2C"
+            android:backgroundTint="@null"
+            android:textSize="16sp"
+            android:background="@drawable/inactive_button"/>
+    </LinearLayout>
+
+    <!-- Followers List (Infinite Scroll) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_followers"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"
+        android:paddingHorizontal="16dp"
+        android:overScrollMode="never"
+        android:scrollbars="vertical"/>
+
+</LinearLayout>
+
