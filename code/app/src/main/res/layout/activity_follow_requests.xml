@@ -8,7 +8,6 @@
     android:orientation="vertical"
     android:background="@drawable/gradient_bg">
 
-    <!-- Followers Banner -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"

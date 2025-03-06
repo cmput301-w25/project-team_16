@@ -20,7 +20,8 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_profile_placeholder" />
+            android:src="@drawable/ic_profile_placeholder"
+            android:contentDescription="@string/profile_picture" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -34,14 +35,16 @@
                 android:layout_height="wrap_content"
                 android:textColor="#1C170D"
                 android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:text="@string/username_placeholder" />
 
             <TextView
                 android:id="@+id/text_user_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#A1824A"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:text="@string/user_id_placeholder" />
         </LinearLayout>
 
         <TextView
@@ -49,30 +52,50 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:text="@string/mood_placeholder" />
 
-        <!-- Two action buttons: Accept and Reject -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/button_accept"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="@drawable/bg_accept_button"
-                android:padding="8dp"
-                android:src="@drawable/ic_tick" />
+            <FrameLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp">
 
-            <ImageButton
-                android:id="@+id/button_reject"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_reject_button"
-                android:padding="8dp"
-                android:src="@drawable/ic_cross" />
+                <ImageButton
+                    android:id="@+id/button_accept"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_accept_button"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_tick"
+                    android:contentDescription="@string/accept"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp" />
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp">
+
+                <ImageButton
+                    android:id="@+id/button_reject"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_reject_button"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_cross"
+                    android:contentDescription="@string/reject"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp" />
+            </FrameLayout>
+
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
+

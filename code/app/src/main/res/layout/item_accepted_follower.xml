@@ -44,7 +44,6 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <!-- Optional mood label if you need it; you can remove or rename this. -->
         <TextView
             android:id="@+id/text_mood"
             android:layout_width="wrap_content"
@@ -52,12 +51,11 @@
             android:layout_marginHorizontal="8dp"
             android:textSize="18sp" />
 
-        <!-- A single button to remove the follower from Accepted -->
         <Button
             android:id="@+id/button_remove"
-            android:layout_width="80dp"
-            android:layout_height="32dp"
-            android:background="@drawable/button_follow_state"
+            android:layout_width="109dp"
+            android:layout_height="48dp"
+            android:background="@drawable/button_remove"
             android:text="@string/remove"
             android:textColor="@color/follow_button_text" />
     </LinearLayout>
