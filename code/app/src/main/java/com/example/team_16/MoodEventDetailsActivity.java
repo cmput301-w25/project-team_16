@@ -41,53 +41,8 @@ public class MoodEventDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.moodeventdetails);
 
-        Intent intent = getIntent(); //<---- for future use
-
-        // Test One
-//        Intent intent = new Intent();
-//        intent.putExtra("Mood_One", "Angry");
-//        intent.putExtra("Mood_Two", "Fear");
-//        intent.putExtra("First_Name_Last_Name", "Adam Smith");
-//        intent.putExtra("Username", "adamsmith");
-//        intent.putExtra("With_Amount", "Two People");
-//        intent.putExtra("Mood_Description", "Scary dog");
-//        intent.putExtra("Time", "09:30");
-//        intent.putExtra("Date", "2025-03-02");
-//        intent.putExtra("Location", "Vancouver, BC");
-//        intent.putExtra("Mood_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/dog-puppy-on-garden-royalty-free-image-1586966191.avif?alt=media&token=dd513b51-ad8a-4096-8407-f3f743ba2206");
-//        intent.putExtra("Profile_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/blank-profile-circle.png?alt=media&token=7f01cfff-bc66-4c73-982c-79e6f2e7e678");
-        //
-
-        // Test Two
-//        Intent intent = new Intent();
-//        intent.putExtra("Mood_One", "Happiness");
-//        intent.putExtra("Mood_Two", "Shame");
-//        intent.putExtra("First_Name_Last_Name", "John Doe");
-//        intent.putExtra("Username", "jdoe");
-//        intent.putExtra("With_Amount", "One Person");
-//        intent.putExtra("Mood_Description", "Lorem ipsum dolor");
-//        intent.putExtra("Time", "5:20");
-//        intent.putExtra("Date", "2025-02-25");
-//        intent.putExtra("Location", "Calgary, AB");
-//        intent.putExtra("Mood_Image_URL", "");
-//        intent.putExtra("Profile_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/blank-profile-circle.png?alt=media&token=7f01cfff-bc66-4c73-982c-79e6f2e7e678");
-
-
-        // Test Three
-//        Intent intent = new Intent();
-//        intent.putExtra("Mood_One", "Surprised");
-//        intent.putExtra("Mood_Two", "Sad");
-//        intent.putExtra("First_Name_Last_Name", "David Doe");
-//        intent.putExtra("Username", "ddoe");
-//        intent.putExtra("With_Amount", "Crowd");
-//        intent.putExtra("Mood_Description", "");
-//        intent.putExtra("Time", "12:30");
-//        intent.putExtra("Date", "2024-09-25");
-//        intent.putExtra("Location", "");
-//        intent.putExtra("Mood_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/moodimage2.jpg?alt=media&token=625fdc87-211f-429c-8a25-c044fb66b88a");
-//        intent.putExtra("Profile_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/profile2.jpg?alt=media&token=66217d30-3609-48e9-8b6f-29bd38702f1a");
-
-
+        Intent intent = getIntent();
+        
         TextView mood_one_view = findViewById(R.id.mood_one);
         TextView mood_two_view = findViewById(R.id.mood_two);
         TextView emoji_one_view = findViewById(R.id.emoji_one);
