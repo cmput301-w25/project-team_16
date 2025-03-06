@@ -21,7 +21,17 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
+import com.bumptech.glide.Glide;
 
+
+/*
+*  The purpose of this activity within the app is to allow users to view the details of any
+* mood event when clicked upon.
+* If done so, this activity should then give the option to edit the mood event details, sending
+* the user to another activity.
+* When this is completed, the second activity should give this activity the changes using an intent
+* which should then cause the screen to be updated accordingly
+* */
 public class MoodEventDetailsActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> editMoodEventLauncher;
@@ -31,23 +41,52 @@ public class MoodEventDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.moodeventdetails);
 
-        // Intent intent = getIntent(); <---- for future use
+        Intent intent = getIntent(); //<---- for future use
 
-        // dummy data, remove once necessary
-        // this is how im assuming the transfered data be formatted as of now, but this is subject to change if necessary
-        Intent intent = new Intent(); // for dummy data
-        intent.putExtra("Mood_One", "Angry");
-        intent.putExtra("Mood_Two", "Fear");
-        intent.putExtra("First_Name_Last_Name", "Adam Smith");
-        intent.putExtra("Username", "adamsmith");
-        intent.putExtra("With_Amount", "Two People");
-        intent.putExtra("Mood_Description", "Scary dog");
-        intent.putExtra("Time", "09:30");
-        intent.putExtra("Date", "2025-03-02");
-        intent.putExtra("Location", "Vancouver, BC");
-        intent.putExtra("Mood_Image_URL", "");
-        intent.putExtra("Profile_Image_URL", "");
+        // Test One
+//        Intent intent = new Intent();
+//        intent.putExtra("Mood_One", "Angry");
+//        intent.putExtra("Mood_Two", "Fear");
+//        intent.putExtra("First_Name_Last_Name", "Adam Smith");
+//        intent.putExtra("Username", "adamsmith");
+//        intent.putExtra("With_Amount", "Two People");
+//        intent.putExtra("Mood_Description", "Scary dog");
+//        intent.putExtra("Time", "09:30");
+//        intent.putExtra("Date", "2025-03-02");
+//        intent.putExtra("Location", "Vancouver, BC");
+//        intent.putExtra("Mood_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/dog-puppy-on-garden-royalty-free-image-1586966191.avif?alt=media&token=dd513b51-ad8a-4096-8407-f3f743ba2206");
+//        intent.putExtra("Profile_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/blank-profile-circle.png?alt=media&token=7f01cfff-bc66-4c73-982c-79e6f2e7e678");
         //
+
+        // Test Two
+//        Intent intent = new Intent();
+//        intent.putExtra("Mood_One", "Happiness");
+//        intent.putExtra("Mood_Two", "Shame");
+//        intent.putExtra("First_Name_Last_Name", "John Doe");
+//        intent.putExtra("Username", "jdoe");
+//        intent.putExtra("With_Amount", "One Person");
+//        intent.putExtra("Mood_Description", "Lorem ipsum dolor");
+//        intent.putExtra("Time", "5:20");
+//        intent.putExtra("Date", "2025-02-25");
+//        intent.putExtra("Location", "Calgary, AB");
+//        intent.putExtra("Mood_Image_URL", "");
+//        intent.putExtra("Profile_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/blank-profile-circle.png?alt=media&token=7f01cfff-bc66-4c73-982c-79e6f2e7e678");
+
+
+        // Test Three
+//        Intent intent = new Intent();
+//        intent.putExtra("Mood_One", "Surprised");
+//        intent.putExtra("Mood_Two", "Sad");
+//        intent.putExtra("First_Name_Last_Name", "David Doe");
+//        intent.putExtra("Username", "ddoe");
+//        intent.putExtra("With_Amount", "Crowd");
+//        intent.putExtra("Mood_Description", "");
+//        intent.putExtra("Time", "12:30");
+//        intent.putExtra("Date", "2024-09-25");
+//        intent.putExtra("Location", "");
+//        intent.putExtra("Mood_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/moodimage2.jpg?alt=media&token=625fdc87-211f-429c-8a25-c044fb66b88a");
+//        intent.putExtra("Profile_Image_URL", "https://firebasestorage.googleapis.com/v0/b/moodtrackerteam16.firebasestorage.app/o/profile2.jpg?alt=media&token=66217d30-3609-48e9-8b6f-29bd38702f1a");
+
 
         TextView mood_one_view = findViewById(R.id.mood_one);
         TextView mood_two_view = findViewById(R.id.mood_two);
@@ -166,7 +205,7 @@ public class MoodEventDetailsActivity extends AppCompatActivity {
         time_ago_view.setText(time_ago);
         profile_picture_view.setImageResource(android.R.drawable.sym_def_app_icon); // example profile picture
         first_name_last_name_view.setText(first_name_last_name);
-        profile_username_view.setText(username);
+        profile_username_view.setText("@" + username);
         with_amount_view.setText("With: " + with_amount);
         mood_description_view.setText(mood_description);
         Drawable mood_image_drawable = getResources().getDrawable(R.drawable.dog); //example image of dog
@@ -174,23 +213,21 @@ public class MoodEventDetailsActivity extends AppCompatActivity {
         time_view.setText(time + "  " + date + "  " + location);
 
         // optional image visibility check
-//        if (mood_image_fileurl.equals("")) {
-//            mood_image_view.setVisibility(View.GONE);
-//        }
+        if (mood_image_fileurl.equals("")) {
+            mood_image_view.setVisibility(View.GONE);
+        }
 
         // For photos, we can add Glide to our dependencies, sync gradle, then use the following code:
-//
-//            Glide.with(this)
-//                    .load(mood_image_fileurl) // Replace this with firebase image url, which should be saved to the database (along with the image itself) during the uploading of the image
-//                    // .placeholder(R.drawable.placeholder) // optional, we can add a placeholder while loading
-//                    // .error(R.drawable.error_image) // also optional, we can add an error image if it doesnt load
-//                    .into(mood_image_view);
-        // This code sets the image view to the image at the given url
+            Glide.with(this)
+                    .load(mood_image_fileurl) // Replace this with firebase image url, which should be saved to the database (along with the image itself) during the uploading of the image
+                    // .placeholder(R.drawable.placeholder) // optional, we can add a placeholder while loading
+                    // .error(R.drawable.error_image) // also optional, we can add an error image if it doesnt load
+                    .into(mood_image_view);
 
         // doing the same for the profile picture:
-//            Glide.with(this)
-//                    .load(profile_image_fileurl)
-//                    .into(profile_picture_view);
+            Glide.with(this)
+                    .load(profile_image_fileurl)
+                    .into(profile_picture_view);
 
 
         // back button, returns to previous activity
@@ -233,7 +270,7 @@ public class MoodEventDetailsActivity extends AppCompatActivity {
 //                        mood_one_view.setText(data.getStringExtra("Mood_One"));
 //                        mood_two_view.setText(data.getStringExtra("Mood_Two"));
 //                        first_name_last_name_view.setText(data.getStringExtra("First_Name_Last_Name"));
-//                        profile_username_view.setText(data.getStringExtra("Username"));
+//                        profile_username_view.setText("@" + data.getStringExtra("Username"));
 //                        with_amount_view.setText(data.getStringExtra("With_Amount"));
 //                        mood_description_view.setText(data.getStringExtra("Mood_Description"));
 //
