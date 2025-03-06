@@ -20,10 +20,16 @@ public class MainActivity extends AppCompatActivity {
     private EditText usernameEditText, passwordEditText;
     private Button loginButton, signUpButton, resetPasswordButton;
 
+    // FirebaseDB instance
+    private FirebaseDB firebaseDB;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize Firebase
+        firebaseDB = FirebaseDB.getInstance(this);
 
         // Initialize UI elements
         usernameEditText = findViewById(R.id.username);
@@ -44,9 +50,18 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Enter all fields!", Toast.LENGTH_SHORT).show();
             } else {
 
-                // TODO: Implement authentication logic (check database)
+                // Use FirebaseDB to login
+                firebaseDB.login(username, password, result -> {
+                    if (result) {
+                        Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
 
-                Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                        // Now after a successful login:
+                        // Go to another activity
+
+                    } else {
+                        Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 

@@ -20,6 +20,9 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText nameEditText, usernameEditText, emailEditText, passwordEditText;
     private Button signUpButton;
 
+    // FirebaseDB instance
+    private FirebaseDB firebaseDB;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,9 @@ public class SignUpActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         }
+
+        // Initialize FirebaseDB
+        firebaseDB = firebaseDB.getInstance(this);
 
         // Initialize UI elements
         nameEditText = findViewById(R.id.name);
@@ -56,10 +62,20 @@ public class SignUpActivity extends AppCompatActivity {
                 Toast.makeText(SignUpActivity.this, "Fill all fields!", Toast.LENGTH_SHORT).show();
             } else {
 
-                // TODO: Save user data to database
-                Toast.makeText(SignUpActivity.this, "User registered!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(SignUpActivity.this, MainActivity.class));
-                finish();
+                // Use FirebaseDB to sign up
+
+                firebaseDB.signup(name, username, email, password, result -> {
+                    if (result) {
+
+                        // Successful Sign Up
+                        Toast.makeText(SignUpActivity.this, "User registered!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(SignUpActivity.this, MainActivity.class));
+                        finish();
+                    } else {
+                        // Sign up failed
+                        Toast.makeText(SignUpActivity.this, "Sign up failed. Try again.", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }

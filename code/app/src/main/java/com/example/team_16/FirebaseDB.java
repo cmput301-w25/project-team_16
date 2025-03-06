@@ -578,4 +578,20 @@ public class FirebaseDB {
                     callback.onCallback(false);
                 });
     }
+
+    /**
+     * Send a password reset email
+     */
+    public void sendPasswordResetEmail(String email, FirebaseCallback<Boolean> callback) {
+        auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener(aVoid -> {
+                    // Reset email sent
+                    callback.onCallback(true);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error sending password reset email", e);
+                    callback.onCallback(false);
+                });
+    }
+
 }
