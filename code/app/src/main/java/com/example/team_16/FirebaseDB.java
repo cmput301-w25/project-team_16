@@ -296,67 +296,6 @@ public class FirebaseDB {
                 });
     }
 
-    /**
-     * Subscribe to user's mood events (real-time updates)
-     */
-    public ListenerRegistration subscribeToUserMoods(String userId, FirebaseCallback<List<MoodEvent>> callback) {
-        return db.collection(MOODS_COLLECTION)
-                .whereEqualTo("userId", userId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .addSnapshotListener((queryDocumentSnapshots, e) -> {
-                    if (e != null) {
-                        Log.e("FirebaseDB", "Listen failed", e);
-                        return;
-                    }
-
-                    List<MoodEvent> moodEvents = new ArrayList<>();
-                    if (queryDocumentSnapshots != null) {
-                        for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                            MoodEvent moodEvent = doc.toObject(MoodEvent.class);
-                            moodEvents.add(moodEvent);
-                        }
-                    }
-                    callback.onCallback(moodEvents);
-                });
-    }
-
-    /**
-     * Subscribe to following users' mood events (real-time updates)
-     */
-    public ListenerRegistration subscribeToFollowingMoods(String userId, FirebaseCallback<List<MoodEvent>> callback) {
-        return db.collection(USERS_COLLECTION).document(userId)
-                .addSnapshotListener((documentSnapshot, e) -> {
-                    if (e != null || documentSnapshot == null) {
-                        Log.e("FirebaseDB", "Listen failed", e);
-                        return;
-                    }
-
-                    UserProfile userProfile = documentSnapshot.toObject(UserProfile.class);
-                    if (userProfile == null || userProfile.getFollowing() == null || userProfile.getFollowing().isEmpty()) {
-                        callback.onCallback(new ArrayList<>());
-                        return;
-                    }
-
-                    db.collection(MOODS_COLLECTION)
-                            .whereIn("userId", userProfile.getFollowing())
-                            .orderBy("timestamp", Query.Direction.DESCENDING)
-                            .addSnapshotListener((queryDocumentSnapshots, err) -> {
-                                if (err != null) {
-                                    Log.e("FirebaseDB", "Listen failed", err);
-                                    return;
-                                }
-
-                                List<MoodEvent> moodEvents = new ArrayList<>();
-                                if (queryDocumentSnapshots != null) {
-                                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                                        MoodEvent moodEvent = doc.toObject(MoodEvent.class);
-                                        moodEvents.add(moodEvent);
-                                    }
-                                }
-                                callback.onCallback(moodEvents);
-                            });
-                });
-    }
 
     // Authentication methods (login, signup, etc.)
 
