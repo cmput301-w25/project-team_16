@@ -24,6 +24,8 @@
         <!-- Sign Up Activity -->
         <activity android:name=".SignUpActivity" android:exported="true"/>
         <activity android:name=".ResetPasswordActivity"/>
+        <activity android:name=".MoodEventDetailsActivity" android:exported="true"/>
+
 
     </application>
 
