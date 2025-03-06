@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">team_16</string>
+    <string name="followers">Followers</string>
+
+    <!-- Tab labels -->
+    <string name="accepted">Accepted</string>
+    <string name="pending">Pending</string>
+
+    <!-- Search bar placeholder -->
+    <string name="search_for_users">Search for users...</string>
+
+    <!-- Empty state message -->
+    <string name="no_follow_requests">No follow requests</string>
+
+    <!-- Button text for removing an accepted follower -->
+    <string name="remove">Remove</string>
 </resources>

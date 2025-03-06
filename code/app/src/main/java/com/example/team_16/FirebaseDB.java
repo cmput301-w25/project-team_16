@@ -524,6 +524,45 @@ public class FirebaseDB {
     }
 
     /**
+     * Fetch user data by user ID
+     */
+    public void fetchUserById(String userId, FirebaseCallback<Map<String, Object>> callback) {
+        db.collection(USERS_COLLECTION).document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        callback.onCallback(documentSnapshot.getData());
+                    } else {
+                        callback.onCallback(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error fetching user", e);
+                    callback.onCallback(null);
+                });
+    }
+
+    /**
+     * Get list of users who follow the specified user
+     */
+    public void getFollowersOfUser(String userId, FirebaseCallback<List<String>> callback) {
+        db.collection(FOLLOWING_COLLECTION)
+                .whereArrayContains("following", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> followerIds = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        followerIds.add(doc.getId());
+                    }
+                    callback.onCallback(followerIds);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error getting followers", e);
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
+    /**
      * Update user profile information
      *
      * @param userId ID of the user to update
