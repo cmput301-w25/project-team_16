@@ -5,7 +5,6 @@ import java.util.Map;
 
 /**
  * Represents a user in the mood tracking application
- * Coordinates interactions between different components of the user's profile
  */
 public class UserProfile {
     // Core user information
@@ -14,12 +13,12 @@ public class UserProfile {
     private String fullName;
     private String email;
 
+    // Firebase database interface
+    private FirebaseDB firebaseDB;
+
     // Mood-related components
     private PersonalMoodHistory personalMoodHistory;
     private MoodHistory followingMoodHistory;
-
-    // Firebase database interface
-    private FirebaseDB firebaseDB;
 
     /**
      * Constructor for creating a new user profile
@@ -29,7 +28,8 @@ public class UserProfile {
      * @param fullName User's full name
      * @param email User's email address
      */
-    public UserProfile(String id, String username, String fullName, String email) {
+    public UserProfile(FirebaseDB firebaseDB, String id, String username, String fullName, String email) {
+        this.firebaseDB = firebaseDB;
         this.id = id;
         this.username = username;
         this.fullName = fullName;
@@ -38,9 +38,6 @@ public class UserProfile {
         // Initialize mood histories
         this.personalMoodHistory = new PersonalMoodHistory(id);
         this.followingMoodHistory = new MoodHistory(id, MoodHistory.MODE_FOLLOWING);
-
-        // Get FirebaseDB instance
-        this.firebaseDB = FirebaseDB.getInstance(null); // Note: Context might need to be passed differently
     }
 
     // Follow-related Methods
@@ -170,7 +167,6 @@ public class UserProfile {
      * @param callback Callback to handle update result
      */
     public void updateProfile(String fullName, String email, FirebaseDB.FirebaseCallback<Boolean> callback) {
-        // TODO: Implement profile update logic in FirebaseDB
         this.fullName = fullName;
         this.email = email;
         firebaseDB.updateUserProfile(this.id, fullName, email, callback);
@@ -192,5 +188,14 @@ public class UserProfile {
 
     public String getEmail() {
         return email;
+    }
+
+    /**
+     * Get the FirebaseDB instance associated with this user profile
+     *
+     * @return FirebaseDB instance
+     */
+    public FirebaseDB getFirebaseDB() {
+        return firebaseDB;
     }
 }
