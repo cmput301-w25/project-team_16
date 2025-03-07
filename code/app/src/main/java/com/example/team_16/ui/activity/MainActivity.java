@@ -1,11 +1,15 @@
 package com.example.team_16.ui.activity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
@@ -50,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         signUpButton = findViewById(R.id.signUpButton);
         resetPasswordButton = findViewById(R.id.resetPasswordButton);
+        EdgeToEdge.enable(this);
+
 
         // Handle Login Button Click
         loginButton.setOnClickListener(v -> {
