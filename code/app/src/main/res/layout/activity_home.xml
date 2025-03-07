@@ -6,12 +6,30 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
-    <!-- Fragment Container (Main Content) -->
-    <FrameLayout
-        android:id="@+id/fragment_container"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:orientation="vertical">
+
+        <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/toolbar_color"
+            android:elevation="4dp"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+        <!-- Fragment Container (Main Content) -->
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/gradient_background"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    </LinearLayout>
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -20,6 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/white"
+        android:fitsSystemWindows="true"
         app:itemIconSize="30dp"
         app:labelVisibilityMode="unlabeled"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
