@@ -1,4 +1,4 @@
-package com.example.team_16;
+package com.example.team_16.ui.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
@@ -10,6 +10,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.team_16.ui.adapters.AcceptedFollowersAdapter;
+import com.example.team_16.ui.adapters.PendingRequestsAdapter;
+import com.example.team_16.R;
+import com.example.team_16.database.FirebaseDB;
 
 import java.util.ArrayList;
 import java.util.List;

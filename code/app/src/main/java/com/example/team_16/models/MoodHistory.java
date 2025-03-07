@@ -1,4 +1,4 @@
-package com.example.team_16;
+package com.example.team_16.models;
 
 import java.util.ArrayList;
 import java.util.List;

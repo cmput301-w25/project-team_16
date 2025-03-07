@@ -1,4 +1,4 @@
-package com.example.team_16;
+package com.example.team_16.ui.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;

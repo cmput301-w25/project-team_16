@@ -1,4 +1,4 @@
-package com.example.team_16;
+package com.example.team_16.models;
 
 import java.util.Collections;
 import java.util.HashMap;
