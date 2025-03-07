@@ -1,5 +1,6 @@
 package com.example.team_16.models;
 
+import com.example.team_16.database.FirebaseDB;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.ServerTimestamp;
@@ -219,13 +220,138 @@ public class MoodEvent {
 
     /**
      * Helper method to save this mood event to Firestore.
-     * Currently commented out until FirebaseDB class is implemented.
      *
      * @param firebaseDB The FirebaseDB instance to use for saving
-     * @return A DocumentReference to the saved mood event
+     * @param callback Callback to handle the result
      */
-    //@Exclude
-    //public DocumentReference saveToFirestore(FirebaseDB firebaseDB) {
-    //    return firebaseDB.addMoodEvent(this);
-    //}
+    @Exclude
+    public void saveToFirestore(FirebaseDB firebaseDB, FirebaseDB.FirebaseCallback<Boolean> callback) {
+        if (!isValid()) {
+            if (callback != null) {
+                callback.onCallback(false);
+            }
+            return;
+        }
+
+        firebaseDB.addMoodEvent(this, callback);
+    }
+
+    /**
+     * Helper method to update this mood event in Firestore.
+     *
+     * @param firebaseDB The FirebaseDB instance to use for updating
+     * @param callback Callback to handle the result
+     */
+    @Exclude
+    public void updateInFirestore(FirebaseDB firebaseDB, FirebaseDB.FirebaseCallback<Boolean> callback) {
+        if (!isValid() || id == null) {
+            if (callback != null) {
+                callback.onCallback(false);
+            }
+            return;
+        }
+
+        firebaseDB.updateMoodEvent(id, this, callback);
+    }
+
+    /**
+     * Helper method to delete this mood event from Firestore.
+     *
+     * @param firebaseDB The FirebaseDB instance to use for deleting
+     * @param callback Callback to handle the result
+     */
+    @Exclude
+    public void deleteFromFirestore(FirebaseDB firebaseDB, FirebaseDB.FirebaseCallback<Boolean> callback) {
+        if (id == null) {
+            if (callback != null) {
+                callback.onCallback(false);
+            }
+            return;
+        }
+
+        firebaseDB.deleteMoodEvent(id, callback);
+    }
+
+    /**
+     * Creates a copy of this mood event.
+     *
+     * @return A new MoodEvent with the same values
+     */
+    @Exclude
+    public MoodEvent copy() {
+        return new MoodEvent(id, timestamp, emotionalState, trigger, userID, socialSituation);
+    }
+
+    /**
+     * Format timestamp as human-readable date string.
+     *
+     * @return Formatted date string or "No date" if timestamp is null
+     */
+    @Exclude
+    public String getFormattedDate() {
+        if (timestamp == null) {
+            return "No date";
+        }
+
+        Date date = timestamp.toDate();
+        return java.text.DateFormat.getDateTimeInstance().format(date);
+    }
+
+    /**
+     * Returns a simple string representation of this mood event.
+     *
+     * @return String representation
+     */
+    @Override
+    public String toString() {
+        return "MoodEvent{" +
+                "id='" + id + '\'' +
+                ", date='" + getFormattedDate() + '\'' +
+                ", emotionalState=" + (emotionalState != null ? emotionalState.getName() : "null") +
+                '}';
+    }
+
+    /**
+     * Checks whether this mood event equals another object.
+     *
+     * @param obj The object to compare with
+     * @return true if they are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        MoodEvent other = (MoodEvent) obj;
+
+        // If both have IDs, compare IDs
+        if (id != null && other.id != null) {
+            return id.equals(other.id);
+        }
+
+        // Otherwise compare all fields
+        if (timestamp != null ? !timestamp.equals(other.timestamp) : other.timestamp != null)
+            return false;
+        if (emotionalState != other.emotionalState)
+            return false;
+        if (userID != null ? !userID.equals(other.userID) : other.userID != null)
+            return false;
+        if (trigger != null ? !trigger.equals(other.trigger) : other.trigger != null)
+            return false;
+        return socialSituation != null ? socialSituation.equals(other.socialSituation) : other.socialSituation == null;
+    }
+
+    /**
+     * Generates a hash code for this mood event.
+     *
+     * @return Hash code value
+     */
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (emotionalState != null ? emotionalState.hashCode() : 0);
+        result = 31 * result + (userID != null ? userID.hashCode() : 0);
+        return result;
+    }
 }
