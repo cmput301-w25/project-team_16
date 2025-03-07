@@ -1,5 +1,7 @@
-package com.example.team_16;
+package com.example.team_16.database;
 
+import com.example.team_16.models.EmotionalState;
+import com.example.team_16.models.MoodEvent;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;

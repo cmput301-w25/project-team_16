@@ -3,6 +3,9 @@ package com.example.team_16;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.example.team_16.models.EmotionalState;
+import com.example.team_16.models.EmotionalStateRegistry;
+
 import org.junit.Test;
 
 public class EmotionalStateTest {

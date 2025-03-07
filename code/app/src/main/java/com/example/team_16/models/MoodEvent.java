@@ -1,4 +1,4 @@
-package com.example.team_16;
+package com.example.team_16.models;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
