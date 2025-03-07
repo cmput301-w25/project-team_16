@@ -82,8 +82,7 @@ public class SignUpActivity extends AppCompatActivity {
                 return;
             }
 
-            // Check only alphanumeric + underscore
-            //    Adjust the regex if you want to allow hyphens or other chars
+            // Check for only alphanumeric and underscores using regex
             if (!username.matches("^[A-Za-z0-9_]+$")) {
                 Toast.makeText(SignUpActivity.this,
                         "Username can only contain letters, numbers, or underscores",
