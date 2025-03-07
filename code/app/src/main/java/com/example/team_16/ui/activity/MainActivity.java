@@ -7,9 +7,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
-
+import com.example.team_16.models.UserProfile;
 
 /**
  * This is the login screen of the app.
@@ -28,10 +29,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         // Initialize Firebase
         firebaseDB = FirebaseDB.getInstance(this);
+
+        // Check if user is already logged in
+        String currentUserId = firebaseDB.getCurrentUserId();
+        if (currentUserId != null) {
+            // User is already logged in, load profile and navigate
+            loadUserProfileAndNavigate(currentUserId);
+            return;
+        }
+
+        // No active session, show login UI
+        setContentView(R.layout.activity_main);
 
         // Initialize UI elements
         usernameEditText = findViewById(R.id.username);
@@ -57,9 +68,11 @@ public class MainActivity extends AppCompatActivity {
                     if (result) {
                         Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
 
-                        // Now after a successful login:
-                        // Go to another activity
+                        // Get the current user ID
+                        String userId = firebaseDB.getCurrentUserId();
 
+                        // Load user profile and navigate to main content
+                        loadUserProfileAndNavigate(userId);
                     } else {
                         Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
                     }
@@ -79,6 +92,49 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
+
+    /**
+     * Load user profile from Firebase and navigate to home screen
+     */
+    private void loadUserProfileAndNavigate(String userId) {
+        // Show loading indicator if needed
+        // loadingProgressBar.setVisibility(View.VISIBLE);
+
+        UserProfile.loadFromFirebase(firebaseDB, userId, userProfile -> {
+            // Hide loading indicator if needed
+            // loadingProgressBar.setVisibility(View.GONE);
+
+            if (userProfile != null) {
+                // Store the user profile in the application
+                saveUserProfileToApp(userProfile);
+
+                // Navigate to home/dashboard activity
+                Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                startActivity(intent);
+                finish(); // Close the login activity
+            } else {
+                // Could not load user profile
+                Toast.makeText(MainActivity.this,
+                        "Error loading user profile. Please try again.",
+                        Toast.LENGTH_SHORT).show();
+
+                // Log the user out
+                firebaseDB.logout();
+
+                // If we were checking an existing session, make sure to show the login UI
+                if (findViewById(R.id.loginButton) == null) {
+                    setContentView(R.layout.activity_main);
+                    // Re-initialize UI elements
+                    // ...
+                }
+            }
+        });
+    }
+
+    /**
+     * Save the UserProfile to the application class
+     */
+    private void saveUserProfileToApp(UserProfile userProfile) {
+        ((MoodTrackerApp) getApplication()).setCurrentUserProfile(userProfile);
+    }
 }
-
-
