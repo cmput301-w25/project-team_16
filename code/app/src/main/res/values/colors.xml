@@ -4,4 +4,11 @@
     <color name="white">#FFFFFFFF</color>
     <color name="navy">#001F3F</color>
 
+    <color name="tab_selected_text">#4CAF50</color>
+    <color name="tab_unselected_text">#4A2C2C</color>
+    <color name="tab_button_stroke">#A1824A</color>
+
+    <color name="tab_button_text">#FFFFFFFF</color>
+
+    <color name="follow_button_text">#FF000000</color>
 </resources>
