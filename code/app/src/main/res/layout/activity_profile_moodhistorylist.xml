@@ -1,0 +1,120 @@
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ADD8E6"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Profile Image -->
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:focusable="true"
+            android:src="@color/black"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center_horizontal"
+            android:clickable="true"
+            app:shapeAppearanceOverlay="@style/roundedImageView_40"/>
+
+
+        <!-- User Info and Edit Button in the same row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <!-- User Info (Aligned Left) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/userName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Name"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000"/>
+
+                <TextView
+                    android:id="@+id/userHandle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/user_handle"
+                    android:textSize="14sp"
+                    android:textColor="#000000"/>
+            </LinearLayout>
+
+            <!-- Edit Profile Button (Aligned Right) -->
+            <Button
+                android:id="@+id/btnEditProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Profile"
+                android:backgroundTint="#00008B"
+                android:textColor="#FFFFFF"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/moodStats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="# Following   # Followers"
+            android:textSize="14sp"
+            android:layout_marginTop="15dp"
+            android:textColor="#000000"/>
+
+        <TextView
+            android:id="@+id/totalMoodEntriesTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Mood Entries: "
+            android:textSize="14sp"
+            android:layout_marginTop="20dp"
+            android:textColor="#000000"/>
+
+        <TextView
+            android:id="@+id/mostFrequentMoodTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Most Frequent Mood: "
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:textColor="#000000"/>
+
+        <!-- Mood History Title -->
+        <TextView
+            android:id="@+id/moodHistoryTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mood History"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:textColor="#000000"/>
+
+        <!-- RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/moodHistoryRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
