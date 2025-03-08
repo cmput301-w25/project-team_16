@@ -22,6 +22,10 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="user_handle">@UserHandle</string>
+    <string name="content_area_description">Main content area</string>
+    <string name="feed_content_description">Mood feed list</string>
+    <string name="maps_content_description">Maps showing mood data</string>
+
 
 
     <string name="lorem_ipsum">
