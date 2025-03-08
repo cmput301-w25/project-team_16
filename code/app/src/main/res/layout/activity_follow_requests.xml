@@ -11,7 +11,7 @@
     <!-- Updated Navigation Bar -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="85dp"
+        android:layout_height="70dp"
         android:background="#1E293F">
 
 
@@ -20,7 +20,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_alignParentStart="true"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:layout_marginStart="2dp"
 
             android:layout_marginEnd="30dp"
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:text="@string/followers"
             android:layout_marginTop="32dp"
-            android:textSize="29sp"
+            android:textSize="20sp"
             android:textColor="#F5F0E5"
             android:textStyle="bold"
             android:layout_centerInParent="true"/>
