@@ -2,6 +2,7 @@ package com.example.team_16.database;
 
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
+import com.example.team_16.models.User;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -634,5 +635,29 @@ public class FirebaseDB {
                     callback.onCallback(false);
                 });
     }
+
+    /**
+     * Searches for users by username.
+     */
+    public void searchUsersByUsername(String username, FirebaseCallback<List<User>> callback) {
+        db.collection(USERS_COLLECTION)
+                .whereEqualTo("usernameLower", username.toLowerCase())
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<User> users = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        User user = doc.toObject(User.class);
+                        if (user != null) {
+                            users.add(user);
+                        }
+                    }
+                    callback.onCallback(users);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error searching users", e);
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
 
 }
