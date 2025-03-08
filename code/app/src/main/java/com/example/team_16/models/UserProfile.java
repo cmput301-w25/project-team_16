@@ -1,6 +1,8 @@
 package com.example.team_16.models;
 
 import com.example.team_16.database.FirebaseDB;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,14 +32,17 @@ public class UserProfile {
      * @param fullName User's full name
      * @param email User's email address
      */
-    public UserProfile(FirebaseDB firebaseDB, String id, String username, String fullName, String email) {
+    // New follow-related fields
+    private List<String> pendingFollow = new ArrayList<>();
+    private List<String> userFollowing = new ArrayList<>();
+
+    public UserProfile(FirebaseDB firebaseDB, String id, String username,
+                       String fullName, String email) {
         this.firebaseDB = firebaseDB;
         this.id = id;
         this.username = username;
         this.fullName = fullName;
         this.email = email;
-
-        // Initialize mood histories with firebaseDB
         this.personalMoodHistory = new PersonalMoodHistory(id, firebaseDB);
         this.followingMoodHistory = new MoodHistory(id, MoodHistory.MODE_FOLLOWING, firebaseDB);
     }
@@ -58,7 +63,7 @@ public class UserProfile {
                 String email = (String) userData.get("email");
 
                 UserProfile profile = new UserProfile(firebaseDB, userId, username, fullName, email);
-                callback.onCallback(profile);
+                profile.refreshFollowData(() -> callback.onCallback(profile));
             } else {
                 callback.onCallback(null);
             }
@@ -66,6 +71,36 @@ public class UserProfile {
     }
 
     // Follow-related Methods
+    // Follow-related Methods
+    public void refreshFollowData(Runnable completion) {
+        firebaseDB.getSentFollowRequests(this.id, requests -> {
+            pendingFollow.clear();
+            for (Map<String, Object> request : requests) {
+                String toUserId = (String) request.get("toUserId");
+                pendingFollow.add(toUserId);
+            }
+
+            firebaseDB.getFollowingList(this.id, followingList -> {
+                userFollowing.clear();
+                if (followingList != null) {
+                    userFollowing.addAll(followingList);
+                }
+                if (completion != null) completion.run();
+            });
+        });
+    }
+
+    public List<String> getPendingFollow() {
+        return new ArrayList<>(pendingFollow);
+    }
+
+    public List<String> getUserFollowing() {
+        return new ArrayList<>(userFollowing);
+    }
+
+    public void searchUsersByUsername(String query, FirebaseDB.FirebaseCallback<List<Map<String, Object>>> callback) {
+        firebaseDB.searchUsersByUsername(query, callback);
+    }
 
     /**
      * Send a follow request to another user
@@ -74,7 +109,12 @@ public class UserProfile {
      * @param callback Callback to handle follow request result
      */
     public void sendFollowRequest(String targetUserId, FirebaseDB.FirebaseCallback<Boolean> callback) {
-        firebaseDB.sendFollowRequest(this.id, targetUserId, callback);
+        firebaseDB.sendFollowRequest(this.id, targetUserId, success -> {
+            if (success) {
+                pendingFollow.add(targetUserId);
+            }
+            if (callback != null) callback.onCallback(success);
+        });
     }
 
     /**
