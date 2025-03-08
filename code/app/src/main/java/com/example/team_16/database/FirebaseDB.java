@@ -47,7 +47,7 @@ public class FirebaseDB {
     /**
      * Private constructor for singleton pattern
      */
-    private FirebaseDB(Context context) {
+    public FirebaseDB(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
