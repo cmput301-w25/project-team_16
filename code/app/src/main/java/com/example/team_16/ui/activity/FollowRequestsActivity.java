@@ -43,7 +43,9 @@ public class FollowRequestsActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
 
-        // Show Pending by default
+        // Show Pending by default and set the pending button as selected
+        btnPending.setSelected(true);
+        btnAccepted.setSelected(false);
         showPendingRequests();
     }
 
@@ -56,8 +58,17 @@ public class FollowRequestsActivity extends AppCompatActivity {
         ImageView backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> onBackPressed());
 
-        btnAccepted.setOnClickListener(v -> showAcceptedFollowers());
-        btnPending.setOnClickListener(v -> showPendingRequests());
+        btnAccepted.setOnClickListener(v -> {
+            btnAccepted.setSelected(true);
+            btnPending.setSelected(false);
+            showAcceptedFollowers();
+        });
+
+        btnPending.setOnClickListener(v -> {
+            btnPending.setSelected(true);
+            btnAccepted.setSelected(false);
+            showPendingRequests();
+        });
     }
 
     private void setupRecyclerView() {
@@ -90,7 +101,7 @@ public class FollowRequestsActivity extends AppCompatActivity {
             }
         });
 
-        // Correct Accepted adapter setup with both parameters
+        // Accepted adapter setup
         acceptedAdapter = new AcceptedFollowersAdapter((follower, position) -> {
             // Remove the follower from current user's followers
             firebaseDB.unfollowUser(follower.userId, currentUserId, success -> {

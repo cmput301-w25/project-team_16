@@ -8,18 +8,22 @@
     android:orientation="vertical"
     android:background="@drawable/gradient_bg">
 
+    <!-- Updated Navigation Bar -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#1E293F"
-        android:padding="16dp">
+        android:layout_height="85dp"
+        android:background="#1E293F">
+
 
         <ImageView
             android:id="@+id/back_button"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="2dp"
+
+            android:layout_marginEnd="30dp"
             android:src="@drawable/arrow_back"
             app:tint="#F5F0E5" />
 
@@ -27,7 +31,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/followers"
-            android:textSize="20sp"
+            android:layout_marginTop="32dp"
+            android:textSize="29sp"
             android:textColor="#F5F0E5"
             android:textStyle="bold"
             android:layout_centerInParent="true"/>
@@ -67,7 +72,7 @@
             android:gravity="center_vertical"/>
     </LinearLayout>
 
-    <!-- Tab Buttons Section -->
+    <!-- Tab Buttons Section with Shadow -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -83,7 +88,8 @@
             android:textColor="@color/tab_button_text"
             android:textSize="16sp"
             android:background="@drawable/tab_button_bg"
-            android:layout_marginEnd="12dp"/>
+            android:layout_marginEnd="12dp"
+            android:elevation="8dp"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_pending"
@@ -92,7 +98,8 @@
             android:text="@string/pending"
             android:textColor="@color/tab_button_text"
             android:textSize="16sp"
-            android:background="@drawable/tab_button_bg"/>
+            android:background="@drawable/tab_button_bg"
+            android:elevation="8dp"/>
     </LinearLayout>
 
     <!-- Text shown when there are no requests/followers -->
@@ -118,4 +125,5 @@
         android:scrollbars="vertical"/>
 
 </LinearLayout>
+
 

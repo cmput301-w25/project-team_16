@@ -7,7 +7,7 @@
     <item
         android:id="@+id/nav_search"
         android:icon="@drawable/ic_search"
-        android:title="Search" />
+        android:title="Find" />
     <item
         android:id="@+id/nav_add"
         android:icon="@drawable/add_circle_24px"

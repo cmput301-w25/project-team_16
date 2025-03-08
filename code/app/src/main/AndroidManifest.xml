@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
@@ -25,12 +24,16 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Sign Up Activity -->
+        </activity>
         <activity
             android:name=".ui.activity.SignUpActivity"
             android:exported="true" />
         <activity
             android:name=".ui.activity.ResetPasswordActivity"
+            android:exported="true" />
+        <!-- Add your FollowRequestsActivity here -->
+        <activity
+            android:name=".ui.activity.FollowRequestsActivity"
             android:exported="true" />
     </application>
 
