@@ -3,6 +3,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="navy">#001F3F</color>
+    <color name="green">#008000</color>
+    <color name="gray">#808080</color>
 
     <color name="tab_selected_text">#4CAF50</color>
     <color name="tab_unselected_text">#4A2C2C</color>
