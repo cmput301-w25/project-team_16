@@ -23,8 +23,10 @@
         </activity>
         <!-- Sign Up Activity -->
         <activity android:name=".ui.activity.SignUpActivity" android:exported="true"/>
+        <!-- Reset Password Activity -->
         <activity android:name=".ui.activity.ResetPasswordActivity" android:exported="true"/>
-
+        <!-- Follow Requests Activity -->
+        <activity android:name=".ui.activity.FollowRequestsActivity" android:exported="true"/>
     </application>
 
 </manifest>

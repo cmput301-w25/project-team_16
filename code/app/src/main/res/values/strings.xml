@@ -16,5 +16,6 @@
     <string name="mood_placeholder" />
     <string name="accept">Accept Request</string>
     <string name="reject">Reject Request</string>
+    <string name="find">Find</string>
 
 </resources>

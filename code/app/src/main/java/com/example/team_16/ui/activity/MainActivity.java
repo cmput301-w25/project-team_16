@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
-
+import com.example.team_16.ui.activity.FollowRequestsActivity; // Make sure to import the FollowRequestsActivity
 
 /**
  * This is the login screen of the app.
@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle Login Button Click
         loginButton.setOnClickListener(v -> {
-
             // Retrieve user input
             String username = usernameEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
@@ -51,15 +50,13 @@ public class MainActivity extends AppCompatActivity {
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(MainActivity.this, "Enter all fields!", Toast.LENGTH_SHORT).show();
             } else {
-
                 // Use FirebaseDB to login
                 firebaseDB.login(username, password, result -> {
                     if (result) {
                         Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-
-                        // Now after a successful login:
-                        // Go to another activity
-
+                        // Navigate to FollowRequestsActivity for testing follow request functionality
+                        Intent intent = new Intent(MainActivity.this, FollowRequestsActivity.class);
+                        startActivity(intent);
                     } else {
                         Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
                     }
@@ -80,5 +77,4 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 }
-
 

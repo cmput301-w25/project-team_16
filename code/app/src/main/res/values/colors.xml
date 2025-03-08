@@ -8,7 +8,7 @@
     <color name="tab_unselected_text">#4A2C2C</color>
     <color name="tab_button_stroke">#A1824A</color>
 
-    <color name="tab_button_text">#FFFFFFFF</color>
+    <color name="tab_button_text">#4A2C2C</color>
 
-    <color name="follow_button_text">#FF000000</color>
+    <color name="follow_button_text">#FF0000</color>
 </resources>
