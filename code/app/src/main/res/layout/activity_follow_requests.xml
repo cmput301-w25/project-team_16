@@ -6,11 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/gradient_bg">
+    android:background="@drawable/gradient_bg"
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="60dp"
         android:background="#1E293F"
         android:padding="16dp">
 
@@ -83,7 +84,8 @@
             android:textColor="@color/tab_button_text"
             android:textSize="16sp"
             android:background="@drawable/tab_button_bg"
-            android:layout_marginEnd="12dp"/>
+            android:layout_marginEnd="12dp"
+            android:elevation="8dp"/>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_pending"
@@ -92,7 +94,8 @@
             android:text="@string/pending"
             android:textColor="@color/tab_button_text"
             android:textSize="16sp"
-            android:background="@drawable/tab_button_bg"/>
+            android:background="@drawable/tab_button_bg"
+            android:elevation="8dp"/>
     </LinearLayout>
 
     <!-- Text shown when there are no requests/followers -->

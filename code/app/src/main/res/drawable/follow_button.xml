@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Drawable for Follow button with green stroke -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_selected="true">
         <shape android:shape="rectangle">
             <corners android:radius="8dp"/>
-            <stroke android:width="2dp" android:color="#1E293F"/>
-            <solid android:color="#F5F0E5"/>
+            <stroke android:width="2dp" android:color="#008000"/>
+            <solid android:color="@android:color/transparent"/>
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="8dp"/>
-            <solid android:color="#F5F0E5"/>
+            <stroke android:width="2dp" android:color="#008000"/>
+            <solid android:color="@android:color/transparent"/>
         </shape>
     </item>
 </selector>

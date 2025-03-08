@@ -1,23 +1,20 @@
 package com.example.team_16.ui.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ScrollView;
-
+import android.widget.TextView;
 import com.example.team_16.R;
+import com.example.team_16.ui.activity.FollowRequestsActivity;
 
-/**
- * Profile fragment displaying user information and mood history
- */
 public class Profile extends Fragment {
 
     public Profile() {
@@ -29,14 +26,9 @@ public class Profile extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        // Inflate the layout for this fragment using the updated fragment_profile.xml
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
@@ -44,13 +36,27 @@ public class Profile extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set up RecyclerView if your profile has a list of mood history
-        ScrollView profileScrollView = view.findViewById(R.id.profile_scroll_view);
+        // Reference the root NestedScrollView (with id "fragment_profile")
+        NestedScrollView profileScrollView = view.findViewById(R.id.fragment_profile);
 
+        // Setup RecyclerView for mood history
+        RecyclerView moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
+        moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // If using a ScrollView for the profile content
-        if (profileScrollView != null) {
-            // The ScrollView is already set up for scrolling
-        }
+        // Set click listener for Followers TextView
+        TextView followersTextView = view.findViewById(R.id.followersTextView);
+        followersTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Launch FollowRequestsActivity when the Followers TextView is clicked
+                Intent intent = new Intent(getActivity(), FollowRequestsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Optionally, add a click listener for Following if needed:
+        // TextView followingTextView = view.findViewById(R.id.followingTextView);
+        // followingTextView.setOnClickListener(...);
     }
 }
