@@ -21,9 +21,9 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-    <string name="user_handle">"@UserHandle"</string>
 
 
+    <!-- Strings for interactable elements on AddMood screen -->
     <string name="track_your_mood_text">Track Your Mood</string>
     <string name="how_are_you_feeling_text">How are you feeling?</string>
     <string name="anger_text">😡 Anger</string>
@@ -47,6 +47,12 @@
     <string name="add_location_text">Add Location</string>
     <string name="save_mood_text">Save Mood</string>
     <string name="delete_entry_text">Delete Entry</string>
+
+    <string name="user_handle">@UserHandle</string>
+    <string name="content_area_description">Main content area</string>
+    <string name="feed_content_description">Mood feed list</string>
+    <string name="maps_content_description">Maps showing mood data</string>
+
 
 
 

@@ -1,60 +1,35 @@
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
-
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
 import com.example.team_16.R;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link Maps#newInstance} factory method to
- * create an instance of this fragment.
+ * Maps fragment displaying location-based mood data
+ * with scroll behavior to support hiding the toolbar and bottom navigation.
  */
 public class Maps extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public Maps() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Maps.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Maps newInstance(String param1, String param2) {
-        Maps fragment = new Maps();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    public static Maps newInstance() {
+        return new Maps();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -62,5 +37,27 @@ public class Maps extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_maps, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Find scrollable content in your maps view
+        // This might be a NestedScrollView, ScrollView, or the map itself
+        View scrollableContent = view.findViewById(R.id.maps_scroll_container);
+
+        if (scrollableContent instanceof NestedScrollView) {
+            // Already a NestedScrollView - good to go
+        } else if (scrollableContent instanceof ScrollView) {
+            // For regular ScrollView, we need to enable nested scrolling programmatically
+            scrollableContent.setNestedScrollingEnabled(true);
+        } else {
+            // For other views, you may need to wrap them or handle differently
+            // depending on your maps implementation
+        }
+
+        // TODO: Initialize your map
+        // initializeMap();
     }
 }

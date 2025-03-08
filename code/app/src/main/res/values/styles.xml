@@ -3,4 +3,6 @@
         <!-- Set status bar background to dark gray or any color -->
         <item name="android:statusBarColor">@color/navy</item>
     </style>
+
+
 </resources>
