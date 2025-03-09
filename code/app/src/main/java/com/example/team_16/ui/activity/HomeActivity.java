@@ -138,6 +138,9 @@ public class HomeActivity extends AppCompatActivity {
                 // Mark that we're handling navigation ourselves
                 isNavigatingFragments = true;
 
+                // Clear the back stack when navigating to a main tab
+                clearBackStack();
+
                 // Replace the fragment without adding to back stack
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, selectedFragment)
@@ -151,6 +154,17 @@ public class HomeActivity extends AppCompatActivity {
         // Set default selection to Feed if this is the first creation
         if (savedInstanceState == null) {
             bottomNavigationView.setSelectedItemId(R.id.nav_feed);
+        }
+    }
+
+    /**
+     * Clear the entire back stack
+     */
+    private void clearBackStack() {
+        FragmentManager manager = getSupportFragmentManager();
+        if (manager.getBackStackEntryCount() > 0) {
+            FragmentManager.BackStackEntry first = manager.getBackStackEntryAt(0);
+            manager.popBackStack(first.getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
     }
 
@@ -169,11 +183,7 @@ public class HomeActivity extends AppCompatActivity {
 
     // Use this method to navigate to a different fragment that should be added to back stack
     public void navigateToFragment(Fragment fragment, String title) {
-        // Update toolbar title
-        TextView toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
-        toolbarTitle.setText(title);
-
-        // Add the fragment transaction to back stack - this enables back navigation
+        setToolbarTitle(title);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
