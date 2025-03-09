@@ -1,70 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:background="@drawable/gradient_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp"
         android:gravity="center"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/loginHeader"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Login"
-            android:textSize="24sp"
+            android:text="Log In"
+            android:textSize="40sp"
             android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="20dp" />
+            android:gravity="top|center_horizontal"
+            android:layout_marginBottom="30dp"/>
 
         <EditText
             android:id="@+id/username"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Username" />
+            android:layout_width="300dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_background"
+            android:padding="12dp"
+            android:textSize="25sp"
+            android:hint="Username"
+            android:textColorHint="@color/black"
+            android:textColor="@android:color/white"
+            android:gravity="center_vertical"/>
+
 
         <EditText
             android:id="@+id/password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="300dp"
+            android:layout_height="70dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_background"
+            android:padding="12dp"
+            android:textSize="25sp"
             android:hint="Password"
-            android:inputType="textPassword" />
+            android:textColorHint="@color/black"
+            android:textColor="@android:color/white"
+            android:gravity="center_vertical" />
 
         <Button
             android:id="@+id/loginButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Login"
-            android:backgroundTint="@color/navy"
+            android:layout_width="300dp"
+            android:layout_height="75dp"
             android:layout_marginTop="10dp"
+            android:backgroundTint="@color/navy"
             android:padding="12dp"
-            android:textStyle="bold"/>
+            android:text="Log In"
+            android:textSize="25dp"
+             />
 
         <Button
             android:id="@+id/signUpButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="300dp"
+            android:layout_height="75dp"
             android:text="Sign Up"
-            android:backgroundTint="@color/navy"
+            android:textColor="@color/navy"
+            android:backgroundTint="@color/lightGrey"
             android:layout_marginTop="10dp"
             android:padding="12dp"
-            android:textStyle="bold"/>
+            android:textSize="25dp"
+            />
 
         <Button
             android:id="@+id/resetPasswordButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Forgot Password?"
-            android:backgroundTint="@color/navy"
+            android:background="@android:color/transparent"
             android:layout_marginTop="10dp"
             android:padding="12dp"
-            android:textStyle="bold"/>
+            android:textColor="@color/customGrey"
+            android:textStyle="bold"
+            android:textSize="15dp"/>
 
     </LinearLayout>
 
