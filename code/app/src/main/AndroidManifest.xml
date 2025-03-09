@@ -34,7 +34,7 @@
             android:exported="true" />
 
         <activity
-            android:name=".ui.activity.FollowRequestsActivity"
+            android:name=".ui.activity.FollowRequestsFragment"
             android:exported="true" />
 
         <meta-data

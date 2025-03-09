@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_margin="2dp"
     app:cardBackgroundColor="#F5F0E5"
     app:cardCornerRadius="8dp"
     app:cardElevation="4dp">
@@ -51,12 +51,13 @@
             android:layout_marginHorizontal="8dp"
             android:textSize="18sp" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/button_remove"
-            android:layout_width="109dp"
-            android:layout_height="48dp"
+            android:layout_width="100dp"
+            android:layout_height="38dp"
             android:background="@drawable/button_remove"
             android:text="@string/remove"
-            android:textColor="@color/follow_button_text" />
+            android:textColor="#FFFFFF"
+            app:backgroundTint="@null" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>
