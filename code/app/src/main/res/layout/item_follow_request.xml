@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_margin="2dp"
     app:cardBackgroundColor="#F5F0E5"
     app:cardCornerRadius="8dp"
     app:cardElevation="4dp">
@@ -61,13 +61,13 @@
             android:orientation="horizontal">
 
             <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp">
+                android:layout_width="38dp"
+                android:layout_height="38dp">
 
                 <ImageButton
                     android:id="@+id/button_accept"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
                     android:layout_gravity="center"
                     android:background="@drawable/bg_accept_button"
                     android:padding="8dp"
@@ -78,14 +78,14 @@
             </FrameLayout>
 
             <FrameLayout
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:layout_marginStart="8dp">
 
                 <ImageButton
                     android:id="@+id/button_reject"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
                     android:layout_gravity="center"
                     android:background="@drawable/bg_reject_button"
                     android:padding="8dp"

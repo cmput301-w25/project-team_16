@@ -635,4 +635,46 @@ public class FirebaseDB {
                 });
     }
 
+    // Add to FirebaseDB class
+    public void getSentFollowRequests(String userId, FirebaseCallback<List<Map<String, Object>>> callback) {
+        db.collection(FOLLOW_REQUESTS_COLLECTION)
+                .whereEqualTo("fromUserId", userId)
+                .whereEqualTo("status", "pending")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Map<String, Object>> requests = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Map<String, Object> data = doc.getData();
+                        data.put("requestId", doc.getId());
+                        requests.add(data);
+                    }
+                    callback.onCallback(requests);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error getting sent requests", e);
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
+    public void searchUsersByUsername(String query, FirebaseCallback<List<Map<String, Object>>> callback) {
+        String queryLower = query.toLowerCase();
+        db.collection(USERS_COLLECTION)
+                .whereGreaterThanOrEqualTo("usernameLower", queryLower)
+                .whereLessThanOrEqualTo("usernameLower", queryLower + "\uf8ff")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Map<String, Object>> users = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        Map<String, Object> userData = doc.getData();
+                        userData.put("id", doc.getId());
+                        users.add(userData);
+                    }
+                    callback.onCallback(users);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error searching users", e);
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
 }
