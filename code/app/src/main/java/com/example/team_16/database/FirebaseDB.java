@@ -429,28 +429,39 @@ public class FirebaseDB {
             FirebaseCallback<List<MoodEvent>> callback) {
 
         // First get the user's following list
+        Log.e("log", "AT FUNCTION");
+        Log.e("log", userId);
         db.collection(FOLLOWING_COLLECTION).document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     List<String> following = (List<String>) documentSnapshot.get("following");
+                    Log.e("log", following.get(0));
                     if (following == null || following.isEmpty()) {
+                        Log.e("log", "nullsuccess");
                         callback.onCallback(new ArrayList<>());
                         return;
                     }
 
                     // Construct query for followed users' mood events
                     Query query = db.collection(MOODS_COLLECTION)
-                            .whereIn("userId", following)
-                            .orderBy("timestamp", Query.Direction.DESCENDING);
-
+                            .whereIn("userID" , following)
+                            ;
+                    //.orderBy("timestamp", Query.Direction.DESCENDING)
                     // Apply date filter if startDate is provided
                     if (startDate != null) {
+                        Log.e("log", "startdate");
                         query = query.whereGreaterThan("timestamp", startDate);
                     }
-
+                    Log.e("log", "middlesuccess");
+                    //Log.e("log", db.collection(MOODS_COLLECTION).whereEqualTo("userID", following.get(0)));
                     query.get()
                             .addOnSuccessListener(queryDocumentSnapshots -> {
                                 List<MoodEvent> moodEvents = new ArrayList<>();
+                                String k = "g";
+                                Log.e("log", "before loop");
+
                                 for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                                    Log.e("log", "success");
+                                    k = "k";
                                     MoodEvent moodEvent = doc.toObject(MoodEvent.class);
 
                                     // Apply emotional state filter
@@ -464,20 +475,32 @@ public class FirebaseDB {
                                             continue;
                                         }
                                     }
+                                    Log.e("log", moodEvent.getFormattedDate() + moodEvent.getSocialSituation());
 
                                     moodEvents.add(moodEvent);
                                 }
+
+                                Log.e("log", k);
+                                Log.e("log", "afterloop");
+                                if (moodEvents != null) {
+                                    Log.e("log", moodEvents.get(0).getId());
+                                }
+
+                                Log.e("log", "successcallback2");
                                 callback.onCallback(moodEvents);
                             })
                             .addOnFailureListener(e -> {
                                 Log.e("FirebaseDB", "Error getting following mood events", e);
                                 callback.onCallback(new ArrayList<>());
                             });
+                    Log.e("log", "midsuc2");
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error getting following list", e);
                     callback.onCallback(new ArrayList<>());
                 });
+
+        Log.e("log", "DONE FUNCTION");
     }
 
     /**

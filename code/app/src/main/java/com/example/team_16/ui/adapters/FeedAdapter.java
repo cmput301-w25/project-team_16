@@ -1,61 +1,3 @@
-//package com.example.team_16.ui.adapters;
-//
-//import androidx.annotation.NonNull;
-//import androidx.recyclerview.widget.RecyclerView;
-//
-//import android.content.Context;
-//import android.view.LayoutInflater;
-//import android.view.View;
-//import android.view.ViewGroup;
-//import android.widget.Button;
-//import android.widget.ImageView;
-//import android.widget.TextView;
-//
-//import androidx.cardview.widget.CardView;
-//import androidx.recyclerview.widget.RecyclerView;
-//
-//
-//import com.example.team_16.R;
-//import com.example.team_16.models.MoodEvent;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//
-//public class FeedAdapter
-//        extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
-//
-//    @NonNull
-//    @Override
-//    public FeedAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//        return null;
-//    }
-//
-//    @Override
-//    public void onBindViewHolder(@NonNull FeedAdapter.ViewHolder holder, int position) {
-//
-//    }
-//
-//    @Override
-//    public int getItemCount() {
-//        return 0;
-//    }
-//
-//    public static class FeedAdapter {
-//        public String userId;
-//        public String username;
-//        public List<MoodEvent> moodEvents;
-//
-//
-//        public FeedAdapter(Context context, List<MoodEvent> moodEvents) {
-////            this.removeListener = removeListener;
-//        }
-//
-//    }
-//
-//}
-
-
-
 package com.example.team_16.ui.adapters;
 
 import static androidx.core.content.ContentProviderCompat.requireContext;
@@ -77,6 +19,7 @@ import com.example.team_16.models.MoodEvent;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.List;
@@ -115,6 +58,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         });
 
         holder.mood_one_view.setText(event.getEmotionalState().getName());
+        holder.emoji_one_view.setText(event.getEmotionalState().getEmoji());
         String date = event.getFormattedDate();
         Date actualDate = event.getTimestamp().toDate();
         holder.first_name_last_name_view.setText(fullName);
@@ -125,7 +69,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         String time_ago;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
-            Duration duration = Duration.between(currentDateTime, (Temporal) actualDate);
+            LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
+            Duration duration = Duration.between(currentDateTime,eventDateTime);
             int hour_difference = (int) Math.abs(duration.toHours());
             if (hour_difference >= 24) {
                 int day_difference = Math.floorDiv(hour_difference, 24);
@@ -148,7 +93,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public static class FeedViewHolder extends RecyclerView.ViewHolder {
         TextView mood_one_view = itemView.findViewById(R.id.mood_one);
         TextView emoji_one_view = itemView.findViewById(R.id.emoji_one);
-        TextView emoji_two_view = itemView.findViewById(R.id.emoji_two);
+        //TextView emoji_two_view = itemView.findViewById(R.id.emoji_two);
         TextView time_ago_view = itemView.findViewById(R.id.time_ago);
         ImageView profile_picture_view = itemView.findViewById(R.id.profile_picture);
         TextView first_name_last_name_view = itemView.findViewById(R.id.first_name_last_name);
@@ -162,7 +107,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             super(itemView);
             mood_one_view = itemView.findViewById(R.id.mood_one);
             emoji_one_view = itemView.findViewById(R.id.emoji_one);
-            emoji_two_view = itemView.findViewById(R.id.emoji_two);
+            //emoji_two_view = itemView.findViewById(R.id.emoji_two);
             time_ago_view = itemView.findViewById(R.id.time_ago);
             profile_picture_view = itemView.findViewById(R.id.profile_picture);
             first_name_last_name_view = itemView.findViewById(R.id.first_name_last_name);
