@@ -1,6 +1,5 @@
-package com.example.team_16;
+package com.example.team_16.ui.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -9,16 +8,21 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.example.team_16.R;
+import com.example.team_16.database.FirebaseDB;
+
 
 /**
  * This is for the reset password page which allows users to request a password reset.
- * The implementation is not functional yet.
  */
 public class ResetPasswordActivity extends AppCompatActivity {
 
     // UI elements
     private EditText emailEditText;
     private Button requestResetButton;
+
+    // FirebaseDB instance
+    private FirebaseDB firebaseDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +37,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
+        // Initialize FirebaseDB
+        firebaseDB = FirebaseDB.getInstance(this);
+
         // Initialize UI elements
         emailEditText = findViewById(R.id.email);
         requestResetButton = findViewById(R.id.requestResetButton);
@@ -45,8 +52,15 @@ public class ResetPasswordActivity extends AppCompatActivity {
             if (email.isEmpty()) {
                 Toast.makeText(ResetPasswordActivity.this, "Enter an email!", Toast.LENGTH_SHORT).show();
             } else {
-                // TODO: Implement password reset logic
-                Toast.makeText(ResetPasswordActivity.this, "Password reset link sent!", Toast.LENGTH_SHORT).show();
+
+                // Use the firebaseDB
+                firebaseDB.sendPasswordResetEmail(email, result -> {
+                    if (result) {
+                        Toast.makeText(ResetPasswordActivity.this, "Password reset link sent!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(ResetPasswordActivity.this, "Failed to send reset link!", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }

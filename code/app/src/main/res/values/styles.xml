@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="CircularImageViewStyle">
         <item name="cornerSize">50%</item>
@@ -6,5 +5,8 @@
     <style name="RoundedImageViewStyle">
         <item name="cornerSize">5%</item>
     </style>
+    <style name="Theme.YourApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Set status bar background to dark gray or any color -->
+        <item name="android:statusBarColor">@color/navy</item>
+    </style>
 </resources>
-

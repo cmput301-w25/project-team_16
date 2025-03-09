@@ -1,4 +1,4 @@
-package com.example.team_16;
+package com.example.team_16.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +8,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
+import com.example.team_16.R;
+import com.example.team_16.database.FirebaseDB;
 
 /**
  * This screen allows users to create a new account.
@@ -19,6 +22,9 @@ public class SignUpActivity extends AppCompatActivity {
     // UI elements for user input fields and sign up button
     private EditText nameEditText, usernameEditText, emailEditText, passwordEditText;
     private Button signUpButton;
+
+    // FirebaseDB instance
+    private FirebaseDB firebaseDB;
 
 
     @Override
@@ -34,6 +40,9 @@ public class SignUpActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         }
+
+        // Initialize FirebaseDB
+        firebaseDB = firebaseDB.getInstance(this);
 
         // Initialize UI elements
         nameEditText = findViewById(R.id.name);
@@ -54,13 +63,50 @@ public class SignUpActivity extends AppCompatActivity {
             // Validate input fields before proceeding
             if (name.isEmpty() || username.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(SignUpActivity.this, "Fill all fields!", Toast.LENGTH_SHORT).show();
-            } else {
-
-                // TODO: Save user data to database
-                Toast.makeText(SignUpActivity.this, "User registered!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(SignUpActivity.this, MainActivity.class));
-                finish();
+                return;
             }
+
+            // Check if length is between 3 and 30
+            if (username.length() < 3 || username.length() > 30) {
+                Toast.makeText(SignUpActivity.this,
+                        "Username must be between 3-30 characters",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Check no embedded spaces
+            if (username.contains(" ")) {
+                Toast.makeText(SignUpActivity.this,
+                        "Username cannot contain spaces",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Check for only alphanumeric and underscores using regex
+            if (!username.matches("^[A-Za-z0-9_]+$")) {
+                Toast.makeText(SignUpActivity.this,
+                        "Username can only contain letters, numbers, or underscores",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Now the username is valid and we can move on the the FirebaseDB step
+
+            // Use FirebaseDB to sign up
+
+            firebaseDB.signup(name, username, email, password, result -> {
+                if (result) {
+
+                    // Successful Sign Up
+                    Toast.makeText(SignUpActivity.this, "User registered!", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(SignUpActivity.this, MainActivity.class));
+                    finish();
+                } else {
+                    // Sign up failed
+                    Toast.makeText(SignUpActivity.this, "Sign up failed. Try again.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         });
     }
 
