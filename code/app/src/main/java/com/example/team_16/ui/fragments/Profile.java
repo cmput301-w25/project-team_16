@@ -39,7 +39,7 @@ public class Profile extends Fragment {
         RecyclerView moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        TextView followersTextView = view.findViewById(R.id.followersTextView);
+        TextView followersTextView = view.findViewById(R.id.followersStats);
         // In Profile.java's onViewCreated
         followersTextView.setOnClickListener(new View.OnClickListener() {
             @Override
