@@ -1,7 +1,6 @@
 package com.example.team_16.ui.activity;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -9,16 +8,17 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.UserProfile;
+import com.example.team_16.ui.fragments.ResetPassword;
+import com.example.team_16.ui.fragments.SignUp;
 
 /**
  * This is the login screen of the app.
- * Users can enter their username and password to login after we set up a database.
+ * Users can enter their username and password to login.
  * There are also options to sign up and reset password.
  */
 public class MainActivity extends AppCompatActivity {
@@ -37,15 +37,11 @@ public class MainActivity extends AppCompatActivity {
         // Initialize Firebase
         firebaseDB = FirebaseDB.getInstance(this);
 
-        // Check if user is already logged in
-        String currentUserId = firebaseDB.getCurrentUserId();
-        if (currentUserId != null) {
-            // User is already logged in, load profile and navigate
-            loadUserProfileAndNavigate(currentUserId);
-            return;
-        }
+        // Makes sure the user has to log in / sign up every time
+        firebaseDB.logout();
 
-        // No active session, show login UI
+
+        // show login UI
         setContentView(R.layout.activity_main);
 
         // Initialize UI elements
@@ -55,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
         signUpButton = findViewById(R.id.signUpButton);
         resetPasswordButton = findViewById(R.id.resetPasswordButton);
         EdgeToEdge.enable(this);
-
 
         // Handle Login Button Click
         loginButton.setOnClickListener(v -> {
@@ -86,59 +81,62 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Go to Sign Up screen
+
+
+        // Show the SignUp Fragment
         signUpButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
-            startActivity(intent);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, new SignUp())
+                    .addToBackStack(null)
+                    .commit();
         });
 
-        // Go to Reset Password screen
+        // Show the ResetPassword Fragment
         resetPasswordButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ResetPasswordActivity.class);
-            startActivity(intent);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, new ResetPassword())
+                    .addToBackStack(null)
+                    .commit();
         });
     }
 
     /**
      * Load user profile from Firebase and navigate to home screen
+     * @param userId The ID of the user who just logged in.
      */
     private void loadUserProfileAndNavigate(String userId) {
-        // Show loading indicator if needed
-        // loadingProgressBar.setVisibility(View.VISIBLE);
+        // May implement a loading progress bar if we choose so.
+        // Show loading indicator if needed - loadingProgressBar.setVisibility(View.VISIBLE);
 
         UserProfile.loadFromFirebase(firebaseDB, userId, userProfile -> {
-            // Hide loading indicator if needed
-            // loadingProgressBar.setVisibility(View.GONE);
+            // Hide loading indicator if needed - loadingProgressBar.setVisibility(View.GONE);
 
             if (userProfile != null) {
                 // Store the user profile in the application
-                saveUserProfileToApp(userProfile);
+                // and navigate to home/dashboard activity
 
-                // Navigate to home/dashboard activity
+                saveUserProfileToApp(userProfile);
                 Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                 startActivity(intent);
-                finish(); // Close the login activity
+                finish();
+
             } else {
-                // Could not load user profile
+                // If loading fails - present an error and sign out
                 Toast.makeText(MainActivity.this,
                         "Error loading user profile. Please try again.",
                         Toast.LENGTH_SHORT).show();
 
-                // Log the user out
                 firebaseDB.logout();
 
-                // If we were checking an existing session, make sure to show the login UI
-                if (findViewById(R.id.loginButton) == null) {
-                    setContentView(R.layout.activity_main);
-                    // Re-initialize UI elements
-                    // ...
-                }
             }
         });
     }
 
     /**
      * Save the UserProfile to the application class
+     * @param userProfile The user profile to save.
      */
     private void saveUserProfileToApp(UserProfile userProfile) {
         ((MoodTrackerApp) getApplication()).setCurrentUserProfile(userProfile);
