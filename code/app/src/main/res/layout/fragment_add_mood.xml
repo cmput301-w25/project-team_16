@@ -229,5 +229,13 @@
             android:text="@string/save_mood_text"
             android:textColor="@android:color/white" />
 
+        <Button
+            android:id="@+id/delete_entry_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#f3a3a6"
+            android:text="@string/delete_entry_text"
+            android:textColor="#FF0000" />
+
     </LinearLayout>
 </ScrollView>
