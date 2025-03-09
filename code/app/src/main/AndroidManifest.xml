@@ -25,19 +25,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Sign Up Activity -->
-        <activity
-            android:name=".ui.activity.SignUpActivity"
-            android:exported="true" />
-        <activity
-            android:name=".ui.activity.ResetPasswordActivity"
-            android:exported="true" />
-
-        <activity
-            android:name=".ui.activity.FollowRequestsActivity"
-            android:exported="true" />
-
-
+        </activity>
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

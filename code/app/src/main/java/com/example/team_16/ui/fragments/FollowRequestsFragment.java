@@ -1,30 +1,39 @@
-package com.example.team_16.ui.activity;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.team_16.ui.adapters.AcceptedFollowersAdapter;
-import com.example.team_16.ui.adapters.PendingRequestsAdapter;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
+import com.example.team_16.ui.activity.HomeActivity;
+import com.example.team_16.ui.adapters.AcceptedFollowersAdapter;
+import com.example.team_16.ui.adapters.PendingRequestsAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FollowRequestsActivity extends AppCompatActivity {
+public class FollowRequestsFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private TextView textNoFollowRequests;
     private AppCompatButton btnAccepted, btnPending;
+    private EditText searchBar;
 
     private PendingRequestsAdapter pendingAdapter;
     private AcceptedFollowersAdapter acceptedAdapter;
@@ -32,15 +41,23 @@ public class FollowRequestsActivity extends AppCompatActivity {
     private FirebaseDB firebaseDB;
     private String currentUserId;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_follow_requests);
+    private List<PendingRequestsAdapter.PendingRequest> originalPendingData = new ArrayList<>();
+    private List<AcceptedFollowersAdapter.AcceptedFollower> originalAcceptedData = new ArrayList<>();
 
-        firebaseDB = FirebaseDB.getInstance(this);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_follow_requests, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        firebaseDB = FirebaseDB.getInstance(requireContext());
         currentUserId = firebaseDB.getCurrentUserId();
 
-        initViews();
+        initViews(view);
         setupRecyclerView();
 
         // Show Pending by default
@@ -49,33 +66,43 @@ public class FollowRequestsActivity extends AppCompatActivity {
         showPendingRequests();
     }
 
-    private void initViews() {
-        recyclerView = findViewById(R.id.recycler_followers);
-        textNoFollowRequests = findViewById(R.id.text_no_follow_requests);
-        btnAccepted = findViewById(R.id.btn_accepted);
-        btnPending = findViewById(R.id.btn_pending);
+    private void initViews(View view) {
+        recyclerView = view.findViewById(R.id.recycler_followers);
+        textNoFollowRequests = view.findViewById(R.id.text_no_follow_requests);
+        btnAccepted = view.findViewById(R.id.btn_accepted);
+        btnPending = view.findViewById(R.id.btn_pending);
+        searchBar = view.findViewById(R.id.search_bar);
 
-        ImageView backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> onBackPressed());
+
 
         btnAccepted.setOnClickListener(v -> {
             btnAccepted.setSelected(true);
             btnPending.setSelected(false);
             showAcceptedFollowers();
+            applySearchFilter(searchBar.getText().toString());
         });
 
         btnPending.setOnClickListener(v -> {
             btnPending.setSelected(true);
             btnAccepted.setSelected(false);
             showPendingRequests();
+            applySearchFilter(searchBar.getText().toString());
         });
 
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                applySearchFilter(s.toString());
+            }
+        });
     }
 
     private void setupRecyclerView() {
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // Pending adapter setup
         pendingAdapter = new PendingRequestsAdapter(new PendingRequestsAdapter.OnActionListener() {
             @Override
             public void onAcceptClicked(PendingRequestsAdapter.PendingRequest request, int position) {
@@ -102,9 +129,7 @@ public class FollowRequestsActivity extends AppCompatActivity {
             }
         });
 
-        // Correct Accepted adapter setup with both parameters
         acceptedAdapter = new AcceptedFollowersAdapter((follower, position) -> {
-            // Remove the follower from current user's followers
             firebaseDB.unfollowUser(follower.userId, currentUserId, success -> {
                 if (success) {
                     acceptedAdapter.removeItem(position);
@@ -153,12 +178,14 @@ public class FollowRequestsActivity extends AppCompatActivity {
     private void incrementCount(int total, int[] doneCount, List<?> list) {
         doneCount[0]++;
         if (doneCount[0] == total) {
-            updatePendingUI(list);
+            originalPendingData.clear();
+            originalPendingData.addAll((List<PendingRequestsAdapter.PendingRequest>) list);
+            applySearchFilter(searchBar.getText().toString());
         }
     }
 
     private void updatePendingUI(List<?> items) {
-        runOnUiThread(() -> {
+        requireActivity().runOnUiThread(() -> {
             pendingAdapter.setData((List<PendingRequestsAdapter.PendingRequest>) items);
             recyclerView.setAdapter(pendingAdapter);
             checkEmptyState();
@@ -187,7 +214,9 @@ public class FollowRequestsActivity extends AppCompatActivity {
 
                     doneCount[0]++;
                     if (doneCount[0] == total) {
-                        updateAcceptedUI(followerList);
+                        originalAcceptedData.clear();
+                        originalAcceptedData.addAll(followerList);
+                        applySearchFilter(searchBar.getText().toString());
                     }
                 });
             }
@@ -195,15 +224,45 @@ public class FollowRequestsActivity extends AppCompatActivity {
     }
 
     private void updateAcceptedUI(List<AcceptedFollowersAdapter.AcceptedFollower> followers) {
-        runOnUiThread(() -> {
+        requireActivity().runOnUiThread(() -> {
             acceptedAdapter.setData(followers);
             recyclerView.setAdapter(acceptedAdapter);
             checkEmptyState();
         });
     }
 
+    private void applySearchFilter(String query) {
+        if (btnPending.isSelected()) {
+            filterPendingRequests(query);
+        } else {
+            filterAcceptedFollowers(query);
+        }
+    }
+
+    private void filterPendingRequests(String query) {
+        List<PendingRequestsAdapter.PendingRequest> filtered = new ArrayList<>();
+        for (PendingRequestsAdapter.PendingRequest request : originalPendingData) {
+            if (request.fromUsername.toLowerCase().contains(query.toLowerCase())) {
+                filtered.add(request);
+            }
+        }
+        pendingAdapter.setData(filtered);
+        checkEmptyState();
+    }
+
+    private void filterAcceptedFollowers(String query) {
+        List<AcceptedFollowersAdapter.AcceptedFollower> filtered = new ArrayList<>();
+        for (AcceptedFollowersAdapter.AcceptedFollower follower : originalAcceptedData) {
+            if (follower.username.toLowerCase().contains(query.toLowerCase())) {
+                filtered.add(follower);
+            }
+        }
+        acceptedAdapter.setData(filtered);
+        checkEmptyState();
+    }
+
     private void checkEmptyState() {
-        runOnUiThread(() -> {
+        requireActivity().runOnUiThread(() -> {
             RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
             boolean isEmpty = adapter == null || adapter.getItemCount() == 0;
 
@@ -213,8 +272,14 @@ public class FollowRequestsActivity extends AppCompatActivity {
     }
 
     private void showToast(String message) {
-        runOnUiThread(() ->
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        requireActivity().runOnUiThread(() ->
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         );
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Ensure title is correct even after rotation
+        ((HomeActivity) requireActivity()).setToolbarTitle("Followers");
     }
 }

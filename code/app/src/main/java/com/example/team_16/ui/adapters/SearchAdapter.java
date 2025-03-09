@@ -1,5 +1,7 @@
 package com.example.team_16.ui.adapters;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,15 +60,15 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         if (followingIds.contains(userId)) {
             holder.followButton.setText("Following");
             holder.followButton.setEnabled(false);
-            holder.followButton.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.gray));
+            holder.followButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AAB8C2")));
         } else if (pendingIds.contains(userId)) {
             holder.followButton.setText("Pending");
             holder.followButton.setEnabled(false);
-            holder.followButton.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.gray));
+            holder.followButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
         } else {
             holder.followButton.setText("Follow");
             holder.followButton.setEnabled(true);
-            holder.followButton.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.gray));
+            holder.followButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
         }
 
         holder.followButton.setOnClickListener(v -> {
@@ -75,6 +77,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
             }
         });
     }
+
 
     @Override
     public int getItemCount() {

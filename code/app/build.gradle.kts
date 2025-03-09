@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -54,9 +55,6 @@ dependencies {
     //test dependencies
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
-    // fragment testing dependencies
-    androidTestImplementation("androidx.fragment:fragment-testing:1.3.6")
-    debugImplementation("androidx.fragment:fragment-testing:1.3.6")
 
     // JUnit Test Dependencies
     androidTestImplementation("androidx.test:runner:1.5.2")

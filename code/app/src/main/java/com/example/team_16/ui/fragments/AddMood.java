@@ -19,10 +19,13 @@ import androidx.fragment.app.Fragment;
 
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
+import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.EmotionalStateRegistry;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
+
+
 
 /**
  * Fragment to add a mood event, using UserProfile to manage mood events.
@@ -32,14 +35,14 @@ public class AddMood extends Fragment {
     private UserProfile userProfile;
 
     private EditText triggerInput;
-    private Button saveMoodButton, takePhotoButton, choosePhotoButton, addLocationButton;
+    private Button saveMoodButton, deleteMoodButton, takePhotoButton, choosePhotoButton, addLocationButton;
     private Button aloneButton, onePersonButton, twoPersonButton, crowdButton;
     private Uri selectedPhotoUri;
-    private String selectedMood;
-    private String socialSetting;
+    private String selectedMood, socialSetting;
     private Location selectedLocation;
 
     private static final int PICK_PHOTO_REQUEST = 1;
+    private boolean isEditMode = false; //flag for adding or editing
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +56,11 @@ public class AddMood extends Fragment {
             Toast.makeText(requireContext(), "Failed to load user profile.", Toast.LENGTH_SHORT).show();
             requireActivity().finish();
             return;
+        }
+
+        if (getArguments() != null && getArguments().containsKey("moodEvent")) {
+            moodEvent = (MoodEvent) getArguments().getSerializable("moodEvent");
+            isEditMode = true;
         }
     }
 
@@ -72,6 +80,7 @@ public class AddMood extends Fragment {
         // UI Elements
         triggerInput = view.findViewById(R.id.trigger_text);
         saveMoodButton = view.findViewById(R.id.save_mood_button);
+        deleteMoodButton = view.findViewById(R.id.delete_entry_button);
         takePhotoButton = view.findViewById(R.id.take_photo_button);
         choosePhotoButton = view.findViewById(R.id.choose_photo_button);
         addLocationButton = view.findViewById(R.id.add_location_button);
@@ -88,6 +97,15 @@ public class AddMood extends Fragment {
         setupPhotoButtons();
         //setupLocationButton(); // Haven't got to location yet
         setupSaveButton();
+        setupDeleteButton();
+
+        // If editing an existing MoodEvent, update the UI immediately
+        if (isEditMode && moodEvent != null) {
+            updateUIForExistingMood();
+            deleteMoodButton.setVisibility(View.VISIBLE);
+        } else {
+            deleteMoodButton.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -189,6 +207,39 @@ public class AddMood extends Fragment {
         selectedButton.setAlpha(1.0f);
     }
 
+    private void populateUIWithExistingData() {
+        triggerInput.setText(moodEvent.getTrigger());
+        selectedMood = moodEvent.getEmotionalState().getName();
+        socialSetting = moodEvent.getSocialSituation();
+
+        highlightMoodButton(getView(), getMoodButtonId(selectedMood));
+        highlightSocialButton(getSocialButton(socialSetting));
+    }
+
+    private int getMoodButtonId(String moodName) {
+        switch (moodName) {
+            case "Anger": return R.id.anger_button;
+            case "Confusion": return R.id.confusion_button;
+            case "Disgust": return R.id.disgust_button;
+            case "Fear": return R.id.fear_button;
+            case "Happiness": return R.id.happiness_button;
+            case "Sadness": return R.id.sadness_button;
+            case "Shame": return R.id.shame_button;
+            case "Surprise": return R.id.surprise_button;
+            default: return -1;
+        }
+    }
+
+    private Button getSocialButton(String setting) {
+        switch (setting) {
+            case "Alone": return aloneButton;
+            case "One Person": return onePersonButton;
+            case "Two People": return twoPersonButton;
+            case "Crowd": return crowdButton;
+            default: return null;
+        }
+    }
+
     /**
      * Opens photo picker.
      */
@@ -222,7 +273,7 @@ public class AddMood extends Fragment {
      */
     private void setupSaveButton() {
         saveMoodButton.setOnClickListener(v -> {
-            if (!validateInputs()) return; // Ensure mood and social setting are selected
+            if (!validateInputs()) return; // Ensure required fields are selected
 
             // Retrieve EmotionalState
             EmotionalState emotionalState = EmotionalStateRegistry.getByName(selectedMood);
@@ -234,30 +285,80 @@ public class AddMood extends Fragment {
             // Get trigger text (optional)
             String triggerText = triggerInput.getText().toString().trim();
 
-            // Create MoodEvent with all optional and required fields
-            moodEvent = new MoodEvent(userProfile.getId(), emotionalState, triggerText, socialSetting);
+            if (isEditMode) {
+                // Update existing MoodEvent
+                moodEvent.setEmotionalState(emotionalState);
+                moodEvent.setTrigger(triggerText);
+                moodEvent.setSocialSituation(socialSetting);
 
-            // Add photo if selected
-            if (selectedPhotoUri != null) {
-                //moodEvent.setPhotoUri(selectedPhotoUri.toString());
-                // TODO: Handle photo upload
+                if (selectedPhotoUri != null) {
+                    // Handle photo upload and set URI in moodEvent (if needed)
+                    // moodEvent.setPhotoUri(selectedPhotoUri.toString());
+                    // TODO: Upload photo to Firebase Storage and update event
+                }
+
+                userProfile.editMoodEvent(moodEvent.getId(), moodEvent, success -> {
+                    if (success) {
+                        Toast.makeText(requireContext(), "Mood updated successfully!", Toast.LENGTH_SHORT).show();
+                        requireActivity().onBackPressed();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to update mood.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                // Create new MoodEvent
+                MoodEvent newMoodEvent = new MoodEvent(userProfile.getId(), emotionalState, triggerText, socialSetting);
+
+                if (selectedPhotoUri != null) {
+                    // Handle photo upload and set URI in newMoodEvent (if needed)
+                    // newMoodEvent.setPhotoUri(selectedPhotoUri.toString());
+                    // TODO: Upload photo to Firebase Storage
+                }
+
+                userProfile.addMoodEvent(newMoodEvent, success -> {
+                    if (success) {
+                        Toast.makeText(requireContext(), "Mood saved successfully!", Toast.LENGTH_SHORT).show();
+                        requireActivity().onBackPressed();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to save mood.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+
+    private void updateUIForExistingMood() {
+        if (moodEvent == null) return;
+
+        // Highlight selected mood
+        highlightMoodButton(getView(), getMoodButtonId(moodEvent.getEmotionalState().getName()));
+
+        // Highlight selected social setting
+        highlightSocialButton(getSocialButton(moodEvent.getSocialSituation()));
+
+        // Show the updated trigger text
+        triggerInput.setText(moodEvent.getTrigger());
+    }
+
+
+
+    private void setupDeleteButton() {
+        deleteMoodButton.setOnClickListener(v -> {
+            if (moodEvent == null || moodEvent.getId() == null) {
+                Toast.makeText(requireContext(), "No mood event selected to delete.", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            // Save using UserProfile
-            userProfile.addMoodEvent(moodEvent, success -> {
+            userProfile.deleteMoodEvent(moodEvent.getId(), success -> {
                 if (success) {
-                    Toast.makeText(requireContext(), "Mood saved successfully!", Toast.LENGTH_SHORT).show();
-
-                    // Let the parent fragment manager handle the navigation
+                    Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
                     if (getFragmentManager() != null) {
                         getFragmentManager().popBackStack();
                     }
                 } else {
-                    Toast.makeText(requireContext(), "Failed to save mood.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Failed to delete mood event.", Toast.LENGTH_SHORT).show();
                 }
             });
         });
     }
-
-
 }

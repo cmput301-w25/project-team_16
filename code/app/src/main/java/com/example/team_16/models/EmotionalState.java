@@ -46,7 +46,6 @@ public class EmotionalState {
     }
 
     public String getEmoji() {
-        Log.e("log", name);
         switch (name) {
             case "Happiness":
                 return "😊";
