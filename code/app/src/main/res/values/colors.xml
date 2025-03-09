@@ -3,14 +3,15 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="navy">#001F3F</color>
+    <color name="green">#008000</color>
+    <color name="gray">#808080</color>
 
     <color name="tab_selected_text">#4CAF50</color>
     <color name="tab_unselected_text">#4A2C2C</color>
     <color name="tab_button_stroke">#A1824A</color>
 
-    <color name="tab_button_text">#FFFFFFFF</color>
+    <color name="tab_button_text">#4A2C2C</color>
 
     <color name="follow_button_text">#FF000000</color>
     <color name="toolbar_color">#1E293F</color>
-
 </resources>

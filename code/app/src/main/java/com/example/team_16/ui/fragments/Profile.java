@@ -1,66 +1,62 @@
 package com.example.team_16.ui.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
-
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
-
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.TextView;
 import com.example.team_16.R;
+import com.example.team_16.ui.activity.FollowRequestsActivity;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Profile#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Profile extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public Profile() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Profile.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Profile newInstance(String param1, String param2) {
-        Profile fragment = new Profile();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public static Profile newInstance() {
+        return new Profile();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        // Inflate the layout for this fragment using the updated fragment_profile.xml
         return inflater.inflate(R.layout.fragment_profile, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Reference the root NestedScrollView (with id "fragment_profile")
+        NestedScrollView profileScrollView = view.findViewById(R.id.fragment_profile);
+
+        // Setup RecyclerView for mood history
+        RecyclerView moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
+        moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Set click listener for Followers TextView
+        TextView followersTextView = view.findViewById(R.id.followersTextView);
+        followersTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Launch FollowRequestsActivity when the Followers TextView is clicked
+                Intent intent = new Intent(getActivity(), FollowRequestsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Optionally, add a click listener for Following if needed:
+        // TextView followingTextView = view.findViewById(R.id.followingTextView);
+        // followingTextView.setOnClickListener(...);
     }
 }

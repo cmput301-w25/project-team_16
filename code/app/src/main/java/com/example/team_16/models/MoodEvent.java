@@ -31,7 +31,6 @@ public class MoodEvent {
 
     /** Optional description of the social context (e.g., "With friends") */
     private String socialSituation;
-    //private String imageID;
 
     /**
      * Default constructor required for Firestore deserialization.

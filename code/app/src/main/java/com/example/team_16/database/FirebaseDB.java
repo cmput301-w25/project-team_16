@@ -8,7 +8,6 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -96,6 +95,7 @@ public class FirebaseDB {
             FirebaseCallback<Boolean> callback) {
 
         // First, check if username is unique
+        Log.e("log", "num one");
         db.collection(USERS_COLLECTION)
                 .whereEqualTo("usernameLower", username.toLowerCase())
                 .get()
@@ -105,7 +105,7 @@ public class FirebaseDB {
                         callback.onCallback(false);
                         return;
                     }
-
+                    Log.e("log", "num two");
                     // Create user with email and password
                     auth.createUserWithEmailAndPassword(email, password)
                             .addOnSuccessListener(authResult -> {
@@ -188,36 +188,23 @@ public class FirebaseDB {
      * Add a mood event
      */
     public void addMoodEvent(MoodEvent moodEvent, FirebaseCallback<Boolean> callback) {
-        Log.e("FirebaseDB", "addMoodEvent" + moodEvent.getId());
         db.collection(MOODS_COLLECTION)
                 .add(moodEvent)
                 .addOnSuccessListener(documentReference -> {
                     // Update the mood event with the generated ID
                     String id = documentReference.getId();
-                    Log.e("FirebaseDB", "inside onSuccessListener");
                     db.collection(MOODS_COLLECTION).document(id)
                             .update("id", id)
                             .addOnSuccessListener(aVoid -> callback.onCallback(true))
                             .addOnFailureListener(e -> {
-                                Log.e("FirebaseDB", "Error updating mood ID");
+                                Log.e("FirebaseDB", "Error updating mood ID", e);
                                 callback.onCallback(false);
                             });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("FirebaseDB", "Error adding mood event");
+                    Log.e("FirebaseDB", "Error adding mood event", e);
                     callback.onCallback(false);
                 });
-
-        db.collection(MOODS_COLLECTION).document("yyWn4a7rQ5RAvlGpXyQw")
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    Map<String, Object> data = documentSnapshot.getData();
-                    String jsonString = new Gson().toJson(data);
-                    Log.e("FirebaseDB", jsonString);
-                })
-        ;
-        Log.e("FirebaseDB", "addMoodEvent finished");
-
     }
 
     /**
@@ -670,6 +657,48 @@ public class FirebaseDB {
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error sending password reset email", e);
                     callback.onCallback(false);
+                });
+    }
+
+    // Add to FirebaseDB class
+    public void getSentFollowRequests(String userId, FirebaseCallback<List<Map<String, Object>>> callback) {
+        db.collection(FOLLOW_REQUESTS_COLLECTION)
+                .whereEqualTo("fromUserId", userId)
+                .whereEqualTo("status", "pending")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Map<String, Object>> requests = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Map<String, Object> data = doc.getData();
+                        data.put("requestId", doc.getId());
+                        requests.add(data);
+                    }
+                    callback.onCallback(requests);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error getting sent requests", e);
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
+    public void searchUsersByUsername(String query, FirebaseCallback<List<Map<String, Object>>> callback) {
+        String queryLower = query.toLowerCase();
+        db.collection(USERS_COLLECTION)
+                .whereGreaterThanOrEqualTo("usernameLower", queryLower)
+                .whereLessThanOrEqualTo("usernameLower", queryLower + "\uf8ff")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Map<String, Object>> users = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        Map<String, Object> userData = doc.getData();
+                        userData.put("id", doc.getId());
+                        users.add(userData);
+                    }
+                    callback.onCallback(users);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error searching users", e);
+                    callback.onCallback(new ArrayList<>());
                 });
     }
 

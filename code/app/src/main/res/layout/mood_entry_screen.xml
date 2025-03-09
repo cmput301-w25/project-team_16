@@ -12,6 +12,32 @@
         android:padding="16dp"
         android:background="@drawable/gradient_background">
 
+        <!-- Toolbar Title -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="#1E293F"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/back_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/arrow_back"
+                app:tint="#F5F0E5"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/track_your_mood_text"
+                android:textSize="20sp"
+                android:textColor="#F5F0E5"
+                android:textStyle="bold"
+                android:layout_centerInParent="true"/>
+        </RelativeLayout>
+
         <!-- Mood Selection -->
         <TextView
             android:layout_width="wrap_content"
@@ -114,7 +140,6 @@
             android:id="@+id/trigger_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
             android:layout_marginBottom="16dp"
             android:hint="@string/word_limit_text"
             android:inputType="text"
@@ -228,6 +253,15 @@
             android:backgroundTint="#61a5fa"
             android:text="@string/save_mood_text"
             android:textColor="@android:color/white" />
+
+        <!-- Delete Entry -->
+        <Button
+            android:id="@+id/delete_entry_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#f3a3a6"
+            android:text="@string/delete_entry_text"
+            android:textColor="#FF0000" />
 
     </LinearLayout>
 </ScrollView>

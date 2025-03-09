@@ -44,6 +44,8 @@ public class FollowRequestsActivity extends AppCompatActivity {
         setupRecyclerView();
 
         // Show Pending by default
+        btnPending.setSelected(true);
+        btnAccepted.setSelected(false);
         showPendingRequests();
     }
 
@@ -56,8 +58,18 @@ public class FollowRequestsActivity extends AppCompatActivity {
         ImageView backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> onBackPressed());
 
-        btnAccepted.setOnClickListener(v -> showAcceptedFollowers());
-        btnPending.setOnClickListener(v -> showPendingRequests());
+        btnAccepted.setOnClickListener(v -> {
+            btnAccepted.setSelected(true);
+            btnPending.setSelected(false);
+            showAcceptedFollowers();
+        });
+
+        btnPending.setOnClickListener(v -> {
+            btnPending.setSelected(true);
+            btnAccepted.setSelected(false);
+            showPendingRequests();
+        });
+
     }
 
     private void setupRecyclerView() {
