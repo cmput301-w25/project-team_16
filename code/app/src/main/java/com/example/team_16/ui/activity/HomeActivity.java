@@ -99,17 +99,11 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         // Add a back stack listener to update back button visibility
-        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                // When back to main fragments, update title based on bottom nav
-                int selectedId = bottomNavigationView.getSelectedItemId();
-                String title = "";
-                if (selectedId == R.id.nav_feed) title = "Feed";
-                else if (selectedId == R.id.nav_search) title = "Search";
-                else if (selectedId == R.id.nav_profile) title = "Profile";
-                setToolbarTitle(title);
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                updateBackButtonVisibility();
             }
-            updateBackButtonVisibility();
         });
 
         // Initialize bottom navigation
@@ -175,22 +169,16 @@ public class HomeActivity extends AppCompatActivity {
 
     // Use this method to navigate to a different fragment that should be added to back stack
     public void navigateToFragment(Fragment fragment, String title) {
-        setToolbarTitle(title);
+        // Update toolbar title
+        TextView toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
+        toolbarTitle.setText(title);
+
+        // Add the fragment transaction to back stack - this enables back navigation
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
     }
-
-    // Add helper methods
-    private void showBackButton() {
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-    }
-
-    private void hideBackButton() {
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
-    }
-
 
     // Method to programmatically select a navigation item
     public void setSelectedNavItem(int itemId) {
