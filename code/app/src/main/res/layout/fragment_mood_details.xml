@@ -46,6 +46,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="40dp"
+                    android:layout_marginTop="2dp"
                     android:text="Happy"
                     android:textColor="#9E6F32"
                     android:textSize="19sp"
@@ -53,18 +54,6 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/emoji_two"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="😱"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/mood_two"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.515" />
 
                 <TextView
                     android:id="@+id/emoji_one"
@@ -79,19 +68,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.555" />
-
-                <TextView
-                    android:id="@+id/mood_two"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="60dp"
-                    android:text="Surprised"
-                    android:textColor="#B6451B"
-                    android:textSize="19sp"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/mood_one"
-                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/time_ago"
@@ -128,6 +104,7 @@
                 android:layout_marginEnd="12dp"
                 android:layout_marginBottom="33dp"
                 android:src="@drawable/ic_menu_edit"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:tint="#F5F0E5" />
@@ -227,6 +204,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
                 app:shapeAppearanceOverlay="@style/RoundedImageViewStyle"
+                android:visibility="gone"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
 

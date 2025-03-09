@@ -30,6 +30,17 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private List<MoodEvent> moodEvents;
     private String fullName;
     private String username;
+    private OnItemClickListener listener;
+
+    // Interface for item clicks
+    public interface OnItemClickListener {
+        void onItemClick(MoodEvent event);
+    }
+
+    // Setter for the listener
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
 
     public FeedAdapter(Context context, List<MoodEvent> moodEvents) {
         this.context = context;
@@ -82,6 +93,15 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         } else {
             holder.time_ago_view.setVisibility(View.GONE);
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onItemClick(event);
+                }
+            }
+        });
 
     }
 

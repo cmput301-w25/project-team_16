@@ -1,5 +1,6 @@
 package com.example.team_16.ui.fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,7 +63,10 @@ public class Feed extends Fragment {
 
         }
 
-        moodEvents = followingMoodHistory.getAllEvents();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            moodEvents = followingMoodHistory.getAllEvents().reversed();
+        }
+
         Log.e("log", "done onCreate");
     }
 
@@ -94,6 +98,20 @@ public class Feed extends Fragment {
         else {
             Log.e("log", "not null");
         }
+
+        adapter.setOnItemClickListener(new FeedAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(MoodEvent event) {
+                MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
+                // Navigation.findNavController(getView()).navigate(R.id.action_feedFragment_to_moodDetailsFragment, bundle);
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, moodDetailsFragment) // fragment_container is your host container
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
         //showFollowedUserMoods();
     }
 

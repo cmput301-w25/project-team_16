@@ -146,6 +146,7 @@
                 android:textColor="#555555"
                 android:textSize="15sp"
                 android:textStyle="bold"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/mood_image" />
