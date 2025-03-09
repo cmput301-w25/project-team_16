@@ -37,7 +37,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         void onItemClick(MoodEvent event);
     }
 
-    // Setter for the listener
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
@@ -59,29 +58,37 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onBindViewHolder(@NonNull FeedViewHolder holder, int position) {
         MoodEvent event = moodEvents.get(position);
 
-
-        FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), new FirebaseDB.FirebaseCallback<Map<String, Object>>() {
-            @Override
-            public void onCallback(Map<String, Object> userData) {
-                    fullName = (String) userData.get("fullName");
-                    username = "@" + (String) userData.get("username");
-            }
-        });
-
         holder.mood_one_view.setText(event.getEmotionalState().getName());
         holder.emoji_one_view.setText(event.getEmotionalState().getEmoji());
         String date = event.getFormattedDate();
         Date actualDate = event.getTimestamp().toDate();
-        holder.first_name_last_name_view.setText(fullName);
-        holder.profile_username_view.setText(username);
         holder.with_amount_view.setText(event.getSocialSituation());
         holder.mood_description_view.setText(event.getTrigger());
         holder.time_view.setText(date);
+
+        holder.first_name_last_name_view.setText("Loading...");
+        holder.profile_username_view.setText("");
+
+        FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), new FirebaseDB.FirebaseCallback<Map<String, Object>>() {
+            @Override
+            public void onCallback(Map<String, Object> userData) {
+                if (userData != null) {
+                    String fullName = (String) userData.get("fullName");
+                    String username = "@" + (String) userData.get("username");
+                    holder.first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
+                    holder.profile_username_view.setText(username != null ? username : "@unknown");
+                } else {
+                    holder.first_name_last_name_view.setText("Unknown User");
+                    holder.profile_username_view.setText("@unknown");
+                }
+            }
+        });
+
         String time_ago;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
             LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
-            Duration duration = Duration.between(currentDateTime,eventDateTime);
+            Duration duration = Duration.between(eventDateTime, currentDateTime); // Note: order was reversed
             int hour_difference = (int) Math.abs(duration.toHours());
             if (hour_difference >= 24) {
                 int day_difference = Math.floorDiv(hour_difference, 24);
@@ -94,6 +101,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             holder.time_ago_view.setVisibility(View.GONE);
         }
 
+        // Item click handling
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,7 +110,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 }
             }
         });
-
     }
 
     @Override
@@ -138,8 +145,5 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             time_view = itemView.findViewById(R.id.post_time);
         }
 
-
-
     }
 }
-

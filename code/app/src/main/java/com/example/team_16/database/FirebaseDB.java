@@ -95,7 +95,6 @@ public class FirebaseDB {
             FirebaseCallback<Boolean> callback) {
 
         // First, check if username is unique
-        Log.e("log", "num one");
         db.collection(USERS_COLLECTION)
                 .whereEqualTo("usernameLower", username.toLowerCase())
                 .get()
@@ -105,7 +104,6 @@ public class FirebaseDB {
                         callback.onCallback(false);
                         return;
                     }
-                    Log.e("log", "num two");
                     // Create user with email and password
                     auth.createUserWithEmailAndPassword(email, password)
                             .addOnSuccessListener(authResult -> {
@@ -428,39 +426,26 @@ public class FirebaseDB {
             String searchText,
             FirebaseCallback<List<MoodEvent>> callback) {
 
-        // First get the user's following list
-        Log.e("log", "AT FUNCTION");
-        Log.e("log", userId);
         db.collection(FOLLOWING_COLLECTION).document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     List<String> following = (List<String>) documentSnapshot.get("following");
-                    Log.e("log", following.get(0));
+
                     if (following == null || following.isEmpty()) {
-                        Log.e("log", "nullsuccess");
                         callback.onCallback(new ArrayList<>());
                         return;
                     }
 
-                    // Construct query for followed users' mood events
                     Query query = db.collection(MOODS_COLLECTION)
-                            .whereIn("userID" , following)
-                            ;
-                    //.orderBy("timestamp", Query.Direction.DESCENDING)
-                    // Apply date filter if startDate is provided
+                            .whereIn("userID" , following);
                     if (startDate != null) {
-                        Log.e("log", "startdate");
                         query = query.whereGreaterThan("timestamp", startDate);
                     }
-                    Log.e("log", "middlesuccess");
-                    //Log.e("log", db.collection(MOODS_COLLECTION).whereEqualTo("userID", following.get(0)));
                     query.get()
                             .addOnSuccessListener(queryDocumentSnapshots -> {
                                 List<MoodEvent> moodEvents = new ArrayList<>();
                                 String k = "g";
-                                Log.e("log", "before loop");
 
                                 for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                                    Log.e("log", "success");
                                     k = "k";
                                     MoodEvent moodEvent = doc.toObject(MoodEvent.class);
 
@@ -475,32 +460,22 @@ public class FirebaseDB {
                                             continue;
                                         }
                                     }
-                                    Log.e("log", moodEvent.getFormattedDate() + moodEvent.getSocialSituation());
 
                                     moodEvents.add(moodEvent);
                                 }
 
-                                Log.e("log", k);
-                                Log.e("log", "afterloop");
-                                if (moodEvents != null) {
-                                    Log.e("log", moodEvents.get(0).getId());
-                                }
-
-                                Log.e("log", "successcallback2");
                                 callback.onCallback(moodEvents);
                             })
                             .addOnFailureListener(e -> {
                                 Log.e("FirebaseDB", "Error getting following mood events", e);
                                 callback.onCallback(new ArrayList<>());
                             });
-                    Log.e("log", "midsuc2");
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error getting following list", e);
                     callback.onCallback(new ArrayList<>());
                 });
 
-        Log.e("log", "DONE FUNCTION");
     }
 
     /**

@@ -21,6 +21,7 @@ import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.adapters.FeedAdapter;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,34 +54,24 @@ public class Feed extends Fragment {
 
         // Retrieve the list of mood events from the followed users' history
         MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
-        if (followingMoodHistory == null) {
-            Log.e("log", "mood history is null");
-        }
-        else {
-            Log.e("log", "history not null");
-            Log.e("log", followingMoodHistory.toString());
-            Log.e("log", followingMoodHistory.getAllEvents().toString());
 
-        }
+        // For older Android versions, initialize moodEvents another way
+        List<MoodEvent> events = followingMoodHistory.getAllEvents();
+        // Manually reverse the list for older Android versions
+        Collections.reverse(events);
+        moodEvents = events;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            moodEvents = followingMoodHistory.getAllEvents().reversed();
-        }
-
-        Log.e("log", "done onCreate");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.e("log", "start oncreateview ");
         // Inflate the layout for this fragment (make sure fragment_feed.xml exists)
         return inflater.inflate(R.layout.fragment_feed, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        Log.e("log", "start onviewcreated ");
         super.onViewCreated(view, savedInstanceState);
         recyclerView = view.findViewById(R.id.feed_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -90,14 +81,6 @@ public class Feed extends Fragment {
         // Set up the adapter with the current list of mood events
         adapter = new FeedAdapter(getContext(), moodEvents);
         recyclerView.setAdapter(adapter);
-
-        Log.e("log", moodEvents.toString());
-        if (moodEvents == null) {
-            Log.e("log", "mood events is null");
-        }
-        else {
-            Log.e("log", "not null");
-        }
 
         adapter.setOnItemClickListener(new FeedAdapter.OnItemClickListener() {
             @Override
@@ -112,19 +95,6 @@ public class Feed extends Fragment {
             }
         });
 
-        //showFollowedUserMoods();
     }
 
-    /**
-     * Refreshes the list of mood events and updates the RecyclerView.
-     */
-    public void showFollowedUserMoods() {
-        MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
-        moodEvents.clear();
-        moodEvents.addAll(followingMoodHistory.getAllEvents());
-
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
-    }
 }
