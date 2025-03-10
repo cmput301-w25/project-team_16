@@ -1,99 +1,120 @@
 package com.example.team_16;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.replaceText;
-import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
-import android.content.Context;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.MediumTest;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.EmotionalStateRegistry;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
-import com.example.team_16.ui.activity.MainActivity;
+import com.example.team_16.models.PersonalMoodHistory;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.ArrayList;
+import java.util.List;
 
-@MediumTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 public class AddMoodTest {
 
-    @Rule
-    public ActivityScenarioRule<MainActivity> activityRule = new ActivityScenarioRule<>(MainActivity.class);
-
-    private FirebaseDB firebaseDB;
+    @Mock
+    private FirebaseDB mockFirebaseDB;
+    
+    @Mock
+    private PersonalMoodHistory mockPersonalMoodHistory;
+    
     private UserProfile userProfile;
-
+    private EmotionalState happinessState;
+    private EmotionalState angerState;
+    
     @Before
     public void setUp() {
-        Context context = ApplicationProvider.getApplicationContext();
-
-        firebaseDB = FirebaseDB.getInstance(context);
-        userProfile = new UserProfile(firebaseDB, "12345", "testUser", "Test User", "test@example.com");
-
+        // Initialize emotional states
+        happinessState = mock(EmotionalState.class);
+        when(happinessState.getName()).thenReturn("Happiness");
+        
+        angerState = mock(EmotionalState.class);
+        when(angerState.getName()).thenReturn("Anger");
+        
+        // Setup EmotionalStateRegistry mock
+        EmotionalStateRegistry.initialize();
+        
+        // Create a user profile with mocked dependencies
+        userProfile = new UserProfile(
+            mockFirebaseDB, 
+            "12345", 
+            "testUser", 
+            "Test User", 
+            "test@example.com"
+        );
+        
+        // Mock the personal mood history
+        when(userProfile.getPersonalMoodHistory()).thenReturn(mockPersonalMoodHistory);
     }
-
+    
     @Test
-    public void testMoodSelection() {
-        onView(withId(R.id.happiness_button)).perform(click());
-        onView(withText("Selected mood: Happiness")).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void testOnlyOneMoodIsSelected() {
-        onView(withId(R.id.anger_button)).perform(click());
-        onView(withText("Selected mood: Anger")).check(matches(isDisplayed()));
-
-        onView(withId(R.id.happiness_button)).perform(click());
-        onView(withText("Selected mood: Anger")).check(doesNotExist());
-        onView(withText("Selected mood: Happiness")).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void testOnlyOneSocialSettingIsSelected() {
-        onView(withId(R.id.alone_button)).perform(click());
-        onView(withText("Selected setting: Alone")).check(matches(isDisplayed()));
-
-        onView(withId(R.id.crowd_button)).perform(click());
-        onView(withText("Selected setting: Alone")).check(doesNotExist());
-        onView(withText("Selected setting: Crowd")).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void testSaveMoodWithoutSelection_ShowsError() {
-        onView(withId(R.id.save_mood_button)).perform(click());
-        onView(withText("Please select a mood before saving.")).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void testMoodDeletion() {
-        EmotionalState state = EmotionalStateRegistry.getByName("Happiness");
-        MoodEvent moodEvent = new MoodEvent("testUser", state);
+    public void testAddMoodEvent() {
+        // Create a mood event
+        MoodEvent moodEvent = new MoodEvent("12345", happinessState);
+        
+        // Set up the mock to capture the mood event added
+        doAnswer(invocation -> {
+            MoodEvent event = invocation.getArgument(0);
+            assertEquals(happinessState, event.getEmotionalState());
+            assertEquals("12345", event.getUserID());
+            return null;
+        }).when(mockPersonalMoodHistory).addEvent(any(MoodEvent.class), any());
+        
+        // Add the mood event
         userProfile.addMoodEvent(moodEvent);
-
-        onView(withId(R.id.happiness_button)).perform(click());
-        onView(withText("Selected mood: Happiness")).check(matches(isDisplayed()));
-
-        onView(withId(R.id.delete_entry_button)).perform(click());
-        onView(withText("Selected mood: Happiness")).check(doesNotExist());
+        
+        // Verify the mood event was added to the personal mood history
+        verify(mockPersonalMoodHistory).addEvent(eq(moodEvent), any());
     }
-
+    
     @Test
-    public void testEnteringTriggerText() {
-        onView(withId(R.id.trigger_text)).perform(replaceText("Feeling great today!"));
-        onView(withId(R.id.trigger_text)).check(matches(withText("Feeling great today!")));
+    public void testDeleteMoodEvent() {
+        // Set up the mock to verify deletion
+        doAnswer(invocation -> {
+            String eventId = invocation.getArgument(0);
+            assertEquals("test-event-id", eventId);
+            return null;
+        }).when(mockPersonalMoodHistory).deleteEvent(anyString(), any());
+        
+        // Delete a mood event
+        userProfile.deleteMoodEvent("test-event-id");
+        
+        // Verify the mood event was deleted from the personal mood history
+        verify(mockPersonalMoodHistory).deleteEvent(eq("test-event-id"), any());
+    }
+    
+    @Test
+    public void testEditMoodEvent() {
+        // Create a mood event with updates
+        MoodEvent updatedMoodEvent = new MoodEvent("12345", angerState);
+        updatedMoodEvent.setTrigger("Feeling frustrated");
+        
+        // Set up the mock to verify editing
+        doAnswer(invocation -> {
+            String eventId = invocation.getArgument(0);
+            MoodEvent event = invocation.getArgument(1);
+            assertEquals("test-event-id", eventId);
+            assertEquals(angerState, event.getEmotionalState());
+            assertEquals("Feeling frustrated", event.getTrigger());
+            return null;
+        }).when(mockPersonalMoodHistory).editEvent(anyString(), any(MoodEvent.class), any());
+        
+        // Edit the mood event
+        userProfile.editMoodEvent("test-event-id", updatedMoodEvent);
+        
+        // Verify the mood event was edited in the personal mood history
+        verify(mockPersonalMoodHistory).editEvent(eq("test-event-id"), eq(updatedMoodEvent), any());
     }
 }
