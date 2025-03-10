@@ -3,6 +3,15 @@
         <!-- Set status bar background to dark gray or any color -->
         <item name="android:statusBarColor">@color/navy</item>
     </style>
+    <style name="CircularImageViewStyle">
+        <item name="cornerSize">50%</item>
+    </style>
+    <style name="RoundedImageViewStyle">
+        <item name="cornerSize">5%</item>
+    </style>
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Customize your theme here -->
+    </style>
 
 
 </resources>

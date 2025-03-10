@@ -1,4 +1,6 @@
 package com.example.team_16.models;
+import android.util.Log;
+
 import java.util.Objects;
 
 /**
@@ -14,6 +16,11 @@ public class EmotionalState {
      * @throws NullPointerException if name is null
      * @throws IllegalArgumentException if name is empty or blank
      */
+
+    public EmotionalState() {
+        name = null;
+    }
+
     public EmotionalState(String name) {
         this.name = Objects.requireNonNull(name, "Emotional state name cannot be null");
         if (name.trim().isEmpty()) {
@@ -36,6 +43,29 @@ public class EmotionalState {
         if (o == null || getClass() != o.getClass()) return false;
         EmotionalState that = (EmotionalState) o;
         return Objects.equals(name, that.name);
+    }
+
+    public String getEmoji() {
+        switch (name) {
+            case "Happiness":
+                return "😊";
+            case "Surprise":
+                return "😱";
+            case "Anger":
+                return "😡";
+            case "Confusion":
+                return "😵‍💫";
+            case "Disgust":
+                return "🤢";
+            case "Fear":
+                return "😨";
+            case "Sadness":
+                return "☹️";
+            case "Shame":
+                return "😳";
+        }
+        return "";
+
     }
 
     @Override
