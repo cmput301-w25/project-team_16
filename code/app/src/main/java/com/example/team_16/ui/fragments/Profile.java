@@ -44,8 +44,6 @@ public class Profile extends Fragment {
     private List<MoodEvent> moodEvents;
     private UserProfile userProfile;
 
-    private RecyclerView moodHistoryRecyclerView;
-    private MoodHistoryAdapter adapter;
 
     public Profile() {
         // Required empty public constructor
@@ -77,14 +75,13 @@ public class Profile extends Fragment {
 
         List<MoodEvent> moodEvents = personalMoodHistory.getAllEvents();
 
-        NestedScrollView profileScrollView = view.findViewById(R.id.fragment_profile);
-        moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
-        moodHistoryRecyclerView.setNestedScrollingEnabled(true);
+        RecyclerView moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
+        MoodHistoryAdapter adapter = new MoodHistoryAdapter(getContext(), moodEvents);
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        adapter = new MoodHistoryAdapter(getContext(), moodEvents);
         moodHistoryRecyclerView.setAdapter(adapter);
 
+        NestedScrollView profileScrollView = view.findViewById(R.id.fragment_profile);
+        moodHistoryRecyclerView.setNestedScrollingEnabled(true);
 
         username = view.findViewById(R.id.userName);
         username.setText(userProfile.getFullName());

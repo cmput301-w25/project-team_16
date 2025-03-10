@@ -4,6 +4,7 @@ import static androidx.core.content.ContentProviderCompat.requireContext;
 
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,6 +89,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         } else {
             holder.time_ago_view.setVisibility(View.GONE); // Hide if not supported
         }
+        Log.d("MoodHistory", "Number of events: " + moodEvents.size());
+
     }
 
     @Override
@@ -97,18 +100,9 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
 
     // ViewHolder class
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView mood_one_view = itemView.findViewById(R.id.moodView);
-        TextView emoji_one_view = itemView.findViewById(R.id.emojiView);
-        //TextView emoji_two_view = itemView.findViewById(R.id.emoji_two);
-        TextView time_ago_view = itemView.findViewById(R.id.timeView);
-        ImageView profile_picture_view = itemView.findViewById(R.id.profilePicture);
-        TextView first_name_last_name_view = itemView.findViewById(R.id.fullNameView);
-        TextView profile_username_view = itemView.findViewById(R.id.profileUsername);
-        TextView with_amount_view = itemView.findViewById(R.id.withAmountView);
-        TextView mood_description_view = itemView.findViewById(R.id.moodDescription);
-        ImageView mood_image_view = itemView.findViewById(R.id.moodImage);
-        TextView time_view = itemView.findViewById(R.id.postTime);
-
+        TextView mood_one_view, emoji_one_view, time_ago_view, first_name_last_name_view,
+                profile_username_view, with_amount_view, mood_description_view, time_view;
+        ImageView profile_picture_view, mood_image_view;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -123,5 +117,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             mood_image_view = itemView.findViewById(R.id.moodImage);
             time_view = itemView.findViewById(R.id.postTime);
         }
+
     }
+
 }
