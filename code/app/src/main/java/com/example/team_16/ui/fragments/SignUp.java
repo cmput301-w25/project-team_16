@@ -122,13 +122,12 @@ public class SignUp extends Fragment {
         }
 
 
-        // Sign up with Firebase
-        firebaseDB.signup(name, username, email, password, result -> {
-            if (result) {
-                Toast.makeText(requireContext(), "User registered!", Toast.LENGTH_SHORT).show();
+        // Call FirebaseDB signup method
+        firebaseDB.signup(name, username, email, password, message -> {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+
+            if (message.equals("Signup successful!")) {
                 requireActivity().onBackPressed();
-            } else {
-                Toast.makeText(requireContext(), "Sign up failed. Try again.", Toast.LENGTH_SHORT).show();
             }
         });
     }

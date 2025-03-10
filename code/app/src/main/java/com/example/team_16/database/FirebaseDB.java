@@ -90,7 +90,7 @@ public class FirebaseDB {
             String username,
             String email,
             String password,
-            FirebaseCallback<Boolean> callback) {
+            FirebaseCallback<String> callback) {
 
         // First, check if username is unique
         db.collection(USERS_COLLECTION)
@@ -99,7 +99,7 @@ public class FirebaseDB {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         // Username already exists
-                        callback.onCallback(false);
+                        callback.onCallback("Username is already taken. Please choose another.");
                         return;
                     }
 
@@ -119,57 +119,54 @@ public class FirebaseDB {
                                     db.collection(USERS_COLLECTION)
                                             .document(firebaseUser.getUid())
                                             .set(userData)
-                                            .addOnSuccessListener(aVoid -> {
-                                                // Create following document for the user
-                                                Map<String, Object> followingData = new HashMap<>();
-                                                followingData.put("userId", firebaseUser.getUid());
-                                                followingData.put("following", new ArrayList<>());
-
-                                                db.collection(FOLLOWING_COLLECTION)
-                                                        .document(firebaseUser.getUid())
-                                                        .set(followingData)
-                                                        .addOnSuccessListener(v -> callback.onCallback(true))
-                                                        .addOnFailureListener(e -> callback.onCallback(false));
-                                            })
-                                            .addOnFailureListener(e -> callback.onCallback(false));
+                                            .addOnSuccessListener(aVoid -> callback.onCallback("Signup successful!"))
+                                            .addOnFailureListener(e -> callback.onCallback("Error creating profile. Please try again."));
                                 } else {
-                                    callback.onCallback(false);
+                                    callback.onCallback("Signup failed. Please try again.");
                                 }
                             })
-                            .addOnFailureListener(e -> callback.onCallback(false));
+                            .addOnFailureListener(e -> {
+                                if (e.getMessage().contains("email")) {
+                                    callback.onCallback("Email is already in use. Try another.");
+                                } else {
+                                    callback.onCallback("Signup failed. " + e.getMessage());
+                                }
+                            });
                 })
-                .addOnFailureListener(e -> callback.onCallback(false));
+                .addOnFailureListener(e -> callback.onCallback("Error checking username availability."));
     }
 
     /**
      * Sign in a user
      */
-    public void login(String username, String password, FirebaseCallback<Boolean> callback) {
-        // Find the user by username
+    public void login(String username, String password, FirebaseCallback<String> callback) {
         db.collection(USERS_COLLECTION)
                 .whereEqualTo("usernameLower", username.toLowerCase())
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.isEmpty()) {
-                        // No user found with this username
-                        callback.onCallback(false);
+                        callback.onCallback("No account found with this username.");
                         return;
                     }
 
-                    // Get the user's email
                     String email = queryDocumentSnapshots.getDocuments().get(0).getString("email");
 
                     if (email == null) {
-                        callback.onCallback(false);
+                        callback.onCallback("Error retrieving account email.");
                         return;
                     }
 
-                    // Attempt to sign in with email and password
                     auth.signInWithEmailAndPassword(email, password)
-                            .addOnSuccessListener(authResult -> callback.onCallback(true))
-                            .addOnFailureListener(e -> callback.onCallback(false));
+                            .addOnSuccessListener(authResult -> callback.onCallback("Login successful!"))
+                            .addOnFailureListener(e -> {
+                                if (e.getMessage().contains("password")) {
+                                    callback.onCallback("Incorrect password. Try again.");
+                                } else {
+                                    callback.onCallback("Login failed. Incorrect Password");
+                                }
+                            });
                 })
-                .addOnFailureListener(e -> callback.onCallback(false));
+                .addOnFailureListener(e -> callback.onCallback("Error checking account. Try again later."));
     }
 
     /**
