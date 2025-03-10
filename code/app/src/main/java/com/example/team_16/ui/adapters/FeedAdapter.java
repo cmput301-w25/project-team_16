@@ -25,6 +25,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Adapter responsible for displaying and updating recyclerView of mood events
+ */
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> {
     private Context context;
     private List<MoodEvent> moodEvents;
@@ -32,15 +35,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private String username;
     private OnItemClickListener listener;
 
-    // Interface for item clicks
+    /**
+     * Interface for item clicks
+     */
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
     }
 
+    /**
+     * Listener for mood event item clicks
+     */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * FeedAdapter constuctor
+     */
     public FeedAdapter(Context context, List<MoodEvent> moodEvents) {
         this.context = context;
         this.moodEvents = moodEvents;
@@ -112,6 +123,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         });
     }
 
+    /**
+     * Return index of current item in recyclerView
+     */
     @Override
     public int getItemCount() {
         return moodEvents == null ? 0 : moodEvents.size();

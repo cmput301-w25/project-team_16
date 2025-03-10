@@ -45,6 +45,9 @@ public class EmotionalState {
         return Objects.equals(name, that.name);
     }
 
+    /**
+     * Return emoji based on emoji name
+     */
     public String getEmoji() {
         switch (name) {
             case "Happiness":
