@@ -2,6 +2,7 @@ package com.example.team_16.database;
 
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -47,7 +49,7 @@ public class FirebaseDB {
     /**
      * Private constructor for singleton pattern
      */
-    public FirebaseDB(Context context) {
+    private FirebaseDB(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
@@ -102,7 +104,6 @@ public class FirebaseDB {
                         callback.onCallback("Username is already taken. Please choose another.");
                         return;
                     }
-
                     // Create user with email and password
                     auth.createUserWithEmailAndPassword(email, password)
                             .addOnSuccessListener(authResult -> {
@@ -247,6 +248,28 @@ public class FirebaseDB {
                     Log.e("FirebaseDB", "Error getting mood events", e);
                     callback.onCallback(new ArrayList<>());
                 });
+    }
+
+    /**
+     * Get mood event from known id
+     */
+    public void getMoodEventFromID (String id, FirebaseCallback<MoodEvent> callback) {
+        DocumentReference docRef = db.collection(MOODS_COLLECTION).document(id);
+        AtomicReference<MoodEvent> moodEvent = new AtomicReference<>(new MoodEvent());
+
+        docRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                moodEvent.set(documentSnapshot.toObject(MoodEvent.class));
+                callback.onCallback(moodEvent.get());
+            } else {
+                Log.d("Firestore", "No document found with the given id.");
+                callback.onCallback(moodEvent.get());
+            }
+
+        }).addOnFailureListener(e -> {
+            Log.w("Firestore", "Error getting document", e);
+            callback.onCallback(moodEvent.get());
+        });
     }
 
     /**
@@ -400,29 +423,27 @@ public class FirebaseDB {
             String searchText,
             FirebaseCallback<List<MoodEvent>> callback) {
 
-        // First get the user's following list
         db.collection(FOLLOWING_COLLECTION).document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     List<String> following = (List<String>) documentSnapshot.get("following");
+
                     if (following == null || following.isEmpty()) {
                         callback.onCallback(new ArrayList<>());
                         return;
                     }
 
-                    // Construct query for followed users' mood events
                     Query query = db.collection(MOODS_COLLECTION)
-                            .whereIn("userId", following)
-                            .orderBy("timestamp", Query.Direction.DESCENDING);
-
-                    // Apply date filter if startDate is provided
+                            .whereIn("userID" , following);
                     if (startDate != null) {
                         query = query.whereGreaterThan("timestamp", startDate);
                     }
-
                     query.get()
                             .addOnSuccessListener(queryDocumentSnapshots -> {
                                 List<MoodEvent> moodEvents = new ArrayList<>();
+                                String k = "g";
+
                                 for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                                    k = "k";
                                     MoodEvent moodEvent = doc.toObject(MoodEvent.class);
 
                                     // Apply emotional state filter
@@ -439,6 +460,7 @@ public class FirebaseDB {
 
                                     moodEvents.add(moodEvent);
                                 }
+
                                 callback.onCallback(moodEvents);
                             })
                             .addOnFailureListener(e -> {
@@ -450,6 +472,7 @@ public class FirebaseDB {
                     Log.e("FirebaseDB", "Error getting following list", e);
                     callback.onCallback(new ArrayList<>());
                 });
+
     }
 
     /**
