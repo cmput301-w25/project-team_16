@@ -55,65 +55,33 @@ public class Profile extends Fragment {
         return new Profile();
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment (make sure fragment_feed.xml exists)
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
+
     //@SuppressLint("SetTextI18n")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // First, initialize userProfile
-        // First, initialize userProfile
         userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
-
-// Check if userProfile is null before proceeding
         if (userProfile == null) {
             Toast.makeText(requireContext(), "Failed to load user profile.", Toast.LENGTH_SHORT).show();
             requireActivity().finish();
             return;
         }
 
-// Get the personal mood history from the user profile
-        MoodHistory personalHistory = userProfile.getPersonalMoodHistory();
+        MoodHistory personalMoodHistory = userProfile.getPersonalMoodHistory();
 
-// Check if personal history is null before proceeding
-        if (personalHistory == null) {
-            Toast.makeText(requireContext(), "Failed to load mood history.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        List<MoodEvent> moodEvents = personalMoodHistory.getAllEvents();
 
-// Set the callback to handle mood events once they are loaded
-        personalHistory.setDataLoadCallback(events -> {
-            // This will be called once the events are loaded
-            List<MoodEvent> allEvents = personalHistory.getAllEvents();
-
-            // Now you can work with allEvents, which contains the list of mood events
-            if (allEvents != null && !allEvents.isEmpty()) {
-                // Handle the events (e.g., update UI or pass the data to an adapter)
-                for (MoodEvent event : allEvents) {
-                    // Do something with each event
-                    Log.d("MoodEvent", "Event ID: " + event.getId());
-                }
-            } else {
-                Toast.makeText(requireContext(), "No mood events found.", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-// Optionally, refresh the data if needed
-        personalHistory.refresh();
-
-
-        // Initialize RecyclerView and adapter
+        NestedScrollView profileScrollView = view.findViewById(R.id.fragment_profile);
         moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
-        moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         moodHistoryRecyclerView.setNestedScrollingEnabled(true);
+        moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Set the adapter with the hardcoded events list
         adapter = new MoodHistoryAdapter(getContext(), moodEvents);
         moodHistoryRecyclerView.setAdapter(adapter);
 
@@ -128,17 +96,7 @@ public class Profile extends Fragment {
         followingStats.setText(userProfile.getUserFollowing().size() + " Following");
 
         followersStats = view.findViewById(R.id.followersStats);
-        // followersStats.setText(userProfile.getFollowers());
 
-        // Ensure moodEvents is populated before setting the adapter
-//        if (moodEvents!= null && !moodEvents.isEmpty()) {
-
-
-//        } else {
-//            Toast.makeText(requireContext(), "No mood events to display", Toast.LENGTH_SHORT).show();
-//        }
-
-        // Set onClickListener for followersStats (if needed)
         followersStats.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
