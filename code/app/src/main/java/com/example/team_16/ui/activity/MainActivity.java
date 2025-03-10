@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
         // Makes sure the user has to log in / sign up every time
         firebaseDB.logout();
 
-
         // show login UI
         setContentView(R.layout.activity_main);
 
@@ -52,35 +51,23 @@ public class MainActivity extends AppCompatActivity {
         resetPasswordButton = findViewById(R.id.resetPasswordButton);
         EdgeToEdge.enable(this);
 
-        // Handle Login Button Click
         loginButton.setOnClickListener(v -> {
-
-            // Retrieve user input
             String username = usernameEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
 
-            // Validate the input fields
             if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(MainActivity.this, "Enter all fields!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Please enter both username and password!", Toast.LENGTH_SHORT).show();
             } else {
+                firebaseDB.login(username, password, message -> {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
 
-                // Use FirebaseDB to login
-                firebaseDB.login(username, password, result -> {
-                    if (result) {
-                        Toast.makeText(MainActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-
-                        // Get the current user ID
+                    if (message.equals("Login successful!")) {
                         String userId = firebaseDB.getCurrentUserId();
-
-                        // Load user profile and navigate to main content
                         loadUserProfileAndNavigate(userId);
-                    } else {
-                        Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
-
 
 
         // Show the SignUp Fragment

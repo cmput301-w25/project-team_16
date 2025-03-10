@@ -2,6 +2,7 @@ package com.example.team_16.database;
 
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -47,7 +49,7 @@ public class FirebaseDB {
     /**
      * Private constructor for singleton pattern
      */
-    public FirebaseDB(Context context) {
+    private FirebaseDB(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
@@ -90,7 +92,7 @@ public class FirebaseDB {
             String username,
             String email,
             String password,
-            FirebaseCallback<Boolean> callback) {
+            FirebaseCallback<String> callback) {
 
         // First, check if username is unique
         db.collection(USERS_COLLECTION)
@@ -99,10 +101,9 @@ public class FirebaseDB {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
                         // Username already exists
-                        callback.onCallback(false);
+                        callback.onCallback("Username is already taken. Please choose another.");
                         return;
                     }
-
                     // Create user with email and password
                     auth.createUserWithEmailAndPassword(email, password)
                             .addOnSuccessListener(authResult -> {
@@ -119,57 +120,54 @@ public class FirebaseDB {
                                     db.collection(USERS_COLLECTION)
                                             .document(firebaseUser.getUid())
                                             .set(userData)
-                                            .addOnSuccessListener(aVoid -> {
-                                                // Create following document for the user
-                                                Map<String, Object> followingData = new HashMap<>();
-                                                followingData.put("userId", firebaseUser.getUid());
-                                                followingData.put("following", new ArrayList<>());
-
-                                                db.collection(FOLLOWING_COLLECTION)
-                                                        .document(firebaseUser.getUid())
-                                                        .set(followingData)
-                                                        .addOnSuccessListener(v -> callback.onCallback(true))
-                                                        .addOnFailureListener(e -> callback.onCallback(false));
-                                            })
-                                            .addOnFailureListener(e -> callback.onCallback(false));
+                                            .addOnSuccessListener(aVoid -> callback.onCallback("Signup successful!"))
+                                            .addOnFailureListener(e -> callback.onCallback("Error creating profile. Please try again."));
                                 } else {
-                                    callback.onCallback(false);
+                                    callback.onCallback("Signup failed. Please try again.");
                                 }
                             })
-                            .addOnFailureListener(e -> callback.onCallback(false));
+                            .addOnFailureListener(e -> {
+                                if (e.getMessage().contains("email")) {
+                                    callback.onCallback("Email is already in use. Try another.");
+                                } else {
+                                    callback.onCallback("Signup failed. " + e.getMessage());
+                                }
+                            });
                 })
-                .addOnFailureListener(e -> callback.onCallback(false));
+                .addOnFailureListener(e -> callback.onCallback("Error checking username availability."));
     }
 
     /**
      * Sign in a user
      */
-    public void login(String username, String password, FirebaseCallback<Boolean> callback) {
-        // Find the user by username
+    public void login(String username, String password, FirebaseCallback<String> callback) {
         db.collection(USERS_COLLECTION)
                 .whereEqualTo("usernameLower", username.toLowerCase())
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.isEmpty()) {
-                        // No user found with this username
-                        callback.onCallback(false);
+                        callback.onCallback("No account found with this username.");
                         return;
                     }
 
-                    // Get the user's email
                     String email = queryDocumentSnapshots.getDocuments().get(0).getString("email");
 
                     if (email == null) {
-                        callback.onCallback(false);
+                        callback.onCallback("Error retrieving account email.");
                         return;
                     }
 
-                    // Attempt to sign in with email and password
                     auth.signInWithEmailAndPassword(email, password)
-                            .addOnSuccessListener(authResult -> callback.onCallback(true))
-                            .addOnFailureListener(e -> callback.onCallback(false));
+                            .addOnSuccessListener(authResult -> callback.onCallback("Login successful!"))
+                            .addOnFailureListener(e -> {
+                                if (e.getMessage().contains("password")) {
+                                    callback.onCallback("Incorrect password. Try again.");
+                                } else {
+                                    callback.onCallback("Login failed. Incorrect Password");
+                                }
+                            });
                 })
-                .addOnFailureListener(e -> callback.onCallback(false));
+                .addOnFailureListener(e -> callback.onCallback("Error checking account. Try again later."));
     }
 
     /**
@@ -250,6 +248,28 @@ public class FirebaseDB {
                     Log.e("FirebaseDB", "Error getting mood events", e);
                     callback.onCallback(new ArrayList<>());
                 });
+    }
+
+    /**
+     * Get mood event from known id
+     */
+    public void getMoodEventFromID (String id, FirebaseCallback<MoodEvent> callback) {
+        DocumentReference docRef = db.collection(MOODS_COLLECTION).document(id);
+        AtomicReference<MoodEvent> moodEvent = new AtomicReference<>(new MoodEvent());
+
+        docRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                moodEvent.set(documentSnapshot.toObject(MoodEvent.class));
+                callback.onCallback(moodEvent.get());
+            } else {
+                Log.d("Firestore", "No document found with the given id.");
+                callback.onCallback(moodEvent.get());
+            }
+
+        }).addOnFailureListener(e -> {
+            Log.w("Firestore", "Error getting document", e);
+            callback.onCallback(moodEvent.get());
+        });
     }
 
     /**
@@ -403,29 +423,27 @@ public class FirebaseDB {
             String searchText,
             FirebaseCallback<List<MoodEvent>> callback) {
 
-        // First get the user's following list
         db.collection(FOLLOWING_COLLECTION).document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     List<String> following = (List<String>) documentSnapshot.get("following");
+
                     if (following == null || following.isEmpty()) {
                         callback.onCallback(new ArrayList<>());
                         return;
                     }
 
-                    // Construct query for followed users' mood events
                     Query query = db.collection(MOODS_COLLECTION)
-                            .whereIn("userId", following)
-                            .orderBy("timestamp", Query.Direction.DESCENDING);
-
-                    // Apply date filter if startDate is provided
+                            .whereIn("userID" , following);
                     if (startDate != null) {
                         query = query.whereGreaterThan("timestamp", startDate);
                     }
-
                     query.get()
                             .addOnSuccessListener(queryDocumentSnapshots -> {
                                 List<MoodEvent> moodEvents = new ArrayList<>();
+                                String k = "g";
+
                                 for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                                    k = "k";
                                     MoodEvent moodEvent = doc.toObject(MoodEvent.class);
 
                                     // Apply emotional state filter
@@ -442,6 +460,7 @@ public class FirebaseDB {
 
                                     moodEvents.add(moodEvent);
                                 }
+
                                 callback.onCallback(moodEvents);
                             })
                             .addOnFailureListener(e -> {
@@ -453,6 +472,7 @@ public class FirebaseDB {
                     Log.e("FirebaseDB", "Error getting following list", e);
                     callback.onCallback(new ArrayList<>());
                 });
+
     }
 
     /**
