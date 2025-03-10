@@ -47,16 +47,16 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MoodEvent event = moodEvents.get(position);
-        holder.mood_one_view.setText(event.getEmotionalState().getName());
+        holder.mood_view.setText(event.getEmotionalState().getName());
         String date = event.getFormattedDate();
 
         Date actualDate = Date.from(event.getTimestamp().toInstant()); // Fixed conversion
-        holder.with_amount_view.setText(event.getSocialSituation());
-        holder.mood_description_view.setText(event.getTrigger());
+        holder.with_amount.setText(event.getSocialSituation());
+        holder.mood_description.setText(event.getTrigger());
         holder.time_view.setText(date);
 
-        holder.first_name_last_name_view.setText("Loading...");
-        holder.profile_username_view.setText("");
+        holder.full_name.setText("Loading...");
+        holder.profile_username.setText("");
 
         FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), new FirebaseDB.FirebaseCallback<Map<String, Object>>() {
             @Override
@@ -64,11 +64,11 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
                 if (userData != null) {
                     String fullName = (String) userData.get("fullName");
                     String username = "@" + (String) userData.get("username");
-                    holder.first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
-                    holder.profile_username_view.setText(username != null ? username : "@unknown");
+                    holder.full_name.setText(fullName != null ? fullName : "Unknown");
+                    holder.profile_username.setText(username != null ? username : "@unknown");
                 } else {
-                    holder.first_name_last_name_view.setText("Unknown User");
-                    holder.profile_username_view.setText("@unknown");
+                    holder.full_name.setText("Unknown User");
+                    holder.profile_username.setText("@unknown");
                 }
             }
         });
@@ -86,9 +86,9 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             } else {
                 time_ago = hour_difference + " hours ago";
             }
-            holder.time_ago_view.setText(time_ago);
+            holder.time_view.setText(time_ago);
         } else {
-            holder.time_ago_view.setVisibility(View.GONE);
+            holder.time_view.setVisibility(View.GONE);
         }
     }
 
@@ -99,22 +99,22 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
 
     // ViewHolder class
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView mood_one_view, emoji_one_view, time_ago_view, first_name_last_name_view,
-                profile_username_view, with_amount_view, mood_description_view, time_view;
-        ImageView profile_picture_view, mood_image_view;
+        TextView mood_view, emoji_view, time_view, full_name,
+                profile_username, with_amount, mood_description, post_time;
+        ImageView profile_picture, mood_image;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            mood_one_view = itemView.findViewById(R.id.moodView);
-            emoji_one_view = itemView.findViewById(R.id.emojiView);
-            time_ago_view = itemView.findViewById(R.id.timeView);
-            profile_picture_view = itemView.findViewById(R.id.profilePicture);
-            first_name_last_name_view = itemView.findViewById(R.id.fullNameView);
-            profile_username_view = itemView.findViewById(R.id.profileUsername);
-            with_amount_view = itemView.findViewById(R.id.withAmountView);
-            mood_description_view = itemView.findViewById(R.id.moodDescription);
-            mood_image_view = itemView.findViewById(R.id.moodImage);
-            time_view = itemView.findViewById(R.id.postTime);
+            mood_view = itemView.findViewById(R.id.moodView);
+            emoji_view = itemView.findViewById(R.id.emojiView);
+            time_view = itemView.findViewById(R.id.timeView);
+            profile_picture = itemView.findViewById(R.id.profilePicture);
+            full_name = itemView.findViewById(R.id.fullNameView);
+            profile_username = itemView.findViewById(R.id.profileUsername);
+            with_amount = itemView.findViewById(R.id.withAmountView);
+            mood_description = itemView.findViewById(R.id.moodDescription);
+            mood_image = itemView.findViewById(R.id.moodImage);
+            post_time = itemView.findViewById(R.id.postTime);
         }
 
     }
