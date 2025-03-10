@@ -49,8 +49,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         MoodEvent event = moodEvents.get(position);
         holder.mood_view.setText(event.getEmotionalState().getName());
         String date = event.getFormattedDate();
-
-        Date actualDate = Date.from(event.getTimestamp().toInstant()); // Fixed conversion
+        Date actualDate = event.getTimestamp().toDate();
         holder.with_amount.setText(event.getSocialSituation());
         holder.mood_description.setText(event.getTrigger());
         holder.time_view.setText(date);
@@ -78,7 +77,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
             LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
-            Duration duration = Duration.between(eventDateTime, currentDateTime);
+            Duration duration = Duration.between(eventDateTime, currentDateTime); // Note: order was reversed
             int hour_difference = (int) Math.abs(duration.toHours());
             if (hour_difference >= 24) {
                 int day_difference = Math.floorDiv(hour_difference, 24);
@@ -88,8 +87,10 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             }
             holder.time_view.setText(time_ago);
         } else {
-            holder.time_view.setVisibility(View.GONE);
+            holder.time_view.setVisibility(View.GONE); // Hide if not supported
         }
+        Log.d("MoodHistory", "Number of events: " + moodEvents.size());
+
     }
 
     @Override
@@ -102,6 +103,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         TextView mood_view, emoji_view, time_view, full_name,
                 profile_username, with_amount, mood_description, post_time;
         ImageView profile_picture, mood_image;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mood_view = itemView.findViewById(R.id.moodView);
@@ -112,7 +114,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             profile_username = itemView.findViewById(R.id.profileUsername);
             with_amount = itemView.findViewById(R.id.withAmountView);
             mood_description = itemView.findViewById(R.id.moodDescription);
-            mood_image = itemView.findViewById(R.id.moodImage);
+            mood_image= itemView.findViewById(R.id.moodImage);
             post_time = itemView.findViewById(R.id.postTime);
         }
 
