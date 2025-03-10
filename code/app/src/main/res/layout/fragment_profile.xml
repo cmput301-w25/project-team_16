@@ -2,12 +2,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment_profile"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    tools:context=".ui.fragments.Profile">
+    android:id="@+id/fragment_profile"
+    android:background="#FFFFFF"
 
+    android:fillViewport="true">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,6 +25,7 @@
             android:layout_gravity="center_horizontal"
             android:clickable="true"
             app:shapeAppearanceOverlay="@style/roundedImageView_40"/>
+
 
         <!-- User Info and Edit Button in the same row -->
         <LinearLayout
@@ -65,36 +66,34 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Edit Profile"
-                android:backgroundTint="#001F3F"
+                android:backgroundTint="#00008B"
                 android:textColor="#FFFFFF"/>
         </LinearLayout>
 
-        <!-- Separated Following and Followers TextViews -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center"
             android:layout_marginTop="15dp">
 
             <TextView
-                android:id="@+id/followingTextView"
+                android:id="@+id/followingStats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Following"
+                android:text="# Following"
                 android:textSize="14sp"
                 android:textColor="#000000"
-                android:padding="8dp" />
+                android:layout_marginEnd="16dp" />
 
             <TextView
-                android:id="@+id/followersTextView"
+                android:id="@+id/followersStats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Followers"
+                android:text="# Followers"
                 android:textSize="14sp"
-                android:textColor="#000000"
-                android:padding="8dp" />
+                android:textColor="#000000" />
         </LinearLayout>
+
 
         <TextView
             android:id="@+id/totalMoodEntriesTxt"
@@ -129,10 +128,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/moodHistoryRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginTop="8dp"/>
 
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
-
