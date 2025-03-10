@@ -44,6 +44,8 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.core)
     testImplementation(libs.junit)
+    testImplementation(libs.espresso.core)
+    testImplementation(libs.ext.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     //firebase dependencies
