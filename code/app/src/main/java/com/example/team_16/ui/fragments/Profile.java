@@ -46,7 +46,6 @@ public class Profile extends Fragment {
     public Profile() {
         // Required empty public constructor
     }
-
     public static Profile newInstance() {
         return new Profile();
     }

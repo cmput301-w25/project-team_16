@@ -102,7 +102,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         TextView mood_view, emoji_view, time_view, full_name,
                 profile_username, with_amount, mood_description, post_time;
         ImageView profile_picture, mood_image;
-
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mood_view = itemView.findViewById(R.id.moodView);
