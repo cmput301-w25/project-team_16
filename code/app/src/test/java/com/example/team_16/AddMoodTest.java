@@ -40,8 +40,10 @@ public class AddMoodTest {
     @Before
     public void setUp() {
         Context context = ApplicationProvider.getApplicationContext();
-        firebaseDB = new FirebaseDB(context);
+
+        firebaseDB = FirebaseDB.getInstance(context);
         userProfile = new UserProfile(firebaseDB, "12345", "testUser", "Test User", "test@example.com");
+
     }
 
     @Test
