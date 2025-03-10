@@ -94,6 +94,9 @@ public class EmotionalState {
         }
     }
 
+    /**
+     * Return emoji based on emoji name
+     */
     public String getEmoji() {
         switch (name) {
             case "Happiness":

@@ -35,7 +35,9 @@ import java.util.Map;
 
 
 
-
+/** Fragment responsible for retrieving and displaying mood details when the item is
+*  clicked on by the user
+*/
 public class MoodDetails extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
