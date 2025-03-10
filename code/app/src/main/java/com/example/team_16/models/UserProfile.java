@@ -9,7 +9,8 @@ import java.util.Map;
 /**
  * Represents a user in the mood tracking application
  */
-public class UserProfile {
+public class
+UserProfile {
     // Core user information
     private String id;
     private String username;
