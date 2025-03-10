@@ -49,7 +49,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         MoodEvent event = moodEvents.get(position);
         holder.mood_one_view.setText(event.getEmotionalState().getName());
         String date = event.getFormattedDate();
-        Date actualDate = event.getTimestamp().toDate();
+
+        Date actualDate = Date.from(event.getTimestamp().toInstant()); // Fixed conversion
         holder.with_amount_view.setText(event.getSocialSituation());
         holder.mood_description_view.setText(event.getTrigger());
         holder.time_view.setText(date);
@@ -77,7 +78,7 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
             LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
-            Duration duration = Duration.between(eventDateTime, currentDateTime); // Note: order was reversed
+            Duration duration = Duration.between(eventDateTime, currentDateTime);
             int hour_difference = (int) Math.abs(duration.toHours());
             if (hour_difference >= 24) {
                 int day_difference = Math.floorDiv(hour_difference, 24);
@@ -87,10 +88,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             }
             holder.time_ago_view.setText(time_ago);
         } else {
-            holder.time_ago_view.setVisibility(View.GONE); // Hide if not supported
+            holder.time_ago_view.setVisibility(View.GONE);
         }
-        Log.d("MoodHistory", "Number of events: " + moodEvents.size());
-
     }
 
     @Override

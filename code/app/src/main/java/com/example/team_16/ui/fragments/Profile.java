@@ -36,14 +36,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class Profile extends Fragment {
+
     private TextView username;
     private TextView userHandle;
     private TextView followingStats;
     private TextView followersStats;
-
-    private List<MoodEvent> moodEvents;
     private UserProfile userProfile;
-
 
     public Profile() {
         // Required empty public constructor
@@ -59,7 +57,6 @@ public class Profile extends Fragment {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
-    //@SuppressLint("SetTextI18n")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -73,16 +70,33 @@ public class Profile extends Fragment {
 
         MoodHistory personalMoodHistory = userProfile.getPersonalMoodHistory();
 
-        List<MoodEvent> moodEvents = personalMoodHistory.getAllEvents();
+        List<MoodEvent> events = personalMoodHistory.getAllEvents();
+        if (events == null) {
+            events = new ArrayList<>(); // Initialize to avoid NullPointerException
+        }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Timestamp timestamp = new Timestamp(Instant.now());
+            EmotionalState emotionalState = new EmotionalState("Happy");
+
+            MoodEvent event1 = new MoodEvent(
+                    "example_id",
+                    timestamp,
+                    emotionalState,
+                    "Feeling great!",
+                    "user_123",
+                    "At work"
+            );
+            events.add(event1);  // Add the new event safely
+        }
+
+        // RecyclerView Setup
         RecyclerView moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
-        MoodHistoryAdapter adapter = new MoodHistoryAdapter(getContext(), moodEvents);
+        MoodHistoryAdapter adapter = new MoodHistoryAdapter(getContext(), events); // Corrected variable name
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         moodHistoryRecyclerView.setAdapter(adapter);
 
-        NestedScrollView profileScrollView = view.findViewById(R.id.fragment_profile);
-        moodHistoryRecyclerView.setNestedScrollingEnabled(true);
-
+        // Setting user data in the UI
         username = view.findViewById(R.id.userName);
         username.setText(userProfile.getFullName());
 
@@ -104,26 +118,10 @@ public class Profile extends Fragment {
             }
         });
     }
+
     @Override
     public void onResume() {
         super.onResume();
         ((HomeActivity) requireActivity()).setToolbarTitle("Profile");
     }
 }
-
-
-//        List<MoodEvent> events = new ArrayList<>();
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            Timestamp timestamp = new Timestamp(Instant.now());
-//            EmotionalState emotionalState = new EmotionalState("Happy"); // Create EmotionalState instance
-//
-//            MoodEvent event1 = new MoodEvent(
-//                    "example_id",         // id (String)
-//                    timestamp,            // timestamp (Timestamp)
-//                    emotionalState,       // emotionalState (EmotionalState)
-//                    "Feeling great!",     // trigger (String)
-//                    "user_123",           // userID (String)
-//                    "At work"             // socialSituation (String)
-//            );
-//            events.add(event1);
-//        }
