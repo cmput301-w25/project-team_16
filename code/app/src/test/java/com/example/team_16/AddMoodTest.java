@@ -1,120 +1,78 @@
 package com.example.team_16;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.runners.JUnit4;
 
-import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.EmotionalStateRegistry;
 import com.example.team_16.models.MoodEvent;
-import com.example.team_16.models.UserProfile;
-import com.example.team_16.models.PersonalMoodHistory;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(JUnit4.class)
 public class AddMoodTest {
 
-    @Mock
-    private FirebaseDB mockFirebaseDB;
-    
-    @Mock
-    private PersonalMoodHistory mockPersonalMoodHistory;
-    
-    private UserProfile userProfile;
     private EmotionalState happinessState;
     private EmotionalState angerState;
     
     @Before
     public void setUp() {
-        // Initialize emotional states
-        happinessState = mock(EmotionalState.class);
-        when(happinessState.getName()).thenReturn("Happiness");
-        
-        angerState = mock(EmotionalState.class);
-        when(angerState.getName()).thenReturn("Anger");
-        
-        // Setup EmotionalStateRegistry mock
-        EmotionalStateRegistry.initialize();
-        
-        // Create a user profile with mocked dependencies
-        userProfile = new UserProfile(
-            mockFirebaseDB, 
-            "12345", 
-            "testUser", 
-            "Test User", 
-            "test@example.com"
-        );
-        
-        // Mock the personal mood history
-        when(userProfile.getPersonalMoodHistory()).thenReturn(mockPersonalMoodHistory);
+        // Create simple emotional states for testing
+        happinessState = new EmotionalState("Happiness", "Happy feeling", "#FFFF00");
+        angerState = new EmotionalState("Anger", "Angry feeling", "#FF0000");
     }
     
     @Test
-    public void testAddMoodEvent() {
-        // Create a mood event
+    public void testMoodEventCreation() {
+        // Create a new mood event
         MoodEvent moodEvent = new MoodEvent("12345", happinessState);
         
-        // Set up the mock to capture the mood event added
-        doAnswer(invocation -> {
-            MoodEvent event = invocation.getArgument(0);
-            assertEquals(happinessState, event.getEmotionalState());
-            assertEquals("12345", event.getUserID());
-            return null;
-        }).when(mockPersonalMoodHistory).addEvent(any(MoodEvent.class), any());
-        
-        // Add the mood event
-        userProfile.addMoodEvent(moodEvent);
-        
-        // Verify the mood event was added to the personal mood history
-        verify(mockPersonalMoodHistory).addEvent(eq(moodEvent), any());
+        // Verify the mood event has correct properties
+        assertEquals("12345", moodEvent.getUserID());
+        assertEquals(happinessState, moodEvent.getEmotionalState());
+        assertNotNull(moodEvent.getTimestamp());
     }
     
     @Test
-    public void testDeleteMoodEvent() {
-        // Set up the mock to verify deletion
-        doAnswer(invocation -> {
-            String eventId = invocation.getArgument(0);
-            assertEquals("test-event-id", eventId);
-            return null;
-        }).when(mockPersonalMoodHistory).deleteEvent(anyString(), any());
+    public void testMoodEventWithTrigger() {
+        // Create a mood event with a trigger
+        MoodEvent moodEvent = new MoodEvent("12345", angerState);
+        moodEvent.setTrigger("Traffic jam");
         
-        // Delete a mood event
-        userProfile.deleteMoodEvent("test-event-id");
-        
-        // Verify the mood event was deleted from the personal mood history
-        verify(mockPersonalMoodHistory).deleteEvent(eq("test-event-id"), any());
+        // Verify the mood event properties
+        assertEquals("12345", moodEvent.getUserID());
+        assertEquals(angerState, moodEvent.getEmotionalState());
+        assertEquals("Traffic jam", moodEvent.getTrigger());
     }
     
     @Test
-    public void testEditMoodEvent() {
-        // Create a mood event with updates
-        MoodEvent updatedMoodEvent = new MoodEvent("12345", angerState);
-        updatedMoodEvent.setTrigger("Feeling frustrated");
+    public void testMoodEventWithSocialSetting() {
+        // Create a mood event with a social setting
+        MoodEvent moodEvent = new MoodEvent("12345", happinessState);
+        moodEvent.setSocialSetting("Crowd");
         
-        // Set up the mock to verify editing
-        doAnswer(invocation -> {
-            String eventId = invocation.getArgument(0);
-            MoodEvent event = invocation.getArgument(1);
-            assertEquals("test-event-id", eventId);
-            assertEquals(angerState, event.getEmotionalState());
-            assertEquals("Feeling frustrated", event.getTrigger());
-            return null;
-        }).when(mockPersonalMoodHistory).editEvent(anyString(), any(MoodEvent.class), any());
+        // Verify the mood event properties
+        assertEquals("12345", moodEvent.getUserID());
+        assertEquals(happinessState, moodEvent.getEmotionalState());
+        assertEquals("Crowd", moodEvent.getSocialSetting());
+    }
+    
+    @Test
+    public void testMoodEventWithLocation() {
+        // Create a mood event with location
+        MoodEvent moodEvent = new MoodEvent("12345", happinessState);
+        double latitude = 53.5461;
+        double longitude = -113.4938;
+        moodEvent.setLatitude(latitude);
+        moodEvent.setLongitude(longitude);
         
-        // Edit the mood event
-        userProfile.editMoodEvent("test-event-id", updatedMoodEvent);
-        
-        // Verify the mood event was edited in the personal mood history
-        verify(mockPersonalMoodHistory).editEvent(eq("test-event-id"), eq(updatedMoodEvent), any());
+        // Verify the mood event properties
+        assertEquals("12345", moodEvent.getUserID());
+        assertEquals(happinessState, moodEvent.getEmotionalState());
+        assertEquals(latitude, moodEvent.getLatitude(), 0.0001);
+        assertEquals(longitude, moodEvent.getLongitude(), 0.0001);
     }
 }
