@@ -117,9 +117,10 @@ public class FragmentTests {
 
         onView(withId(R.id.anger_button)).perform(click());
         onView(withId(R.id.alone_button)).perform(click());
+        delay(5);
         onView(withId(R.id.save_mood_button)).perform(click());
 
-        delay(5);
+        delay(3);
 
         onView(withId(R.id.nav_add)).perform(click());
 
@@ -127,6 +128,7 @@ public class FragmentTests {
         onView(withId(R.id.trigger_text))
                 .perform(replaceText("TestMood"));
         onView(withId(R.id.crowd_button)).perform(click());
+        delay(3);
         onView(withId(R.id.save_mood_button)).perform(click());
 
         delay(5);
