@@ -4,7 +4,9 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 //import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -118,7 +120,9 @@ public class FragmentTests {
         onView(withId(R.id.anger_button)).perform(click());
         onView(withId(R.id.alone_button)).perform(click());
         delay(5);
-        onView(withId(R.id.save_mood_button)).perform(click());
+        onView(withId(R.id.save_mood_button))
+                .check(matches(isDisplayed()))
+                .perform(click());
 
         delay(3);
 
@@ -129,7 +133,9 @@ public class FragmentTests {
                 .perform(replaceText("TestMood"));
         onView(withId(R.id.crowd_button)).perform(click());
         delay(3);
-        onView(withId(R.id.save_mood_button)).perform(click());
+        onView(withId(R.id.save_mood_button))
+                .check(matches(isDisplayed()))
+                .perform(click());
 
         delay(5);
 
