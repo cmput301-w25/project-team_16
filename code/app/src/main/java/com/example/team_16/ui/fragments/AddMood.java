@@ -1,6 +1,8 @@
 package com.example.team_16.ui.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -93,7 +95,7 @@ public class AddMood extends Fragment {
 
         // Setup event listeners
         setupMoodSelectionButtons(view);
-        setupSocialSettingButtons();
+        setupSocialSettingButtons(view);
         setupPhotoButtons();
         //setupLocationButton(); // Haven't got to location yet
         setupSaveButton();
@@ -140,12 +142,15 @@ public class AddMood extends Fragment {
 
         for (int i = 0; i < moodButtonIds.length; i++) {
             int index = i;
-            view.findViewById(moodButtonIds[i]).setOnClickListener(v -> {
-                selectedMood = moodNames[index];
-                Toast.makeText(requireContext(), "Selected mood: " + moodNames[index], Toast.LENGTH_SHORT).show();
-
-                // Visual feedback for selection
-                highlightMoodButton(view, moodButtonIds[index]);
+            Button button = view.findViewById(moodButtonIds[i]);
+            button.setOnClickListener(v -> {
+                if (selectedMood != null && selectedMood.equals(moodNames[index])) {
+                    selectedMood = null;
+                    button.setAlpha(0.8f);
+                } else {
+                    selectedMood = moodNames[index];
+                    highlightMoodButton(view, moodButtonIds[index]);
+                }
             });
         }
     }
@@ -174,23 +179,28 @@ public class AddMood extends Fragment {
     /**
      * Sets up click listeners for social setting buttons.
      */
-    private void setupSocialSettingButtons() {
-        aloneButton.setOnClickListener(v -> {
-            socialSetting = "Alone";
-            highlightSocialButton(aloneButton);
-        });
-        onePersonButton.setOnClickListener(v -> {
-            socialSetting = "One Person";
-            highlightSocialButton(onePersonButton);
-        });
-        twoPersonButton.setOnClickListener(v -> {
-            socialSetting = "Two People";
-            highlightSocialButton(twoPersonButton);
-        });
-        crowdButton.setOnClickListener(v -> {
-            socialSetting = "Crowd";
-            highlightSocialButton(crowdButton);
-        });
+    private void setupSocialSettingButtons(View view) {
+        int[] socialButtonIds = {
+                R.id.alone_button, R.id.one_person_button, R.id.two_person_button, R.id.crowd_button
+        };
+
+        String[] socialNames = {
+                "Alone", "One Person", "Two People", "Crowd"
+        };
+
+        for (int i = 0; i < socialButtonIds.length; i++) {
+            int index = i;
+            Button button = view.findViewById(socialButtonIds[i]);
+            button.setOnClickListener(v -> {
+                if (socialSetting != null && socialSetting.equals(socialNames[index])) {
+                    socialSetting = null;
+                    button.setAlpha(0.8f);
+                } else {
+                    socialSetting = socialNames[index];
+                    highlightSocialButton(button);
+                }
+            });
+        }
     }
 
     /**
@@ -349,16 +359,26 @@ public class AddMood extends Fragment {
                 return;
             }
 
-            userProfile.deleteMoodEvent(moodEvent.getId(), success -> {
-                if (success) {
-                    Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
-                    if (getFragmentManager() != null) {
-                        getFragmentManager().popBackStack();
-                    }
-                } else {
-                    Toast.makeText(requireContext(), "Failed to delete mood event.", Toast.LENGTH_SHORT).show();
-                }
-            });
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Mood")
+                    .setMessage("Are you sure you want to delete this mood event?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            userProfile.deleteMoodEvent(moodEvent.getId(), success -> {
+                                if (success) {
+                                    Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
+                                    if (getFragmentManager() != null) {
+                                        getFragmentManager().popBackStack();
+                                    }
+                                } else {
+                                    Toast.makeText(requireContext(), "Failed to delete mood event.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
         });
     }
 }

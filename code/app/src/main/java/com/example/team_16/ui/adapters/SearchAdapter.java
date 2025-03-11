@@ -24,8 +24,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     public interface OnFollowClickListener {
         void onFollowClick(String targetUserId);
+        void onUnfollowClick(String targetUserId); // Add this line
     }
-
     public SearchAdapter(OnFollowClickListener listener) {
         this.followClickListener = listener;
     }
@@ -58,24 +58,37 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         holder.personName.setText(username);
 
         if (followingIds.contains(userId)) {
-            holder.followButton.setText("Following");
-            holder.followButton.setEnabled(false);
-            holder.followButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#AAB8C2")));
+            // UNFOLLOW STATE
+            holder.followButton.setText("Unfollow");
+            holder.followButton.setEnabled(true);
+            holder.followButton.setBackgroundTintList(
+                    ColorStateList.valueOf(Color.parseColor("#FF0000")) // Red
+            );
+            holder.followButton.setOnClickListener(v -> {
+                if (followClickListener != null) {
+                    followClickListener.onUnfollowClick(userId); // Trigger unfollow
+                }
+            });
         } else if (pendingIds.contains(userId)) {
+            // PENDING STATE
             holder.followButton.setText("Pending");
             holder.followButton.setEnabled(false);
-            holder.followButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
+            holder.followButton.setBackgroundTintList(
+                    ColorStateList.valueOf(Color.parseColor("#FF9800")) // Orange
+            );
         } else {
+            // FOLLOW STATE
             holder.followButton.setText("Follow");
             holder.followButton.setEnabled(true);
-            holder.followButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+            holder.followButton.setBackgroundTintList(
+                    ColorStateList.valueOf(Color.parseColor("#4CAF50")) // Green
+            );
+            holder.followButton.setOnClickListener(v -> {
+                if (followClickListener != null) {
+                    followClickListener.onFollowClick(userId); // Trigger follow
+                }
+            });
         }
-
-        holder.followButton.setOnClickListener(v -> {
-            if (followClickListener != null) {
-                followClickListener.onFollowClick(userId);
-            }
-        });
     }
 
 

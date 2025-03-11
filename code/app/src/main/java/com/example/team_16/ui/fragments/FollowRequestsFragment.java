@@ -60,10 +60,9 @@ public class FollowRequestsFragment extends Fragment {
         initViews(view);
         setupRecyclerView();
 
-        // Show Pending by default
-        btnPending.setSelected(true);
-        btnAccepted.setSelected(false);
-        showPendingRequests();
+        btnAccepted.setSelected(true);
+        btnPending.setSelected(false);
+        showAcceptedFollowers();
     }
 
     private void initViews(View view) {
@@ -237,6 +236,7 @@ public class FollowRequestsFragment extends Fragment {
         } else {
             filterAcceptedFollowers(query);
         }
+        checkEmptyState();
     }
 
     private void filterPendingRequests(String query) {
@@ -247,7 +247,7 @@ public class FollowRequestsFragment extends Fragment {
             }
         }
         pendingAdapter.setData(filtered);
-        checkEmptyState();
+        recyclerView.setAdapter(pendingAdapter);
     }
 
     private void filterAcceptedFollowers(String query) {
@@ -258,7 +258,7 @@ public class FollowRequestsFragment extends Fragment {
             }
         }
         acceptedAdapter.setData(filtered);
-        checkEmptyState();
+        recyclerView.setAdapter(acceptedAdapter);
     }
 
     private void checkEmptyState() {
