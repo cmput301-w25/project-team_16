@@ -247,6 +247,7 @@ public class FollowRequestsFragment extends Fragment {
             }
         }
         pendingAdapter.setData(filtered);
+        recyclerView.setAdapter(pendingAdapter); // Set the adapter
         checkEmptyState();
     }
 
@@ -258,6 +259,7 @@ public class FollowRequestsFragment extends Fragment {
             }
         }
         acceptedAdapter.setData(filtered);
+        recyclerView.setAdapter(acceptedAdapter); // Set the adapter
         checkEmptyState();
     }
 
