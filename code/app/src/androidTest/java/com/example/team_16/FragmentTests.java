@@ -93,6 +93,7 @@ public class FragmentTests {
         }
 
         onView(withId(R.id.signUpButton)).perform(click());
+        delay(5);
         onView(withId(R.id.name))
                 .perform(replaceText("TestProfile" + Integer.toString(profileNum)));
         onView(allOf(withId(R.id.username), isDescendantOfA(withId(R.id.signUpContainer))))
@@ -102,6 +103,7 @@ public class FragmentTests {
         onView(allOf(withId(R.id.password), isDescendantOfA(withId(R.id.signUpContainer))))
                 .perform(replaceText("TestProfile" + Integer.toString(profileNum) + "TestProfile" + Integer.toString(profileNum)));
 
+        delay(5);
         onView(allOf(withId(R.id.signUpButton), isDescendantOfA(withId(R.id.signUpContainer)))).perform(click());
 
         delay(5);
@@ -113,7 +115,7 @@ public class FragmentTests {
 
         onView(allOf(withId(R.id.loginButton), isDescendantOfA(withId(R.id.loginLinear)))).perform(click());
 
-        delay(5);
+        delay(15);
 
         onView(withId(R.id.nav_add)).perform(click());
 
@@ -126,6 +128,7 @@ public class FragmentTests {
 
         delay(3);
 
+        delay(15);
         onView(withId(R.id.nav_add)).perform(click());
 
         onView(withId(R.id.happiness_button)).perform(click());
@@ -181,15 +184,14 @@ public class FragmentTests {
         activityRule =
                 new ActivityScenarioRule<>(MainActivity.class);
 
+        delay(5);
         onView(allOf(withId(R.id.username), isDescendantOfA(withId(R.id.loginLinear))))
                 .perform(replaceText("Test2"));
         onView(allOf(withId(R.id.password), isDescendantOfA(withId(R.id.loginLinear))))
                 .perform(replaceText("test2test2"));
 
-        onView(allOf(withId(R.id.loginButton), isDescendantOfA(withId(R.id.loginLinear)))).perform(click());
-
         delay(5);
-
+        onView(allOf(withId(R.id.loginButton), isDescendantOfA(withId(R.id.loginLinear)))).perform(click());
         delay(30);
 
         db.collection("following").document("bgoJmto3W3SB8WRzJQSl0B2t7M63")
