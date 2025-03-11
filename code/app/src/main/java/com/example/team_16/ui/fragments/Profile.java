@@ -39,7 +39,6 @@ import java.util.List;
  * Profile fragment that displays the user's profile along with its mood feed
  */
 public class Profile extends Fragment {
-
     private TextView username;
     private TextView userHandle;
     private TextView followingStats;

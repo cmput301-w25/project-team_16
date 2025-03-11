@@ -32,7 +32,6 @@ import java.util.Map;
 public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
     private Context context;
     private List<MoodEvent> moodEvents;
-
     private OnItemClickListener listener;
 
     /**
