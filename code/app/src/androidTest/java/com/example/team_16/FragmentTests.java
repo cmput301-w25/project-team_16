@@ -170,6 +170,9 @@ public class FragmentTests {
     @Test
     public void t2showMoodEventsThroughExistingFollowingUser() {
 
+        activityRule =
+                new ActivityScenarioRule<>(MainActivity.class);
+
         onView(allOf(withId(R.id.username), isDescendantOfA(withId(R.id.loginLinear))))
                 .perform(replaceText("Test2"));
         onView(allOf(withId(R.id.password), isDescendantOfA(withId(R.id.loginLinear))))
@@ -179,9 +182,6 @@ public class FragmentTests {
 
         delay(5);
 
-        activityRule.getScenario().onActivity(activity -> {
-            Toast.makeText(activity, "Click on a mood to check MoodDetails", Toast.LENGTH_SHORT).show();
-        });
         delay(30);
 
         db.collection("following").document("bgoJmto3W3SB8WRzJQSl0B2t7M63")
