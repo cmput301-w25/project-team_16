@@ -387,25 +387,44 @@ public class FirebaseDB {
      * Add user to following list
      */
     private void addToFollowing(String followerId, String followedId, FirebaseCallback<Boolean> callback) {
-        db.collection(FOLLOWING_COLLECTION).document(followerId)
-                .get()
+        // Get reference to the document
+        DocumentReference followingRef = db.collection(FOLLOWING_COLLECTION).document(followerId);
+
+        followingRef.get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    List<String> following = (List<String>) documentSnapshot.get("following");
-                    if (following == null) {
-                        following = new ArrayList<>();
-                    }
+                    // Check if document exists
+                    if (!documentSnapshot.exists()) {
+                        // Create new document with initial following list if it doesn't exist
+                        List<String> newFollowing = new ArrayList<>();
+                        newFollowing.add(followedId);
 
-                    if (!following.contains(followedId)) {
-                        following.add(followedId);
-                    }
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("following", newFollowing);
 
-                    db.collection(FOLLOWING_COLLECTION).document(followerId)
-                            .update("following", following)
-                            .addOnSuccessListener(aVoid -> callback.onCallback(true))
-                            .addOnFailureListener(e -> {
-                                Log.e("FirebaseDB", "Error updating following list", e);
-                                callback.onCallback(false);
-                            });
+                        followingRef.set(data)
+                                .addOnSuccessListener(aVoid -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e("FirebaseDB", "Error creating following document", e);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        // Document exists, update existing following list
+                        List<String> following = (List<String>) documentSnapshot.get("following");
+                        if (following == null) {
+                            following = new ArrayList<>();
+                        }
+
+                        if (!following.contains(followedId)) {
+                            following.add(followedId);
+                        }
+
+                        followingRef.update("following", following)
+                                .addOnSuccessListener(aVoid -> callback.onCallback(true))
+                                .addOnFailureListener(e -> {
+                                    Log.e("FirebaseDB", "Error updating following list", e);
+                                    callback.onCallback(false);
+                                });
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error retrieving following list", e);

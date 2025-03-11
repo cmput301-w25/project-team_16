@@ -24,6 +24,7 @@ public class MoodEvent {
     private String trigger;
 
     /** The emotional state recorded for this mood event (required) */
+
     private EmotionalState emotionalState;
 
     /** Reference to the user who created this mood event */
