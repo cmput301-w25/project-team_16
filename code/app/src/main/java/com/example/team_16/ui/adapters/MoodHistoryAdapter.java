@@ -26,10 +26,28 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * Adapter responsible for displaying and updating recyclerView of mood events
+ */
 public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
     private Context context;
     private List<MoodEvent> moodEvents;
+
+    private OnItemClickListener listener;
+
+    /**
+     * Interface for item clicks
+     */
+    public interface OnItemClickListener {
+        void onItemClick(MoodEvent event);
+    }
+
+    /**
+     * Listener for mood event item clicks
+     */
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
 
     public MoodHistoryAdapter(Context context, List<MoodEvent> moodEvents) {
         this.context = context;
