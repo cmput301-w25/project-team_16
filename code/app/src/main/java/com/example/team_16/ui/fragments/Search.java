@@ -119,4 +119,17 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
             }
         });
     }
+    @Override
+    public void onUnfollowClick(String targetUserId) {
+        currentUser.unfollowUser(targetUserId, success -> {
+            if (success) {
+                currentUser.refreshFollowData(() -> {
+                    updateAdapterLists();
+                    Toast.makeText(getContext(), "Unfollowed successfully", Toast.LENGTH_SHORT).show();
+                });
+            } else {
+                Toast.makeText(getContext(), "Failed to unfollow", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }
