@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="@drawable/gradient_shape"
         android:padding="11dp">
 
         <ImageView
@@ -55,9 +56,9 @@
             android:id="@+id/button_remove"
             android:layout_width="100dp"
             android:layout_height="38dp"
-            android:background="@drawable/button_remove"
+            android:background="@drawable/unfollow_button_bg"
             android:text="@string/remove"
-            android:textColor="#FFFFFF"
+            android:textColor="#FF0000"
             app:backgroundTint="@null" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

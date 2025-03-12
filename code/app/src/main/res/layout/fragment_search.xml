@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <!-- Search Bar -->
+    <!-- Search Bar (Fixed at Top) -->
     <LinearLayout
+        android:id="@+id/searchBarContainer"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:orientation="horizontal"
         android:layout_marginTop="16dp"
         android:layout_marginHorizontal="16dp"
         android:gravity="center_vertical"
         android:background="@drawable/search_bar"
-        android:elevation="4dp">
+        android:elevation="4dp"
+        android:orientation="horizontal">
 
         <ImageView
             android:layout_width="24dp"
@@ -40,26 +40,31 @@
             android:gravity="center_vertical"/>
     </LinearLayout>
 
-    <!-- RecyclerView for displaying people -->
+    <!-- RecyclerView (Scrolls independently) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/peopleRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_below="@id/searchBarContainer"
         android:overScrollMode="never"
         android:scrollbars="vertical"
-        android:layout_marginTop="23dp"
+        android:layout_marginTop="16dp"
         android:padding="5dp"/>
 
-    <!-- Empty State TextView -->
+    <!-- Centered Message When No Search Input -->
     <TextView
-        android:id="@+id/emptyStateTextView"
+        android:id="@+id/noSearchMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No users found"
+        android:layout_centerInParent="true"
         android:gravity="center"
-        android:visibility="gone"
-        android:textColor="#000000"
-        android:textSize="16sp"/>
-</LinearLayout>
+        android:visibility="visible"
+        android:text="👀\nStart typing to search for users"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        android:textColor="#808080"
+        android:lineSpacingExtra="8dp"/>
+</RelativeLayout>
+
+
 
