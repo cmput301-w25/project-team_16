@@ -2,11 +2,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mood_frame"
     android:layout_width="match_parent"
-    android:layout_height="235dp">
-    <!--
+    android:layout_height="200dp"
     tools:context=".ui.fragments.MoodDetails">
-    -->
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -17,195 +16,183 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginTop="70dp"
             android:layout_marginEnd="12dp"
-            android:layout_marginBottom="70dp"
+            android:background="@drawable/gradient_shape"
             android:elevation="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
-        <!--
-        android:background="@drawable/gradient_shape"
-        -->
 
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/constraintLayout"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteX="-1dp">
-
-            <!--
-               app:srcCompat="@drawable/gradient_shape_2" />
-               -->
-
-            <ImageView
-                android:id="@+id/gradient_top"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraintLayout"
                 android:layout_width="match_parent"
-                android:layout_height="108dp"
+                android:layout_height="60dp"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:layout_editor_absoluteX="0dp" />
+                tools:layout_editor_absoluteX="-1dp">
+
+                <ImageView
+                    android:id="@+id/gradient_top"
+                    android:layout_width="match_parent"
+                    android:layout_height="108dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/gradient_shape_2" />
+
+                <TextView
+                    android:id="@+id/moodView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="40dp"
+                    android:layout_marginTop="2dp"
+                    android:text="Happy"
+                    android:textColor="#9E6F32"
+                    android:textSize="19sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/emojiView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="😊"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/moodView"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.555" />
+
+                <TextView
+                    android:id="@+id/timeView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:text="- 1 hour ago"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp"
+                    android:textStyle="normal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profilePicture"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="13dp"
+                android:layout_marginTop="6dp"
+                android:scaleType="centerCrop"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                app:shapeAppearanceOverlay="@style/CircularImageViewStyle"
+                app:srcCompat="@android:drawable/sym_def_app_icon" />
 
             <TextView
-               android:id="@+id/moodView"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:layout_marginStart="40dp"
-               android:layout_marginTop="2dp"
-               android:text="Happy"
-               android:textColor="#9E6F32"
-               android:textSize="19sp"
-               android:textStyle="bold"
-               app:layout_constraintBottom_toBottomOf="parent"
-               app:layout_constraintStart_toStartOf="parent"
-               app:layout_constraintTop_toTopOf="parent"
-               />
+                android:id="@+id/fullNameView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="13dp"
+                android:layout_marginTop="8dp"
+                android:text="First Last"
+                android:textColor="#000000"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/profilePicture"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
 
-           <TextView
-               android:id="@+id/emojiView"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:layout_marginStart="16dp"
-               android:text="😊"
-               android:textSize="22sp"
-               android:textStyle="bold"
-               app:layout_constraintBottom_toBottomOf="parent"
-               app:layout_constraintEnd_toStartOf="@+id/moodView"
-               app:layout_constraintStart_toStartOf="parent"
-               app:layout_constraintTop_toTopOf="parent"
-               app:layout_constraintVertical_bias="0.555" />
+            <TextView
+                android:id="@+id/profileUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="-@username"
+                android:textColor="#888888"
+                android:textSize="12sp"
+                android:textStyle="normal"
+                app:layout_constraintStart_toEndOf="@+id/profilePicture"
+                app:layout_constraintTop_toBottomOf="@+id/fullNameView" />
 
-           <TextView
-               android:id="@+id/timeView"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:layout_marginEnd="16dp"
-               android:text="- 1 hour ago"
-               android:textColor="#FFFFFF"
-               android:textSize="12sp"
-               android:textStyle="normal"
-               app:layout_constraintBottom_toBottomOf="parent"
-               app:layout_constraintEnd_toEndOf="parent"
-               app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/withAmountView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="19dp"
+                android:layout_marginEnd="14dp"
+                android:text="With: # Of People"
+                android:textColor="#A9772B"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
 
+            <TextView
+                android:id="@+id/postTime"
+                android:layout_width="358dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="13dp"
+                android:layout_marginBottom="10dp"
+                android:text="06:50  2025-03-02  Vancouver, BC"
+                android:textColor="#555555"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/moodImage" />
 
-       </androidx.constraintlayout.widget.ConstraintLayout>
-
-       <com.google.android.material.imageview.ShapeableImageView
-           android:id="@+id/profilePicture"
-           android:layout_width="40dp"
-           android:layout_height="40dp"
-           android:layout_marginStart="13dp"
-           android:layout_marginTop="6dp"
-           android:scaleType="centerCrop"
-           app:layout_constraintStart_toStartOf="parent"
-           app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
-           app:shapeAppearanceOverlay="@style/roundedImageView_20"
-           app:srcCompat="@android:drawable/sym_def_app_icon" />
-
-       <TextView
-           android:id="@+id/fullNameView"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_marginStart="13dp"
-           android:layout_marginTop="8dp"
-           android:text="First Last"
-           android:textColor="#000000"
-           android:textSize="15sp"
-           android:textStyle="bold"
-           app:layout_constraintStart_toEndOf="@+id/profilePicture"
-           app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
-
-       <TextView
-           android:id="@+id/profileUsername"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_marginStart="12dp"
-           android:text="-@username"
-           android:textColor="#888888"
-           android:textSize="12sp"
-           android:textStyle="normal"
-           app:layout_constraintStart_toEndOf="@+id/profilePicture"
-           app:layout_constraintTop_toBottomOf="@+id/fullNameView" />
-
-       <TextView
-           android:id="@+id/withAmountView"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_marginTop="19dp"
-           android:layout_marginEnd="14dp"
-           android:layout_marginBottom="36dp"
-           android:text="With: # Of People"
-           android:textColor="#A9772B"
-           android:textSize="13sp"
-           android:textStyle="bold"
-           app:layout_constraintBottom_toTopOf="@+id/moodImage"
-           app:layout_constraintEnd_toEndOf="parent"
-           app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
-
-       <TextView
-           android:id="@+id/postTime"
-           android:layout_width="358dp"
-           android:layout_height="22dp"
-           android:layout_marginStart="13dp"
-           android:layout_marginBottom="10dp"
-           android:text="06:50  2025-03-02  Vancouver, BC"
-           android:textColor="#555555"
-           android:textSize="15sp"
-           android:textStyle="bold"
-           android:visibility="gone"
-           app:layout_constraintBottom_toBottomOf="parent"
-           app:layout_constraintStart_toStartOf="parent"
-           app:layout_constraintTop_toBottomOf="@+id/moodImage" />
-
-       <TextView
-           android:id="@+id/moodDescription"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_marginStart="13dp"
-           android:layout_marginTop="6dp"
-           android:text="Text (20 Characters)"
-           android:textColor="#C15837"
-           android:textSize="15sp"
-           android:textStyle="bold"
-           app:layout_constraintStart_toStartOf="parent"
-           app:layout_constraintTop_toBottomOf="@+id/profileUsername" />
+            <TextView
+                android:id="@+id/moodDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="13dp"
+                android:layout_marginTop="6dp"
+                android:text="Text (20 Characters)"
+                android:textColor="#C15837"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/profileUsername" />
 
 
-       <TextView
-           android:id="@+id/moodDescription2"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_marginStart="13dp"
-           android:layout_marginTop="4dp"
-           android:layout_marginBottom="20dp"
-           android:textColor="#C15837"
-           android:textSize="13sp"
-           android:textStyle="bold"
-           app:layout_constraintBottom_toTopOf="@+id/postTime"
-           app:layout_constraintStart_toStartOf="parent"
-           app:layout_constraintTop_toBottomOf="@+id/profileUsername" />
+            <TextView
+                android:id="@+id/moodDescription2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="13dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="20dp"
+                android:textColor="#C15837"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/postTime"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/profileUsername" />
 
-       <com.google.android.material.imageview.ShapeableImageView
-           android:id="@+id/moodImage"
-           android:layout_width="359dp"
-           android:layout_height="319dp"
-           android:layout_marginStart="12dp"
-           android:layout_marginEnd="12dp"
-           android:layout_marginBottom="14dp"
-           android:scaleType="centerCrop"
-           android:visibility="gone"
-           app:layout_constraintBottom_toBottomOf="parent"
-           app:layout_constraintEnd_toEndOf="parent"
-           app:layout_constraintStart_toStartOf="parent"
-           app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
-           app:shapeAppearanceOverlay="@style/roundedImageView_40"
-           tools:srcCompat="@tools:sample/backgrounds/scenic" />
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/moodImage"
+                android:layout_width="359dp"
+                android:layout_height="319dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="14dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                app:shapeAppearanceOverlay="@style/RoundedImageViewStyle"
+                tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
 
-   </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
