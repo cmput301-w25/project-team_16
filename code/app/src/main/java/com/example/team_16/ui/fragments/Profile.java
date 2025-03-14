@@ -1,9 +1,13 @@
 package com.example.team_16.ui.fragments;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,21 +21,30 @@ import android.widget.Toast;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
+import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
+import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.PersonalMoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
+import com.example.team_16.ui.adapters.FeedAdapter;
 import com.example.team_16.ui.adapters.MoodHistoryAdapter;
+import com.google.firebase.Timestamp;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
+/**
+ * Profile fragment that displays the user's profile along with its mood feed
+ */
 public class Profile extends Fragment {
-
     private TextView username;
     private TextView userHandle;
     private TextView followingStats;
     private TextView followersStats;
     private UserProfile userProfile;
+    private List<MoodEvent> moodEvents;
     private MoodHistoryAdapter adapter;
     private RecyclerView moodHistoryRecyclerView;
 
@@ -42,10 +55,16 @@ public class Profile extends Fragment {
     public static Profile newInstance() {
         return new Profile();
     }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
+
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
@@ -59,90 +78,65 @@ public class Profile extends Fragment {
             requireActivity().finish();
             return;
         }
-
-        initializeViews(view);
-        setupMoodHistoryRecyclerView();
-        setupProfileInfo();
-        setupClickListeners();
-        refreshCounts(); // Refresh counts when the fragment is created
-    }
-
-    private void initializeViews(View view) {
-        username = view.findViewById(R.id.userName);
-        userHandle = view.findViewById(R.id.userHandle);
-        followingStats = view.findViewById(R.id.followingStats);
-        followersStats = view.findViewById(R.id.followersStats);
-        moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
-    }
-
-    private void setupMoodHistoryRecyclerView() {
         PersonalMoodHistory personalMoodHistory = userProfile.getPersonalMoodHistory();
         List<MoodEvent> events = personalMoodHistory.getAllEvents();
+        moodEvents = events;
 
+        moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView); // Use the class-level variable
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         moodHistoryRecyclerView.setNestedScrollingEnabled(true);
 
+        // Initialize the adapter using the class-level field, and set it to the RecyclerView
         adapter = new MoodHistoryAdapter(getContext(), events);
         moodHistoryRecyclerView.setAdapter(adapter);
 
-        adapter.setOnItemClickListener(event -> {
-            MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, moodDetailsFragment)
-                    .addToBackStack(null)
-                    .commit();
+        adapter.setOnItemClickListener(new MoodHistoryAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(MoodEvent event) {
+                MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, moodDetailsFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
         });
-    }
-
-    private void setupProfileInfo() {
+        username = view.findViewById(R.id.userName);
         username.setText(userProfile.getFullName());
+
+        userHandle = view.findViewById(R.id.userHandle);
         userHandle.setText(userProfile.getUsername());
-    }
 
-    private void setupClickListeners() {
-        followersStats.setOnClickListener(v -> {
-            ((HomeActivity) requireActivity()).navigateToFragment(
-                    new FollowRequestsFragment(),
-                    "Follow Requests"
-            );
-        });
+        followingStats = view.findViewById(R.id.followingStats);
+        followingStats.setText(userProfile.getUserFollowing().size() + " Following");
 
-        followingStats.setOnClickListener(v -> {
-            ((HomeActivity) requireActivity()).navigateToFragment(
-                    new FollowingFragment(),
-                    "Following"
-            );
-        });
-    }
+        followersStats = view.findViewById(R.id.followersStats);
 
-    private void refreshCounts() {
-        // Refresh followers count
-        FirebaseDB.getInstance(requireContext()).getFollowersOfUser(userProfile.getId(), followers -> {
-            if (followers != null) {
-                followersStats.setText(followers.size() + " Followers");
-            } else {
-                followersStats.setText("0 Followers");
-                Log.e("Profile", "Failed to fetch followers");
+        userProfile.getFollowingList(new FirebaseDB.FirebaseCallback<List<String>>() {
+            @Override
+            public void onCallback(List<String> followingList) {
+                if (followingList != null && !followingList.isEmpty()) {
+                    followersStats.setText(followingList.size() + " Followers");
+                } else {
+                    followersStats.setText("0 Followers");
+                }
             }
         });
 
-        // Refresh following count
-        FirebaseDB.getInstance(requireContext()).getFollowingList(userProfile.getId(), following -> {
-            if (following != null) {
-                followingStats.setText(following.size() + " Following");
-            } else {
-                followingStats.setText("0 Following");
-                Log.e("Profile", "Failed to fetch following list");
+        followersStats.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((HomeActivity) requireActivity()).navigateToFragment(
+                        new FollowRequestsFragment(),
+                        "Follow Requests"
+                );
             }
         });
     }
-
     @Override
     public void onResume() {
         super.onResume();
         ((HomeActivity) requireActivity()).setToolbarTitle("Profile");
-        refreshCounts(); // Refresh counts every time the fragment is resumed
     }
 }
 

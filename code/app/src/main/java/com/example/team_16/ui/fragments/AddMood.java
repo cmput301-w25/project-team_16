@@ -7,12 +7,16 @@ import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,6 +41,7 @@ public class AddMood extends Fragment {
     private UserProfile userProfile;
 
     private EditText triggerInput;
+    private TextView triggerCounter;
     private Button saveMoodButton, deleteMoodButton, takePhotoButton, choosePhotoButton, addLocationButton;
     private Button aloneButton, onePersonButton, twoPersonButton, crowdButton;
     private Uri selectedPhotoUri;
@@ -79,8 +84,8 @@ public class AddMood extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // UI Elements
         triggerInput = view.findViewById(R.id.trigger_text);
+        triggerCounter = view.findViewById(R.id.trigger_counter);
         saveMoodButton = view.findViewById(R.id.save_mood_button);
         deleteMoodButton = view.findViewById(R.id.delete_entry_button);
         takePhotoButton = view.findViewById(R.id.take_photo_button);
@@ -108,6 +113,32 @@ public class AddMood extends Fragment {
         } else {
             deleteMoodButton.setVisibility(View.GONE);
         }
+
+        updateTriggerCounter(triggerCounter, triggerInput.getText().toString());
+
+        triggerInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateTriggerCounter(triggerCounter, s.toString());
+
+                if (s.length() > 20) {
+                    triggerInput.setText(s.subSequence(0, 20));
+                    triggerInput.setSelection(20);  // Set cursor position at the end
+
+                    // Show error message
+                    triggerInput.setError("Maximum 20 characters allowed.");
+                } else {
+                    // Clear the error message if the input is within the limit
+                    triggerInput.setError(null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     /**
@@ -225,6 +256,49 @@ public class AddMood extends Fragment {
         highlightMoodButton(getView(), getMoodButtonId(selectedMood));
         highlightSocialButton(getSocialButton(socialSetting));
     }
+
+    /**
+     * Updates the UI with remaining character and word count.
+     */
+    private void updateTriggerCounter(TextView counterView, String text) {
+        int charRemaining = 20 - text.length();
+        int wordCount = text.trim().isEmpty() ? 0 : text.trim().split("\\s+").length;
+        int wordRemaining = 3 - wordCount;
+
+        // Ensure it doesn't show negative values
+        charRemaining = Math.max(charRemaining, 0);
+        wordRemaining = Math.max(wordRemaining, 0);
+
+        counterView.setText(charRemaining + " characters left | " + wordRemaining + " words left");
+    }
+    /**
+     * Validates the trigger input for character length and word count.
+     */
+    private void validateTriggerInput() {
+        String text = triggerInput.getText().toString().trim();
+        int charCount = text.length();
+        int wordCount = text.isEmpty() ? 0 : text.split("\\s+").length;
+
+        if (charCount > 20) {
+            triggerInput.setError("Maximum 20 characters allowed.");
+        } else if (wordCount > 3) {
+            triggerInput.setError("Maximum 3 words allowed.");
+        } else {
+            triggerInput.setError(null); // Clear error when valid
+        }
+
+        updateTriggerCounter(triggerCounter, text);
+    }
+
+    /**
+     * Resets the input field when the form is reset.
+     */
+    private void resetForm() {
+        triggerInput.setText("");  // Clear input field
+        triggerInput.setError(null); // Clear any validation errors
+        triggerCounter.setText("20 characters left | 3 words left");
+    }
+
 
     private int getMoodButtonId(String moodName) {
         switch (moodName) {

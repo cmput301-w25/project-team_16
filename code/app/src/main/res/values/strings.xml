@@ -96,5 +96,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="no_following">You\'re not following anyone yet</string>
     <string name="filter">Filter</string>
+    <string name="_20_characters_left_3_words_left">20 characters left | 3 words left</string>
 
 </resources>
