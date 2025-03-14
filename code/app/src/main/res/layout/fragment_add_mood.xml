@@ -114,11 +114,19 @@
             android:id="@+id/trigger_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:layout_marginBottom="16dp"
-            android:hint="@string/word_limit_text"
+            android:layout_marginBottom="8dp"
+            android:hint="Why? (Optional)"
             android:inputType="text"
-            android:maxLength="20" />
+             />
+
+        <TextView
+            android:id="@+id/trigger_counter"
+            android:layout_width="232dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/_20_characters_left_3_words_left"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp" />
 
         <!-- Who were you with? -->
         <TextView
