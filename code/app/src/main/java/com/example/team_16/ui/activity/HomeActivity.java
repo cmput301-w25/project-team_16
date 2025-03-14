@@ -3,6 +3,7 @@ package com.example.team_16.ui.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +19,7 @@ import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.fragments.AddMood;
 import com.example.team_16.ui.fragments.Feed;
+import com.example.team_16.ui.fragments.FilterableFragment;
 import com.example.team_16.ui.fragments.Maps;
 import com.example.team_16.ui.fragments.Profile;
 import com.example.team_16.ui.fragments.Search;
@@ -29,6 +31,8 @@ public class HomeActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
     private androidx.appcompat.widget.Toolbar toolbar;
+    private ImageView filterIcon;
+    private TextView toolbarTitle;
     private boolean isNavigatingFragments = false;
 
     @Override
@@ -36,83 +40,61 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        // Enable edge-to-edge layout
         EdgeToEdge.enable(this);
 
-        // Get the user profile from application
+        // Check for a valid user session
         UserProfile userProfile = ((MoodTrackerApp) getApplication()).getCurrentUserProfile();
-
-        // Check if user profile exists
         if (userProfile == null) {
-            // No valid user session, redirect to login
             Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, MainActivity.class));
             finish();
             return;
         }
 
-        // Setup toolbar
+        // Initialize toolbar
+        initializeToolbar();
+
+        // Set up bottom navigation
+        setupNavigation(savedInstanceState);
+
+        // Handle back press logic
+        setupBackPressHandling();
+    }
+
+    /**
+     * Initialize and configure the toolbar, including the filter icon.
+     */
+    private void initializeToolbar() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Hide the default title
+        // Hide the default ActionBar title
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        // Find the custom TextView and use it for the title
-        TextView toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
+
+        // Custom title TextView
+        toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
         toolbarTitle.setText("Feed");
 
-        // Only show back button when we have fragments in back stack
+        // Filter icon
+        filterIcon = toolbar.findViewById(R.id.filter_icon);
+        filterIcon.setOnClickListener(v -> handleFilterClick());
+
+        // Update back button visibility based on fragments in the back stack
         updateBackButtonVisibility();
 
-        // Handle back button clicks
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getOnBackPressedDispatcher().onBackPressed();
-            }
-        });
+        // If the toolbar's back arrow is clicked, call onBackPressedDispatcher
+        toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+    }
 
-        // Register back callback (instead of overriding onBackPressed)
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // Check if we have any fragments in the back stack
-                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                    // Pop the fragment from the back stack
-                    getSupportFragmentManager().popBackStack();
-                } else if (isNavigatingFragments) {
-                    // If we're in a bottom navigation fragment and there's nothing in back stack,
-                    // return to the Feed tab instead of closing app
-                    if (bottomNavigationView.getSelectedItemId() != R.id.nav_feed) {
-                        bottomNavigationView.setSelectedItemId(R.id.nav_feed);
-                    } else {
-                        // We're already at the Feed tab, so proceed with normal back behavior
-                        this.setEnabled(false);
-                        getOnBackPressedDispatcher().onBackPressed();
-                        this.setEnabled(true);
-                    }
-                } else {
-                    // No fragments in back stack, normal back behavior
-                    this.setEnabled(false);
-                    getOnBackPressedDispatcher().onBackPressed();
-                    this.setEnabled(true);
-                }
-            }
-        });
-
-        // Add a back stack listener to update back button visibility
-        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                updateBackButtonVisibility();
-            }
-        });
-
-        // Initialize bottom navigation
+    /**
+     * Set up the bottom navigation with fragment switching.
+     */
+    private void setupNavigation(Bundle savedInstanceState) {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
             Fragment selectedFragment = null;
             String title = "";
-
-            int itemId = item.getItemId();
 
             if (itemId == R.id.nav_feed) {
                 selectedFragment = new Feed();
@@ -132,56 +114,125 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             if (selectedFragment != null) {
-                // Set activity title
-                toolbarTitle.setText(title);
-
-                // Mark that we're handling navigation ourselves
-                isNavigatingFragments = true;
-
-                // Clear the back stack when navigating to a main tab
-                clearBackStack();
-
-                // Replace the fragment without adding to back stack
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, selectedFragment)
-                        .commit();
+                handleNavigation(selectedFragment, title, itemId);
                 return true;
             }
-
             return false;
         });
 
-        // Set default selection to Feed if this is the first creation
+        // Default to Feed tab on first load
         if (savedInstanceState == null) {
             bottomNavigationView.setSelectedItemId(R.id.nav_feed);
         }
     }
 
     /**
-     * Clear the entire back stack
+     * Replace the current fragment with the selected one, clearing the back stack since these are main tabs.
+     */
+    private void handleNavigation(Fragment fragment, String title, int itemId) {
+        toolbarTitle.setText(title);
+        isNavigatingFragments = true;
+
+        // Clear any back stack entries when switching main tabs
+        clearBackStack();
+
+        // Replace without adding to back stack for main tabs
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
+
+        // Show or hide the filter icon depending on the selected tab
+        updateFilterIconVisibility(itemId);
+    }
+
+    /**
+     * Handle back press logic with custom behavior for bottom navigation.
+     */
+    private void setupBackPressHandling() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                FragmentManager fm = getSupportFragmentManager();
+                if (fm.getBackStackEntryCount() > 0) {
+                    // If there's something in the back stack, pop it
+                    fm.popBackStack();
+                } else if (isNavigatingFragments) {
+                    // If we're in a bottom nav tab with no back stack, go to 'Feed' if not on it
+                    if (bottomNavigationView.getSelectedItemId() != R.id.nav_feed) {
+                        bottomNavigationView.setSelectedItemId(R.id.nav_feed);
+                    } else {
+                        finish();
+                    }
+                } else {
+                    finish();
+                }
+            }
+        });
+
+        // Listen for back stack changes so we can update the toolbar/back arrow/filter icon
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            updateBackButtonVisibility();
+            updateFilterIconFromCurrentFragment();
+        });
+    }
+
+    /**
+     * Show/hide the filter icon based on which bottom nav item is selected.
+     */
+    private void updateFilterIconVisibility(int itemId) {
+        // Example: show filter on these tabs only
+        boolean showFilter = (itemId == R.id.nav_feed
+                || itemId == R.id.nav_maps
+                || itemId == R.id.nav_profile);
+
+        filterIcon.setVisibility(showFilter ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Show/hide the filter icon based on the current visible fragment (in case we navigate via back stack).
+     */
+    private void updateFilterIconFromCurrentFragment() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (currentFragment instanceof FilterableFragment) {
+            // Show filter icon if fragment implements FilterableFragment
+            filterIcon.setVisibility(View.VISIBLE);
+        } else {
+            filterIcon.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * When the user clicks the filter icon, call onFilterClicked() of the current fragment if it implements FilterableFragment.
+     */
+    private void handleFilterClick() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (currentFragment instanceof FilterableFragment) {
+            ((FilterableFragment) currentFragment).onFilterClicked();
+        }
+    }
+
+    /**
+     * Clear the entire fragment back stack.
      */
     private void clearBackStack() {
         FragmentManager manager = getSupportFragmentManager();
         if (manager.getBackStackEntryCount() > 0) {
-            FragmentManager.BackStackEntry first = manager.getBackStackEntryAt(0);
-            manager.popBackStack(first.getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
     }
 
-    // Update back button visibility based on back stack
+    /**
+     * Update the toolbar back arrow based on back stack count.
+     */
     private void updateBackButtonVisibility() {
-        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-            // We have fragments in back stack, show back button
-            Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        } else {
-            // No fragments in back stack, hide back button
-            Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
-            getSupportActionBar().setDisplayShowHomeEnabled(false);
-        }
+        boolean canGoBack = (getSupportFragmentManager().getBackStackEntryCount() > 0);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(canGoBack);
+        getSupportActionBar().setDisplayShowHomeEnabled(canGoBack);
     }
 
-    // Use this method to navigate to a different fragment that should be added to back stack
+    /**
+     * Navigate to another fragment and add it to the back stack (will show the back arrow).
+     */
     public void navigateToFragment(Fragment fragment, String title) {
         setToolbarTitle(title);
         getSupportFragmentManager().beginTransaction()
@@ -190,49 +241,58 @@ public class HomeActivity extends AppCompatActivity {
                 .commit();
     }
 
-    // Method to programmatically select a navigation item
+    /**
+     * Programmatically set the selected bottom navigation item.
+     */
     public void setSelectedNavItem(int itemId) {
         bottomNavigationView.setSelectedItemId(itemId);
     }
 
-    // Logout method (can be called from fragments)
+    /**
+     * Log out the user and go back to the login screen.
+     */
     public void logout() {
-        // Clear user profile from app
+        // Clear the user profile
         ((MoodTrackerApp) getApplication()).clearCurrentUserProfile();
-
-        // Log out from Firebase
         FirebaseDB.getInstance(this).logout();
 
-        // Return to login screen
+        // Return to MainActivity (Login screen)
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
 
-    // Method to hide the toolbar
+    /**
+     * Hide the toolbar entirely.
+     */
     public void hideToolbar() {
         if (toolbar.getVisibility() == View.VISIBLE) {
             toolbar.setVisibility(View.GONE);
         }
     }
 
-    // Method to show the toolbar
+    /**
+     * Show the toolbar if it was hidden.
+     */
     public void showToolbar() {
         if (toolbar.getVisibility() == View.GONE) {
             toolbar.setVisibility(View.VISIBLE);
         }
     }
 
-    // Method to change toolbar title
+    /**
+     * Update the toolbar title text.
+     */
     public void setToolbarTitle(String title) {
-        if (toolbar != null) {
-            TextView toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
+        if (toolbar != null && toolbarTitle != null) {
             toolbarTitle.setText(title);
         }
     }
 
-    // Method to customize toolbar visibility
+    /**
+     * Control toolbar visibility directly.
+     */
     public void setToolbarVisibility(boolean isVisible) {
         toolbar.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
