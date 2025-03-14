@@ -40,10 +40,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
     }
-
-    /**
-     * Listener for mood event item clicks
-     */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }

@@ -35,6 +35,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
 /**
  * Profile fragment that displays the user's profile along with its mood feed
  */
@@ -55,12 +57,7 @@ public class Profile extends Fragment {
     public static Profile newInstance() {
         return new Profile();
     }
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
-
-    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -78,7 +75,7 @@ public class Profile extends Fragment {
             requireActivity().finish();
             return;
         }
-        PersonalMoodHistory personalMoodHistory = userProfile.getPersonalMoodHistory();
+        MoodHistory personalMoodHistory = userProfile.getFollowingMoodHistory();
         List<MoodEvent> events = personalMoodHistory.getAllEvents();
         moodEvents = events;
 
