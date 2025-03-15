@@ -6,9 +6,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.team_16.MoodTrackerApp;
@@ -16,24 +13,27 @@ import com.example.team_16.R;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
+import com.example.team_16.ui.activity.HomeActivity;
 import com.example.team_16.ui.adapters.FeedAdapter;
+import android.view.View;
+import android.view.ViewGroup;
+import android.text.TextUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
-/**
- * Feed fragment that displays the user's mood feed.
- * Implements FilterableFragment so the HomeActivity can invoke onFilterClicked()
- */
-public class Feed extends Fragment implements FilterableFragment {
+public class Feed extends Fragment implements FilterableFragment, FilterFragment.FilterListener {
 
     private RecyclerView recyclerView;
     private UserProfile userProfile;
+    private List<MoodEvent> fullMoodEvents;
     private List<MoodEvent> moodEvents;
     private FeedAdapter adapter;
 
     public Feed() {
-        // Required empty public constructor
+        // constructor
     }
 
     public static Feed newInstance() {
@@ -51,35 +51,30 @@ public class Feed extends Fragment implements FilterableFragment {
             return;
         }
 
-        // Retrieve the list of mood events from the followed users' history
         MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
-
-        // Reverse events to show most recent first
         List<MoodEvent> events = followingMoodHistory.getAllEvents();
         Collections.reverse(events);
-        moodEvents = events;
+        fullMoodEvents = new ArrayList<>(events);
+        moodEvents = new ArrayList<>(fullMoodEvents);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull android.view.LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_feed, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         recyclerView = view.findViewById(R.id.feed_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setNestedScrollingEnabled(true);
 
-        // Set up the adapter with the current list of mood events
         adapter = new FeedAdapter(getContext(), moodEvents);
         recyclerView.setAdapter(adapter);
 
-        // Click handler if the user taps a MoodEvent
         adapter.setOnItemClickListener(event -> {
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
             getParentFragmentManager()
@@ -92,9 +87,86 @@ public class Feed extends Fragment implements FilterableFragment {
 
     @Override
     public void onFilterClicked() {
-        // Handle your filter logic here
-        Toast.makeText(getContext(), "Filter clicked in Feed", Toast.LENGTH_SHORT).show();
-        // e.g., show a dialog, filter your moodEvents list, etc.
+        FilterFragment filterFragment = new FilterFragment();
+        filterFragment.setFilterListener(this);
+        ((HomeActivity) requireActivity()).navigateToFragment(filterFragment, "Filter");
+    }
+
+    @Override
+    public void onApplyFilter(FilterFragment.FilterCriteria criteria) {
+        if (criteria.eventType != null) {
+            if (criteria.eventType.equals("My Own Mood History")) {
+                ((HomeActivity) requireActivity()).setSelectedNavItem(R.id.nav_profile);
+                return;
+            } else if (criteria.eventType.equals("Nearby Events within 5km")) {
+                ((HomeActivity) requireActivity()).setSelectedNavItem(R.id.nav_maps);
+                return;
+            }
+        }
+
+        applyFilter(criteria);
+    }
+
+    @Override
+    public void onResetFilter() {
+        moodEvents = new ArrayList<>(fullMoodEvents);
+        if (adapter != null) {
+            adapter.updateData(moodEvents);
+        }
+    }
+
+    private void applyFilter(FilterFragment.FilterCriteria criteria) {
+        List<MoodEvent> filtered = new ArrayList<>();
+        Date currentDate = new Date();
+
+        for (MoodEvent event : fullMoodEvents) {
+            boolean matches = true;
+
+            // Time Period Filter
+            if (!criteria.timePeriod.equals("All Time")) {
+                Date eventDate = event.getTimestamp().toDate();
+                long diff = currentDate.getTime() - eventDate.getTime();
+                long daysDiff = diff / (1000 * 60 * 60 * 24);
+
+                if (criteria.timePeriod.equals("Last Year") && daysDiff > 365) {
+                    matches = false;
+                } else if (criteria.timePeriod.equals("Last Month") && daysDiff > 30) {
+                    matches = false;
+                } else if (criteria.timePeriod.equals("Last Week") && daysDiff > 7) {
+                    matches = false;
+                }
+            }
+
+            // Emotional State Filter
+            if (matches && criteria.emotionalState != null) {
+                if (!criteria.emotionalState.equalsIgnoreCase(event.getEmotionalState().getName())) {
+                    matches = false;
+                }
+            }
+
+            // Trigger Reason Filter
+            if (matches && !TextUtils.isEmpty(criteria.triggerReason)) {
+                if (event.getTrigger() == null || !event.getTrigger().toLowerCase().contains(criteria.triggerReason.toLowerCase())) {
+                    matches = false;
+                }
+            }
+
+            if (matches && criteria.eventType != null) {
+                if (criteria.eventType.equals("Events from People I Follow")) {
+                    if (event.getUserID().equals(userProfile.getId())) {
+                        matches = false;
+                    }
+                }
+            }
+
+            if (matches) {
+                filtered.add(event);
+            }
+        }
+
+        moodEvents = filtered;
+        if (adapter != null) {
+            adapter.updateData(moodEvents);
+        }
     }
 }
-

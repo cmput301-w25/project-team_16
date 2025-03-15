@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<transition xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/follow_button_bg"/>
+    <item android:drawable="@drawable/pending_button_bg"/>
+</transition>

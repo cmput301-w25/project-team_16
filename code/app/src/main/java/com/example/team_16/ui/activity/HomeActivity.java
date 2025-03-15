@@ -2,6 +2,7 @@ package com.example.team_16.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,6 +35,9 @@ public class HomeActivity extends AppCompatActivity {
     private ImageView filterIcon;
     private TextView toolbarTitle;
     private boolean isNavigatingFragments = false;
+
+    private int previousNavItemId = -1;
+    private int currentNavItemId = R.id.nav_feed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +100,9 @@ public class HomeActivity extends AppCompatActivity {
             Fragment selectedFragment = null;
             String title = "";
 
+            previousNavItemId = currentNavItemId;
+            currentNavItemId = itemId;
+
             if (itemId == R.id.nav_feed) {
                 selectedFragment = new Feed();
                 title = "Feed";
@@ -133,15 +140,30 @@ public class HomeActivity extends AppCompatActivity {
         toolbarTitle.setText(title);
         isNavigatingFragments = true;
 
-        // Clear any back stack entries when switching main tabs
         clearBackStack();
 
-        // Replace without adding to back stack for main tabs
+        int enterAnim = R.anim.slide_in_right;
+        int exitAnim = R.anim.slide_out_left;
+
+        Menu menu = bottomNavigationView.getMenu();
+        int previousOrder = menu.findItem(previousNavItemId).getOrder();
+        int currentOrder = menu.findItem(itemId).getOrder();
+
+        if (currentOrder < previousOrder) {
+            enterAnim = R.anim.slide_in_left;
+            exitAnim = R.anim.slide_out_right;
+        }
+
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        enterAnim,
+                        exitAnim,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
+                )
                 .replace(R.id.fragment_container, fragment)
                 .commit();
 
-        // Show or hide the filter icon depending on the selected tab
         updateFilterIconVisibility(itemId);
     }
 
@@ -236,11 +258,16 @@ public class HomeActivity extends AppCompatActivity {
     public void navigateToFragment(Fragment fragment, String title) {
         setToolbarTitle(title);
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        R.anim.fade_in,
+                        R.anim.fade_out,
+                        R.anim.fade_in,
+                        R.anim.fade_out
+                )
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
     }
-
     /**
      * Programmatically set the selected bottom navigation item.
      */

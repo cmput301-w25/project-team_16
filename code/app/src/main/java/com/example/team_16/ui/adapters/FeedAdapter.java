@@ -20,38 +20,26 @@ import com.example.team_16.models.MoodEvent;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Adapter responsible for displaying and updating recyclerView of mood events
+ * Adapter responsible for displaying and updating the recyclerView of mood events.
  */
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> {
     private Context context;
     private List<MoodEvent> moodEvents;
-    private String fullName;
-    private String username;
     private OnItemClickListener listener;
 
-    /**
-     * Interface for item clicks
-     */
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
     }
 
-    /**
-     * Listener for mood event item clicks
-     */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
-    /**
-     * FeedAdapter constuctor
-     */
     public FeedAdapter(Context context, List<MoodEvent> moodEvents) {
         this.context = context;
         this.moodEvents = moodEvents;
@@ -60,7 +48,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @NonNull
     @Override
     public FeedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate your item layout (ensure item_feed.xml exists with the IDs below)
         View view = LayoutInflater.from(context).inflate(R.layout.feed_recyclerview_item, parent, false);
         return new FeedViewHolder(view);
     }
@@ -95,14 +82,14 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             }
         });
 
-        String time_ago;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
             LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
-            Duration duration = Duration.between(eventDateTime, currentDateTime); // Note: order was reversed
+            Duration duration = Duration.between(eventDateTime, currentDateTime);
             int hour_difference = (int) Math.abs(duration.toHours());
+            String time_ago;
             if (hour_difference >= 24) {
-                int day_difference = Math.floorDiv(hour_difference, 24);
+                int day_difference = hour_difference / 24;
                 time_ago = day_difference + " days ago";
             } else {
                 time_ago = hour_difference + " hours ago";
@@ -112,43 +99,39 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             holder.time_ago_view.setVisibility(View.GONE);
         }
 
-        // Item click handling
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) {
-                    listener.onItemClick(event);
-                }
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(event);
             }
         });
     }
 
-    /**
-     * Return index of current item in recyclerView
-     */
     @Override
     public int getItemCount() {
         return moodEvents == null ? 0 : moodEvents.size();
     }
 
+    public void updateData(List<MoodEvent> newData) {
+        this.moodEvents = newData;
+        notifyDataSetChanged();
+    }
+
     public static class FeedViewHolder extends RecyclerView.ViewHolder {
-        TextView mood_one_view = itemView.findViewById(R.id.mood_one);
-        TextView emoji_one_view = itemView.findViewById(R.id.emoji_one);
-        //TextView emoji_two_view = itemView.findViewById(R.id.emoji_two);
-        TextView time_ago_view = itemView.findViewById(R.id.time_ago);
-        ImageView profile_picture_view = itemView.findViewById(R.id.profile_picture);
-        TextView first_name_last_name_view = itemView.findViewById(R.id.first_name_last_name);
-        TextView profile_username_view = itemView.findViewById(R.id.profile_username);
-        TextView with_amount_view = itemView.findViewById(R.id.with_amount);
-        TextView mood_description_view = itemView.findViewById(R.id.mood_description);
-        ImageView mood_image_view = itemView.findViewById(R.id.mood_image);
-        TextView time_view = itemView.findViewById(R.id.post_time);
+        TextView mood_one_view;
+        TextView emoji_one_view;
+        TextView time_ago_view;
+        ImageView profile_picture_view;
+        TextView first_name_last_name_view;
+        TextView profile_username_view;
+        TextView with_amount_view;
+        TextView mood_description_view;
+        ImageView mood_image_view;
+        TextView time_view;
 
         public FeedViewHolder(@NonNull View itemView) {
             super(itemView);
             mood_one_view = itemView.findViewById(R.id.mood_one);
             emoji_one_view = itemView.findViewById(R.id.emoji_one);
-            //emoji_two_view = itemView.findViewById(R.id.emoji_two);
             time_ago_view = itemView.findViewById(R.id.time_ago);
             profile_picture_view = itemView.findViewById(R.id.profile_picture);
             first_name_last_name_view = itemView.findViewById(R.id.first_name_last_name);
@@ -158,6 +141,5 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             mood_image_view = itemView.findViewById(R.id.mood_image);
             time_view = itemView.findViewById(R.id.post_time);
         }
-
     }
 }

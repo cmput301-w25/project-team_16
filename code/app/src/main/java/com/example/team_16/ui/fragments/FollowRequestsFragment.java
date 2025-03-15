@@ -72,8 +72,6 @@ public class FollowRequestsFragment extends Fragment {
         btnPending = view.findViewById(R.id.btn_pending);
         searchBar = view.findViewById(R.id.search_bar);
 
-
-
         btnAccepted.setOnClickListener(v -> {
             btnAccepted.setSelected(true);
             btnPending.setSelected(false);
