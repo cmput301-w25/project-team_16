@@ -7,16 +7,16 @@
                 android:height="24dp"
                 android:viewportWidth="24"
                 android:viewportHeight="24"
-                android:angle="0"
+                android:angle="18"
                 android:startColor="#60CCBC"
                 android:centerColor="#f5cea3"
                 android:endColor="#f5aea3"
                 android:type="linear"/>
-<!--            <corners-->
-<!--                android:topLeftRadius="16dp"-->
-<!--                android:topRightRadius="16dp"-->
-<!--                android:bottomLeftRadius="0dp"-->
-<!--                android:bottomRightRadius="0dp"/>-->
+            <!--            <corners-->
+            <!--                android:topLeftRadius="16dp"-->
+            <!--                android:topRightRadius="16dp"-->
+            <!--                android:bottomLeftRadius="0dp"-->
+            <!--                android:bottomRightRadius="0dp"/>-->
 
         </shape>
 

@@ -20,6 +20,7 @@ import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.fragments.AddMood;
 import com.example.team_16.ui.fragments.Feed;
+import com.example.team_16.ui.fragments.FilterFragment;
 import com.example.team_16.ui.fragments.FilterableFragment;
 import com.example.team_16.ui.fragments.Maps;
 import com.example.team_16.ui.fragments.Profile;
@@ -89,6 +90,10 @@ public class HomeActivity extends AppCompatActivity {
         // If the toolbar's back arrow is clicked, call onBackPressedDispatcher
         toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
     }
+    public int getCurrentNavItemId() {
+        return currentNavItemId;
+    }
+
 
     /**
      * Set up the bottom navigation with fragment switching.
@@ -195,7 +200,25 @@ public class HomeActivity extends AppCompatActivity {
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             updateBackButtonVisibility();
             updateFilterIconFromCurrentFragment();
+
+            // Update toolbar title based on current fragment type
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof Feed) {
+                setToolbarTitle("Feed");
+            } else if (currentFragment instanceof Profile) {
+                setToolbarTitle("Profile");
+            } else if (currentFragment instanceof Maps) {
+                setToolbarTitle("Maps");
+            } else if (currentFragment instanceof Search) {
+                setToolbarTitle("Search");
+            } else if (currentFragment instanceof AddMood) {
+                setToolbarTitle("Add Mood");
+            } else if (currentFragment instanceof FilterFragment) {
+                setToolbarTitle("Filter");
+            }
+            // ... add other fragments as needed
         });
+
     }
 
     /**

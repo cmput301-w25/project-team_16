@@ -97,14 +97,17 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
         if (criteria.eventType != null) {
             if (criteria.eventType.equals("My Own Mood History")) {
                 ((HomeActivity) requireActivity()).setSelectedNavItem(R.id.nav_profile);
+                getParentFragmentManager().popBackStack();
                 return;
             } else if (criteria.eventType.equals("Nearby Events within 5km")) {
                 ((HomeActivity) requireActivity()).setSelectedNavItem(R.id.nav_maps);
+                getParentFragmentManager().popBackStack();
                 return;
             }
         }
 
         applyFilter(criteria);
+        getParentFragmentManager().popBackStack();
     }
 
     @Override
@@ -169,4 +172,13 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
             adapter.updateData(moodEvents);
         }
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        HomeActivity homeActivity = (HomeActivity) requireActivity();
+        if (homeActivity.getCurrentNavItemId() == R.id.nav_feed) {
+            homeActivity.setToolbarTitle("Feed");
+        }
+    }
+
 }

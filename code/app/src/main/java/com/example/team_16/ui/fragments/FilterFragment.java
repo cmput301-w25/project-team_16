@@ -156,15 +156,28 @@ public class FilterFragment extends Fragment {
         });
 
         applyButton.setOnClickListener(v -> {
-            triggerReason = triggerReasonEditText.getText().toString();
+            triggerReason = triggerReasonEditText.getText().toString().trim();
+
+            if (selectedTimePeriod.equals("All Time")
+                    && selectedEmotionalState == null
+                    && selectedEventType == null
+                    && triggerReason.isEmpty()) {
+
+                getParentFragmentManager().popBackStack();
+                return;
+            }
+
+            // Create and send filter criteria
             FilterCriteria criteria = new FilterCriteria();
             criteria.timePeriod = selectedTimePeriod;
             criteria.emotionalState = selectedEmotionalState;
             criteria.triggerReason = triggerReason;
             criteria.eventType = selectedEventType;
+
             if (listener != null) {
                 listener.onApplyFilter(criteria);
             }
+
             getParentFragmentManager().popBackStack();
         });
 
@@ -213,4 +226,5 @@ public class FilterFragment extends Fragment {
         eventsFromPeopleIFollowTextView.setBackgroundResource("Events from People I Follow".equals(selectedEventType) ? R.drawable.stroke_background_selected : R.drawable.stroke_background);
         nearbyEventsTextView.setBackgroundResource("Nearby Events within 5km".equals(selectedEventType) ? R.drawable.stroke_background_selected : R.drawable.stroke_background);
     }
+
 }

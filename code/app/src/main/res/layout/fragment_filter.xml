@@ -43,6 +43,40 @@
             android:gravity="center_vertical"/>
     </LinearLayout>
 
+    <!-- Empty State View -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_filter"
+            android:layout_marginBottom="16dp"
+            app:tint="#D3D3D3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Filters Selected"
+            android:textSize="18sp"
+            android:textColor="#808080"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select filters to refine your mood history"
+            android:textSize="14sp"
+            android:textColor="#A0A0A0"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
     <!-- Main scrollable content -->
     <ScrollView
         android:layout_width="match_parent"
