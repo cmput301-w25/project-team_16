@@ -7,7 +7,7 @@
                 android:height="24dp"
                 android:viewportWidth="24"
                 android:viewportHeight="24"
-                android:angle="18"
+                android:angle="270"
                 android:startColor="#60CCBC"
                 android:centerColor="#f5cea3"
                 android:endColor="#f5aea3"
