@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="30dp"
     tools:context=".ui.fragments.MoodDetails">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -146,8 +147,8 @@
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/mood_image"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_width="410dp"
+                android:layout_height="171dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
                 android:scaleType="centerCrop"
@@ -166,8 +167,8 @@
                 android:id="@+id/post_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="104dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="224dp"
                 android:text="06:50  2025-03-02  Vancouver, BC"
                 android:textColor="#555555"
                 android:textSize="14sp"

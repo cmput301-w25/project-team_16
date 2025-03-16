@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_background">
+    android:background="@drawable/gradient_shape_3">
 
     <!-- Toolbar with Back Arrow -->
     <androidx.appcompat.widget.Toolbar
