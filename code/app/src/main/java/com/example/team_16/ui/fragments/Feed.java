@@ -6,6 +6,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.team_16.MoodTrackerApp;
@@ -14,6 +16,7 @@ import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
+
 import com.example.team_16.ui.adapters.FeedAdapter;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,9 +31,12 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
 
     private RecyclerView recyclerView;
     private UserProfile userProfile;
+    private LinearLayout emptyState;
+
     private List<MoodEvent> fullMoodEvents;
     private List<MoodEvent> moodEvents;
     private FeedAdapter adapter;
+    private FilterFragment.FilterCriteria currentCriteria = null;
 
     public Feed() {
         // constructor
@@ -68,6 +74,7 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
     public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        emptyState = view.findViewById(R.id.emptyState);
         recyclerView = view.findViewById(R.id.feed_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setNestedScrollingEnabled(true);
@@ -83,39 +90,45 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
                     .addToBackStack(null)
                     .commit();
         });
+        updateEmptyState();
+    }
+
+    private void updateEmptyState() {
+        if (moodEvents.isEmpty()) {
+            emptyState.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            emptyState.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
     public void onFilterClicked() {
         FilterFragment filterFragment = new FilterFragment();
+
+        Bundle args = new Bundle();
+        args.putBoolean("hide_event_type_filters", true);
+        filterFragment.setArguments(args);
+
         filterFragment.setFilterListener(this);
         ((HomeActivity) requireActivity()).navigateToFragment(filterFragment, "Filter");
     }
-
     @Override
     public void onApplyFilter(FilterFragment.FilterCriteria criteria) {
-        if (criteria.eventType != null) {
-            if (criteria.eventType.equals("My Own Mood History")) {
-                ((HomeActivity) requireActivity()).setSelectedNavItem(R.id.nav_profile);
-                getParentFragmentManager().popBackStack();
-                return;
-            } else if (criteria.eventType.equals("Nearby Events within 5km")) {
-                ((HomeActivity) requireActivity()).setSelectedNavItem(R.id.nav_maps);
-                getParentFragmentManager().popBackStack();
-                return;
-            }
-        }
-
+        currentCriteria = criteria;
         applyFilter(criteria);
         getParentFragmentManager().popBackStack();
     }
 
     @Override
     public void onResetFilter() {
+        currentCriteria = null;
         moodEvents = new ArrayList<>(fullMoodEvents);
         if (adapter != null) {
             adapter.updateData(moodEvents);
         }
+        updateEmptyState();
     }
 
     private void applyFilter(FilterFragment.FilterCriteria criteria) {
@@ -171,10 +184,28 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
         if (adapter != null) {
             adapter.updateData(moodEvents);
         }
+        updateEmptyState();
+    }
+    private void loadData() {
+        MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
+        List<MoodEvent> events = followingMoodHistory.getAllEvents();
+        Collections.reverse(events);
+        fullMoodEvents = new ArrayList<>(events);
+        moodEvents = new ArrayList<>(fullMoodEvents);
+
+        if (currentCriteria != null) {
+            applyFilter(currentCriteria);
+        } else {
+            if (adapter != null) {
+                adapter.updateData(moodEvents);
+                updateEmptyState();
+            }
+        }
     }
     @Override
     public void onResume() {
         super.onResume();
+        loadData();
         HomeActivity homeActivity = (HomeActivity) requireActivity();
         if (homeActivity.getCurrentNavItemId() == R.id.nav_feed) {
             homeActivity.setToolbarTitle("Feed");

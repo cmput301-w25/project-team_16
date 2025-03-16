@@ -32,6 +32,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private List<MoodEvent> moodEvents;
     private OnItemClickListener listener;
 
+
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
     }

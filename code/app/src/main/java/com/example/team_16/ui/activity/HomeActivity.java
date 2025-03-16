@@ -110,7 +110,7 @@ public class HomeActivity extends AppCompatActivity {
 
             if (itemId == R.id.nav_feed) {
                 selectedFragment = new Feed();
-                title = "Feed";
+                title = "Explore";
             } else if (itemId == R.id.nav_search) {
                 selectedFragment = new Search();
                 title = "Search";

@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
-        android:background="@android:color/transparent"
+        android:background="@drawable/gradient_bg"
         android:contentDescription="@string/feed_content_description" />
 
     <!-- Empty State View -->

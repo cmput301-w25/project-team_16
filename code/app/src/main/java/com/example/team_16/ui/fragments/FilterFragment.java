@@ -29,12 +29,14 @@ public class FilterFragment extends Fragment {
     }
 
     private FilterListener listener;
+    private boolean hideEventTypeFilters = false;
 
     // UI Elements
     private TextView allTimeTextView, lastYearTextView, lastMonthTextView, lastWeekTextView;
     private Button angerButton, confusionButton, disgustButton, fearButton, happinessButton, sadnessButton, shameButton, surpriseButton;
     private TextView myOwnMoodHistoryTextView, eventsFromPeopleIFollowTextView, nearbyEventsTextView;
     private EditText triggerReasonEditText;
+    private ViewGroup eventTypeSection;
     private Button resetButton, applyButton;
 
     private String selectedTimePeriod = "All Time";
@@ -48,6 +50,14 @@ public class FilterFragment extends Fragment {
 
     public void setFilterListener(FilterListener listener) {
         this.listener = listener;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            hideEventTypeFilters = getArguments().getBoolean("hide_event_type_filters", false);
+        }
     }
 
     @Nullable
@@ -80,6 +90,7 @@ public class FilterFragment extends Fragment {
         nearbyEventsTextView = view.findViewById(R.id.nearbyEvents);
 
         triggerReasonEditText = view.findViewById(R.id.search_bar);
+        eventTypeSection = view.findViewById(R.id.event_type_section);
 
         resetButton = view.findViewById(R.id.resetButton);
         applyButton = view.findViewById(R.id.applyButton);
@@ -154,6 +165,20 @@ public class FilterFragment extends Fragment {
                 listener.onResetFilter();
             }
         });
+
+        if (hideEventTypeFilters) {
+            eventTypeSection.setVisibility(View.GONE);
+            selectedEventType = null;
+        }
+
+        boolean showOnlyNearby = getArguments() != null && getArguments().getBoolean("show_only_nearby_event_type", false);
+
+        if (showOnlyNearby) {
+            myOwnMoodHistoryTextView.setVisibility(View.GONE);
+            eventsFromPeopleIFollowTextView.setVisibility(View.GONE);
+            // Keep nearbyEvents visible
+        }
+
 
         applyButton.setOnClickListener(v -> {
             triggerReason = triggerReasonEditText.getText().toString().trim();
