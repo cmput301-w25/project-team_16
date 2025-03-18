@@ -75,7 +75,7 @@ public class Profile extends Fragment {
             requireActivity().finish();
             return;
         }
-       MoodHistory personalMoodHistory = userProfile.getFollowingMoodHistory();
+        MoodHistory personalMoodHistory = userProfile.getPersonalMoodHistory();
         List<MoodEvent> events = personalMoodHistory.getAllEvents();
         moodEvents = events;
 
