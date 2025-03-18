@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -69,6 +71,10 @@ public class ResetPassword extends Fragment {
         // Handle the reset button click
         requestResetButton.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
+            Animation scaleDown = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_down);
+
+            requestResetButton.startAnimation(scaleDown);
+
             if (TextUtils.isEmpty(email)) {
                 Toast.makeText(requireContext(), "Enter an email!", Toast.LENGTH_SHORT).show();
             } else {

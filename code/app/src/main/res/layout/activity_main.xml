@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="@drawable/gradient_shape_3">
+    android:background="@drawable/gradient_background">
 
     <LinearLayout
         android:id="@+id/loginLinear"
@@ -22,16 +22,18 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="30dp"
             android:gravity="top|center_horizontal"
+            android:textColor="@color/white"
             android:text="Log In"
             android:textSize="40sp"
             android:textStyle="bold" />
+
 
         <EditText
             android:id="@+id/username"
             android:layout_width="300dp"
             android:layout_height="70dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/edit_text_background"
+            android:background="@drawable/item_bg"
             android:gravity="center_vertical"
             android:hint="Username"
             android:padding="12dp"
@@ -45,7 +47,7 @@
             android:layout_width="300dp"
             android:layout_height="70dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/edit_text_background"
+            android:background="@drawable/item_bg"
             android:fastScrollEnabled="true"
             android:gravity="center_vertical"
             android:hint="Password"
@@ -60,8 +62,9 @@
             android:id="@+id/loginButton"
             android:layout_width="300dp"
             android:layout_height="75dp"
-            android:layout_marginTop="10dp"
-            android:backgroundTint="@color/navy"
+            android:layout_marginTop="40dp"
+            android:backgroundTint="#F5C754"
+            android:textColor="@color/black"
             android:padding="12dp"
             android:text="Log In"
             android:textSize="25dp" />
@@ -70,7 +73,7 @@
             android:id="@+id/signUpButton"
             android:layout_width="300dp"
             android:layout_height="75dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:backgroundTint="@color/lightGrey"
             android:padding="12dp"
             android:text="Sign Up"
@@ -85,8 +88,8 @@
             android:background="@android:color/transparent"
             android:padding="12dp"
             android:text="Forgot Password?"
-            android:textColor="@color/white"
-            android:textSize="15dp"
+            android:textColor="#F5F0E5"
+            android:textSize="17dp"
             android:textStyle="bold" />
 
     </LinearLayout>

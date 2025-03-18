@@ -1,7 +1,12 @@
 package com.example.team_16.ui.activity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.transition.Fade;
+import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -32,6 +37,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Request the feature before setting content view
+            getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
+            getWindow().setEnterTransition(new Fade());
+        }
         super.onCreate(savedInstanceState);
 
         // Initialize Firebase
@@ -52,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
 
         loginButton.setOnClickListener(v -> {
+            Animation scale_down = AnimationUtils.loadAnimation(this, R.anim.scale_down);
+            loginButton.startAnimation(scale_down);
+
             String username = usernameEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
 
@@ -64,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                     if (message.equals("Login successful!")) {
                         String userId = firebaseDB.getCurrentUserId();
                         loadUserProfileAndNavigate(userId);
+
                     }
                 });
             }
@@ -72,8 +86,19 @@ public class MainActivity extends AppCompatActivity {
 
         // Show the SignUp Fragment
         signUpButton.setOnClickListener(v -> {
+
+            Animation scale_down = AnimationUtils.loadAnimation(this, R.anim.scale_down);
+
+            signUpButton.startAnimation(scale_down);
+
             getSupportFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                    )
                     .replace(android.R.id.content, new SignUp())
                     .addToBackStack(null)
                     .commit();
@@ -81,8 +106,17 @@ public class MainActivity extends AppCompatActivity {
 
         // Show the ResetPassword Fragment
         resetPasswordButton.setOnClickListener(v -> {
+            Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
+            resetPasswordButton.startAnimation(scaleDown);
+
             getSupportFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_in_right,
+                            R.anim.slide_out_left,
+                            R.anim.slide_in_left,
+                            R.anim.slide_out_right
+                    )
                     .replace(android.R.id.content, new ResetPassword())
                     .addToBackStack(null)
                     .commit();
@@ -107,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 saveUserProfileToApp(userProfile);
                 Intent intent = new Intent(MainActivity.this, HomeActivity.class);
                 startActivity(intent);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
 
             } else {
@@ -128,4 +163,5 @@ public class MainActivity extends AppCompatActivity {
     private void saveUserProfileToApp(UserProfile userProfile) {
         ((MoodTrackerApp) getApplication()).setCurrentUserProfile(userProfile);
     }
+
 }

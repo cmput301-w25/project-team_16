@@ -4,12 +4,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.team_16.R;
@@ -160,11 +163,17 @@ public class FilterFragment extends Fragment {
         });
 
         resetButton.setOnClickListener(v -> {
+
+            Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
+
+            resetButton.startAnimation(scaleUp);
+
             resetSelections();
             if (listener != null) {
                 listener.onResetFilter();
             }
         });
+
 
         if (hideEventTypeFilters) {
             eventTypeSection.setVisibility(View.GONE);
@@ -181,6 +190,10 @@ public class FilterFragment extends Fragment {
 
 
         applyButton.setOnClickListener(v -> {
+            Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
+
+            applyButton.startAnimation(scaleUp);
+
             triggerReason = triggerReasonEditText.getText().toString().trim();
 
             if (selectedTimePeriod.equals("All Time")
@@ -192,7 +205,6 @@ public class FilterFragment extends Fragment {
                 return;
             }
 
-            // Create and send filter criteria
             FilterCriteria criteria = new FilterCriteria();
             criteria.timePeriod = selectedTimePeriod;
             criteria.emotionalState = selectedEmotionalState;
@@ -217,6 +229,16 @@ public class FilterFragment extends Fragment {
         updateTimePeriodSelection();
         updateEmotionalStateSelection();
         updateEventTypeSelection();
+    }
+
+    private void updateTextViewState(TextView textView, String period) {
+        if (selectedTimePeriod.equals(period)) {
+            textView.setBackgroundResource(R.drawable.stroke_background_selected);
+            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
+        } else {
+            textView.setBackgroundResource(R.drawable.stroke_background);
+            textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.white));
+        }
     }
 
     private void updateTimePeriodSelection() {

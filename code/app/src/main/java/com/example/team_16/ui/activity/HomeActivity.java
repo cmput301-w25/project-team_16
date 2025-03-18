@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,8 +74,13 @@ public class HomeActivity extends AppCompatActivity {
     private void initializeToolbar() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         // Hide the default ActionBar title
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+
+        // Initialize custom back button
+        ImageView backButton = toolbar.findViewById(R.id.navigation_icon);
+        backButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         // Custom title TextView
         toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
@@ -84,12 +90,10 @@ public class HomeActivity extends AppCompatActivity {
         filterIcon = toolbar.findViewById(R.id.filter_icon);
         filterIcon.setOnClickListener(v -> handleFilterClick());
 
-        // Update back button visibility based on fragments in the back stack
+        // Initial update
         updateBackButtonVisibility();
-
-        // If the toolbar's back arrow is clicked, call onBackPressedDispatcher
-        toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
     }
+
     public int getCurrentNavItemId() {
         return currentNavItemId;
     }
@@ -201,6 +205,7 @@ public class HomeActivity extends AppCompatActivity {
             updateBackButtonVisibility();
             updateFilterIconFromCurrentFragment();
 
+
             // Update toolbar title based on current fragment type
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof Feed) {
@@ -271,8 +276,19 @@ public class HomeActivity extends AppCompatActivity {
      */
     private void updateBackButtonVisibility() {
         boolean canGoBack = (getSupportFragmentManager().getBackStackEntryCount() > 0);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(canGoBack);
-        getSupportActionBar().setDisplayShowHomeEnabled(canGoBack);
+
+
+        // Update custom back button visibility
+        ImageView backButton = toolbar.findViewById(R.id.navigation_icon);
+        backButton.setVisibility(canGoBack ? View.VISIBLE : View.GONE);
+
+        // Keep title centered using proper layout param handling
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        toolbarTitle.setLayoutParams(params);
     }
 
     /**

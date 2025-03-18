@@ -98,5 +98,7 @@
     <string name="filter">Filter</string>
     <string name="_20_characters_left_3_words_left">20 characters left | 3 words left</string>
     <string name="trigger_reason">Trigger Reason</string>
+    <string name="get_started">Get Started</string>
+    <string name="copyright">© 2024 Team_16. All rights reserved</string>
 
 </resources>

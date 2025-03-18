@@ -86,6 +86,12 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
             getParentFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_up_enter,
+                            R.anim.fade_out,
+                            R.anim.fade_in,
+                            R.anim.slide_down_exit
+                    )
                     .replace(R.id.fragment_container, moodDetailsFragment)
                     .addToBackStack(null)
                     .commit();

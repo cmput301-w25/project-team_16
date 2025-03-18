@@ -2,6 +2,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:background="@drawable/gradient_background"
     android:layout_height="match_parent">
 
     <!-- RecyclerView -->
@@ -11,7 +12,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
-        android:background="@drawable/gradient_bg"
+        android:layout_marginTop="20dp"
         android:contentDescription="@string/feed_content_description" />
 
     <!-- Empty State View -->
@@ -35,7 +36,7 @@
             android:layout_height="wrap_content"
             android:text="No Mood Events Found"
             android:textSize="18sp"
-            android:textColor="#808080"
+            android:textColor="#F5F0E5"
             android:textStyle="bold"/>
 
         <TextView
@@ -43,7 +44,7 @@
             android:layout_height="wrap_content"
             android:text="Adjust your filters or check back later."
             android:textSize="14sp"
-            android:textColor="#A0A0A0"
+            android:textColor="#F5F0E5"
             android:layout_marginTop="8dp"/>
     </LinearLayout>
 
