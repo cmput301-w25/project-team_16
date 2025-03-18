@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="2dp"
-    app:cardBackgroundColor="#FFFFFF"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="15dp">
+    app:cardCornerRadius="20dp"
+    app:cardElevation="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="@drawable/item_bg"
         android:padding="16dp">
 
         <ImageView
@@ -33,7 +33,7 @@
                 android:id="@+id/text_username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#1C170D"
+                android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:text="@string/username_placeholder" />
@@ -42,7 +42,7 @@
                 android:id="@+id/text_user_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#A1824A"
+                android:textColor="#000000"
                 android:textSize="14sp"
                 android:text="@string/user_id_placeholder" />
         </LinearLayout>

@@ -1,6 +1,5 @@
 package com.example.team_16.ui.adapters;
 
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.team_16.R;
 import java.util.ArrayList;
@@ -16,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
-
     private List<Map<String, Object>> users = new ArrayList<>();
     private List<String> followingIds = new ArrayList<>();
     private List<String> pendingIds = new ArrayList<>();
@@ -24,8 +21,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     public interface OnFollowClickListener {
         void onFollowClick(String targetUserId);
-        void onUnfollowClick(String targetUserId); // Add this line
+        void onUnfollowClick(String targetUserId);
     }
+
     public SearchAdapter(OnFollowClickListener listener) {
         this.followClickListener = listener;
     }
@@ -58,39 +56,35 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         holder.personName.setText(username);
 
         if (followingIds.contains(userId)) {
-            // UNFOLLOW STATE
+            // UNFOLLOW state
             holder.followButton.setText("Unfollow");
             holder.followButton.setEnabled(true);
-            holder.followButton.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#FF0000")) // Red
-            );
+            holder.followButton.setBackgroundResource(R.drawable.unfollow_button_bg);
+            holder.followButton.setTextColor(Color.RED);
             holder.followButton.setOnClickListener(v -> {
                 if (followClickListener != null) {
-                    followClickListener.onUnfollowClick(userId); // Trigger unfollow
+                    followClickListener.onUnfollowClick(userId);
                 }
             });
         } else if (pendingIds.contains(userId)) {
-            // PENDING STATE
+            // PENDING state
             holder.followButton.setText("Pending");
             holder.followButton.setEnabled(false);
-            holder.followButton.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#FF9800")) // Orange
-            );
+            holder.followButton.setBackgroundResource(R.drawable.pending_button_bg);
+            holder.followButton.setTextColor(Color.parseColor("#1E293F"));
         } else {
-            // FOLLOW STATE
+            // FOLLOW state
             holder.followButton.setText("Follow");
             holder.followButton.setEnabled(true);
-            holder.followButton.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#4CAF50")) // Green
-            );
+            holder.followButton.setBackgroundResource(R.drawable.follow_button_bg);
+            holder.followButton.setTextColor(Color.parseColor("#4CAF50"));
             holder.followButton.setOnClickListener(v -> {
                 if (followClickListener != null) {
-                    followClickListener.onFollowClick(userId); // Trigger follow
+                    followClickListener.onFollowClick(userId);
                 }
             });
         }
     }
-
 
     @Override
     public int getItemCount() {
