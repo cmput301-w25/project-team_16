@@ -3,13 +3,16 @@ package com.example.team_16.database;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -387,29 +390,30 @@ public class FirebaseDB {
      * Add user to following list
      */
     private void addToFollowing(String followerId, String followedId, FirebaseCallback<Boolean> callback) {
-        db.collection(FOLLOWING_COLLECTION).document(followerId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    List<String> following = (List<String>) documentSnapshot.get("following");
-                    if (following == null) {
-                        following = new ArrayList<>();
-                    }
+        DocumentReference followingRef = db.collection(FOLLOWING_COLLECTION).document(followerId);
 
-                    if (!following.contains(followedId)) {
-                        following.add(followedId);
-                    }
-
-                    db.collection(FOLLOWING_COLLECTION).document(followerId)
-                            .update("following", following)
-                            .addOnSuccessListener(aVoid -> callback.onCallback(true))
-                            .addOnFailureListener(e -> {
-                                Log.e("FirebaseDB", "Error updating following list", e);
-                                callback.onCallback(false);
-                            });
-                })
+        // Use arrayUnion to atomically add to the list
+        followingRef.update("following", FieldValue.arrayUnion(followedId))
+                .addOnSuccessListener(aVoid -> callback.onCallback(true))
                 .addOnFailureListener(e -> {
-                    Log.e("FirebaseDB", "Error retrieving following list", e);
-                    callback.onCallback(false);
+                    // Handle case where document doesn't exist yet
+                    if (e instanceof FirebaseFirestoreException &&
+                            ((FirebaseFirestoreException) e).getCode() == FirebaseFirestoreException.Code.NOT_FOUND) {
+
+                        // Create new document with initial list
+                        Map<String, Object> newFollowing = new HashMap<>();
+                        newFollowing.put("following", Collections.singletonList(followedId));
+
+                        followingRef.set(newFollowing)
+                                .addOnSuccessListener(aVoid2 -> callback.onCallback(true))
+                                .addOnFailureListener(e2 -> {
+                                    Log.e("FirebaseDB", "Error creating following document", e2);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        Log.e("FirebaseDB", "Error updating following list", e);
+                        callback.onCallback(false);
+                    }
                 });
     }
 

@@ -5,19 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="4dp"
-    app:cardBackgroundColor="#FFFFFF"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="15dp"
-    android:outlineProvider="bounds"
-    android:clipToOutline="false">
+    app:cardCornerRadius="20dp"
+    app:cardElevation="10dp">
 
 <LinearLayout
 android:layout_width="match_parent"
 android:layout_height="wrap_content"
 android:orientation="horizontal"
-android:padding="9dp"
+android:padding="11dp"
+
 android:gravity="center_vertical"
->
+    android:background="@drawable/item_bg">
 
 <!-- User's Avatar -->
 <ImageView
@@ -25,7 +23,7 @@ android:gravity="center_vertical"
     android:layout_width="48dp"
     android:layout_height="48dp"
     android:layout_marginEnd="16dp"
-    android:src="@drawable/ic_profile_placeholder"
+    android:src="@drawable/image"
     android:contentDescription="@string/profile_picture" />
 
 <!-- Person's Name -->
@@ -36,7 +34,7 @@ android:gravity="center_vertical"
     android:layout_height="wrap_content"
     android:text="John Doe"
     android:textSize="16sp"
-    android:textColor="#1C170D" />
+    android:textColor="#000000" />
 
 <!-- Follow/Unfollow Button -->
 <androidx.appcompat.widget.AppCompatButton
@@ -46,10 +44,14 @@ android:gravity="center_vertical"
     android:text="Follow"
     android:backgroundTint="@null"
     android:textColor="#FFFFFF"
-    android:background="@drawable/follow_button"
+    android:background="@drawable/follow_button_bg"
     android:padding="8dp"
     android:elevation="4dp" />
+
+
 </LinearLayout>
+
+
     </androidx.cardview.widget.CardView>
 
 
