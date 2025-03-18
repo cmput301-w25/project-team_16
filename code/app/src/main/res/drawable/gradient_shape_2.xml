@@ -3,17 +3,16 @@
     <item>
         <shape android:shape="rectangle">
             <gradient
-                android:width="24dp"
-                android:height="24dp"
-                android:viewportWidth="24"
-                android:viewportHeight="24"
                 android:angle="0"
                 android:startColor="#f5fea3"
                 android:centerColor="#f5cea3"
                 android:endColor="#f5aea3"
                 android:type="linear"/>
-            <corners android:radius="32dp"/>
+            <corners
+                android:topLeftRadius="16dp"
+                android:topRightRadius="16dp"
+                android:bottomLeftRadius="0dp"
+                android:bottomRightRadius="0dp"/>
         </shape>
-
     </item>
 </layer-list>

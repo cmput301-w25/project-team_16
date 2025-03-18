@@ -1,4 +1,5 @@
 package com.example.team_16.models;
+import android.graphics.Color;
 import android.util.Log;
 
 import java.util.Objects;
@@ -69,6 +70,35 @@ public class EmotionalState {
         }
         return "";
 
+    }
+
+    /**
+     * Returns a color value associated with this emotional state
+     * These colors match the UI colors used in the app's layout
+     *
+     * @return The color as an integer value from android.graphics.Color
+     */
+    public int getColor() {
+        switch (name) {
+            case "Happiness":
+                return Color.parseColor("#FFEB3B");    // Yellow
+            case "Surprise":
+                return Color.parseColor("#FF9800");    // Orange
+            case "Anger":
+                return Color.parseColor("#F44336");    // Red
+            case "Confusion":
+                return Color.parseColor("#673AB7");    // Deep Purple
+            case "Disgust":
+                return Color.parseColor("#8BC34A");    // Light Green
+            case "Fear":
+                return Color.parseColor("#455362");    // Dark Slate Gray
+            case "Sadness":
+                return Color.parseColor("#2196F3");    // Blue
+            case "Shame":
+                return Color.parseColor("#D96CD7");    // Pink/Purple
+            default:
+                return Color.GRAY;                     // Default color
+        }
     }
 
     @Override
