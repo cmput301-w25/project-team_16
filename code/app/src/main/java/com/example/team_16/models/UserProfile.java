@@ -1,8 +1,14 @@
 package com.example.team_16.models;
 
+import android.util.Log;
+
 import com.example.team_16.database.FirebaseDB;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

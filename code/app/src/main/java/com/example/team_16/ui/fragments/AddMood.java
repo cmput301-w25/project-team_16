@@ -4,9 +4,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.Manifest;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -21,6 +26,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.example.team_16.MoodTrackerApp;
@@ -30,13 +38,27 @@ import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.EmotionalStateRegistry;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
+import com.google.android.gms.maps.model.LatLng;
 
-
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Fragment to add a mood event, using UserProfile to manage mood events.
  */
 public class AddMood extends Fragment {
+    // Permission constants
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 1002;
+    private static final int GALLERY_PERMISSION_REQUEST_CODE = 1003;
+    private static final int CAMERA_REQUEST_CODE = 101;
+
+
     private MoodEvent moodEvent;
     private UserProfile userProfile;
 
@@ -44,9 +66,15 @@ public class AddMood extends Fragment {
     private TextView triggerCounter;
     private Button saveMoodButton, deleteMoodButton, takePhotoButton, choosePhotoButton, addLocationButton;
     private Button aloneButton, onePersonButton, twoPersonButton, crowdButton;
+    private Uri photoUri; // for temporary file Uri
     private Uri selectedPhotoUri;
     private String selectedMood, socialSetting;
-    private Location selectedLocation;
+
+    // Stores the selected coordinates (null if no location selected)
+    private LatLng selectedLatLng = null;
+
+    // Stores the selected place name (null if no name is available)
+    private String selectedPlaceName = null;
 
     private static final int PICK_PHOTO_REQUEST = 1;
     private boolean isEditMode = false; //flag for adding or editing
@@ -102,9 +130,12 @@ public class AddMood extends Fragment {
         setupMoodSelectionButtons(view);
         setupSocialSettingButtons(view);
         setupPhotoButtons();
-        //setupLocationButton(); // Haven't got to location yet
+        setupLocationButton();
         setupSaveButton();
         setupDeleteButton();
+
+        // App permission handling
+        checkAndRequestPermissions();
 
         // If editing an existing MoodEvent, update the UI immediately
         if (isEditMode && moodEvent != null) {
@@ -334,21 +365,85 @@ public class AddMood extends Fragment {
             startActivityForResult(intent, PICK_PHOTO_REQUEST);
         });
 
+        boolean hasCameraPermission = hasPermission(Manifest.permission.CAMERA);
+
         takePhotoButton.setOnClickListener(v -> {
-            // TODO: Implement camera functionality
-            Toast.makeText(requireContext(), "Camera functionality not implemented yet", Toast.LENGTH_SHORT).show();
+            if (!hasCameraPermission) {
+                requestPermission(Manifest.permission.CAMERA, CAMERA_PERMISSION_REQUEST_CODE);
+            } else {
+                openCamera(); // Call function to take a photo
+            }
         });
     }
 
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        if (cameraIntent.resolveActivity(requireContext().getPackageManager()) != null) {
+            File photoFile = createImageFile();
+            if (photoFile != null) {
+                selectedPhotoUri = FileProvider.getUriForFile(requireContext(),
+                        requireContext().getPackageName() + ".provider", photoFile);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, selectedPhotoUri);
+                startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
+            }
+        }
+    }
+
+    private File createImageFile() {
+        try {
+            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+            String imageFileName = "JPEG_" + timestamp + "_";
+            File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            return File.createTempFile(imageFileName, ".jpg", storageDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    private void setupLocationButton() {
+        boolean hasLocationPermission = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+        enableButton(addLocationButton, hasLocationPermission);
+
+        addLocationButton.setOnClickListener(v -> {
+            if (!hasLocationPermission) {
+                requestPermission(Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_PERMISSION_REQUEST_CODE);
+            } else {
+                // Open location picker dialog
+                AddLocationDialog locationDialog = new AddLocationDialog((latLng, placeName) -> {
+                    selectedLatLng = latLng;
+                    selectedPlaceName = placeName;
+
+                    // Update UI with selected location (if needed)
+                    Toast.makeText(requireContext(), "Location selected: " +
+                                    (placeName != null ? placeName : latLng.latitude + ", " + latLng.longitude),
+                            Toast.LENGTH_SHORT).show();
+                });
+
+                locationDialog.show(getParentFragmentManager(), "AddLocationDialog");
+            }
+        });
+    }
+
+
     /**
-     * Handles photo selection.
-     */
+         * Handles photo selection.
+         */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_PHOTO_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+
+        if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (photoUri != null) {
+                Toast.makeText(requireContext(), "Photo captured!", Toast.LENGTH_SHORT).show();
+                // Save the photo URI to use it later
+                selectedPhotoUri = photoUri;
+            }
+        } else if (requestCode == PICK_PHOTO_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
             selectedPhotoUri = data.getData();
-            Toast.makeText(requireContext(), "Photo selected!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Photo selected from gallery!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -369,11 +464,20 @@ public class AddMood extends Fragment {
             // Get trigger text (optional)
             String triggerText = triggerInput.getText().toString().trim();
 
+            //get location data (optional)
+            // Handle optional location data
+            Double latitude = (selectedLatLng != null) ? selectedLatLng.latitude : null;
+            Double longitude = (selectedLatLng != null) ? selectedLatLng.longitude : null;
+            String placeName = (selectedPlaceName != null) ? selectedPlaceName : null;
+
             if (isEditMode) {
                 // Update existing MoodEvent
                 moodEvent.setEmotionalState(emotionalState);
                 moodEvent.setTrigger(triggerText);
                 moodEvent.setSocialSituation(socialSetting);
+                moodEvent.setLatitude(latitude);
+                moodEvent.setLongitude(longitude);
+                moodEvent.setPlaceName(placeName);
 
                 if (selectedPhotoUri != null) {
                     // Handle photo upload and set URI in moodEvent (if needed)
@@ -391,7 +495,13 @@ public class AddMood extends Fragment {
                 });
             } else {
                 // Create new MoodEvent
-                MoodEvent newMoodEvent = new MoodEvent(userProfile.getId(), emotionalState, triggerText, socialSetting);
+                MoodEvent newMoodEvent = new MoodEvent(userProfile.getId(),
+                                                        emotionalState,
+                                                        triggerText,
+                                                        socialSetting,
+                                                        latitude,
+                                                        longitude,
+                                                        placeName);
 
                 if (selectedPhotoUri != null) {
                     // Handle photo upload and set URI in newMoodEvent (if needed)
@@ -454,5 +564,67 @@ public class AddMood extends Fragment {
                     .setNegativeButton("No", null)
                     .show();
         });
+    }
+
+    private void enableButton(Button button, boolean enable) {
+        button.setEnabled(enable);
+    }
+
+    private boolean hasPermission(String permission) {
+        return ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission(String permission, int requestCode) {
+        ActivityCompat.requestPermissions(requireActivity(), new String[]{permission}, requestCode);
+    }
+
+    private void checkAndRequestPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
+        if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        if (!hasPermission(Manifest.permission.CAMERA)) permissionsNeeded.add(Manifest.permission.CAMERA);
+        if (!hasPermission(Manifest.permission.READ_MEDIA_IMAGES)) permissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES);
+
+        if (!permissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(requireActivity(), permissionsNeeded.toArray(new String[0]), LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            enableButton(takePhotoButton, true);
+            enableButton(choosePhotoButton, true);
+            enableButton(addLocationButton, true);
+        }
+    }
+
+    private void handlePermissionDenied(String permission, String permissionName) {
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), permission)) {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle(permissionName + " Permission Needed")
+                    .setMessage("To use this feature, please enable " + permissionName.toLowerCase() + " access in your device settings.")
+                    .setPositiveButton("Go to Settings", (dialog, which) -> {
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", requireContext().getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                    })
+                    .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                    .show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE ||
+                requestCode == CAMERA_PERMISSION_REQUEST_CODE ||
+                requestCode == GALLERY_PERMISSION_REQUEST_CODE) {
+            for (int i = 0; i < permissions.length; i++) {
+                if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION)) enableButton(addLocationButton, true);
+                    if (permissions[i].equals(Manifest.permission.CAMERA)) enableButton(takePhotoButton, true);
+                    if (permissions[i].equals(Manifest.permission.READ_MEDIA_IMAGES)) enableButton(choosePhotoButton, true);
+                } else {
+                    handlePermissionDenied(permissions[i], permissions[i].substring(19));
+                }
+            }
+        }
     }
 }

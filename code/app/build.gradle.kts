@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
+    alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 }
 
 android {
@@ -43,6 +44,7 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.core)
+    implementation(libs.play.services.maps)
     testImplementation(libs.junit)
     testImplementation(libs.espresso.core)
     testImplementation(libs.ext.junit)
@@ -60,6 +62,9 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    // Maps SDK for Android
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    
 
 
 

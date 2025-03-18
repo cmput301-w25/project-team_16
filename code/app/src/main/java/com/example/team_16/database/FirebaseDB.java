@@ -3,12 +3,18 @@ package com.example.team_16.database;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,10 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Comprehensive Firebase Database Management for Mood Tracking App
@@ -116,6 +127,10 @@ public class FirebaseDB {
                                     userData.put("username", username);
                                     userData.put("usernameLower", username.toLowerCase());
                                     userData.put("email", email);
+
+                                    userData.put("locationPermission", false);
+                                    userData.put("photoPermission", false);
+                                    userData.put("cameraPermission", false);
 
                                     db.collection(USERS_COLLECTION)
                                             .document(firebaseUser.getUid())
@@ -296,6 +311,101 @@ public class FirebaseDB {
                     Log.e("FirebaseDB", "Error deleting mood event", e);
                     callback.onCallback(false);
                 });
+    }
+
+    // Methods related to image uploading
+
+    private byte[] compressImage(Context context, Uri imageUri, int maxSize) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), imageUri);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            int quality = 100;
+            Bitmap.CompressFormat format = Bitmap.CompressFormat.JPEG;
+            do {
+                outputStream.reset();
+                bitmap.compress(format, quality, outputStream);
+                quality -= 5;
+            } while (outputStream.toByteArray().length > maxSize && quality > 10);
+
+            if (outputStream.toByteArray().length > maxSize) {
+                return null;
+            }
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            Log.e("FirebaseDB", "Error compressing image", e);
+            return null;
+        }
+    }
+
+    private void uploadImageToFirebase(Context context, Uri imageUri, FirebaseCallback<String> callback) {
+        if (imageUri == null) {
+            callback.onCallback(null);
+            return;
+        }
+
+        // Show loading indicator
+        ProgressDialog progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage("Compressing & Uploading...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        try {
+            // Compress image to meet 64KB requirement
+            byte[] compressedImage = compressImage(context, imageUri, 64 * 1024);
+
+            if (compressedImage == null) {
+                progressDialog.dismiss(); // Hide loading indicator
+                Toast.makeText(context, "Image too large. Try a smaller image!", Toast.LENGTH_SHORT).show();
+                callback.onCallback(null);
+                return;
+            }
+
+            // Create a unique file name
+            String fileName = "mood_images/" + System.currentTimeMillis() + ".jpg";
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference().child(fileName);
+
+            // Upload compressed image
+            storageRef.putBytes(compressedImage)
+                    .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> {
+                                progressDialog.dismiss(); // Hide loading indicator
+                                callback.onCallback(uri.toString());
+                            })
+                            .addOnFailureListener(e -> {
+                                progressDialog.dismiss();
+                                Log.e("FirebaseDB", "Failed to get image URL", e);
+                                callback.onCallback(null);
+                            }))
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        Log.e("FirebaseDB", "Image upload failed", e);
+                        callback.onCallback(null);
+                    });
+
+        } catch (Exception e) {
+            progressDialog.dismiss(); // Hide loading indicator
+            Log.e("FirebaseDB", "Compression error", e);
+            callback.onCallback(null);
+        }
+    }
+
+    public void addMoodEventWithImage(Context context, MoodEvent moodEvent, Uri imageUri, FirebaseCallback<Boolean> callback) {
+        uploadImageToFirebase(context, imageUri, imageUrl -> {
+            if (imageUrl != null) {
+                moodEvent.setPhotoUrl(imageUrl);
+            }
+            addMoodEvent(moodEvent, callback);
+        });
+    }
+
+    public void updateMoodEventWithImage(Context context, String eventId, MoodEvent updates, Uri imageUri, FirebaseCallback<Boolean> callback) {
+        uploadImageToFirebase(context, imageUri, imageUrl -> {
+            if (imageUrl != null) {
+                updates.setPhotoUrl(imageUrl);
+            }
+            updateMoodEvent(eventId, updates, callback);
+        });
     }
 
     // Follow Methods
@@ -553,6 +663,13 @@ public class FirebaseDB {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        Map<String, Object> userData = documentSnapshot.getData();
+
+                        // Ensure permissions default to false if missing
+                        if (!userData.containsKey("locationPermission")) userData.put("locationPermission", false);
+                        if (!userData.containsKey("photoPermission")) userData.put("photoPermission", false);
+                        if (!userData.containsKey("cameraPermission")) userData.put("cameraPermission", false);
+
                         callback.onCallback(documentSnapshot.getData());
                     } else {
                         callback.onCallback(null);
@@ -639,6 +756,42 @@ public class FirebaseDB {
                     callback.onCallback(false);
                 });
     }
+
+    /**
+     * Update a user's permission in Firestore.
+     *
+     * @param userId        The user's ID.
+     * @param permissionKey The permission field name in Firestore.
+     * @param isGranted     Whether the permission is granted or revoked.
+     * @param callback      Callback to notify success or failure.
+     */
+    public void updateUserPermission(String userId, String permissionKey, boolean isGranted, FirebaseCallback<Boolean> callback) {
+        DocumentReference userDoc = db.collection(USERS_COLLECTION).document(userId);
+
+        if (isGranted) {
+            // Store `true` in Firestore
+            Map<String, Object> updates = new HashMap<>();
+            updates.put(permissionKey, true);
+
+            userDoc.set(updates, SetOptions.merge())
+                    .addOnSuccessListener(aVoid -> callback.onCallback(true))
+                    .addOnFailureListener(e -> {
+                        Log.e("FirebaseDB", "Error updating permission", e);
+                        callback.onCallback(false);
+                    });
+
+        } else {
+            // Remove the permission field from Firestore (effectively setting it to `false` by default)
+            userDoc.update(permissionKey, FieldValue.delete())
+                    .addOnSuccessListener(aVoid -> callback.onCallback(true))
+                    .addOnFailureListener(e -> {
+                        Log.e("FirebaseDB", "Error removing permission", e);
+                        callback.onCallback(false);
+                    });
+        }
+    }
+
+
 
     /**
      * Send a password reset email
