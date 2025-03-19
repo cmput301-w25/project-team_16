@@ -62,7 +62,7 @@
         android:text="👀\nStart typing to search for users"
         android:textAlignment="center"
         android:textSize="22sp"
-        android:textColor="#808080"
+        android:textColor="#F5F0E5"
         android:lineSpacingExtra="8dp"/>
 </RelativeLayout>
 

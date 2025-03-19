@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="filter_icon" type="id" />
+    <item name="bottom_navigation" type="id" />
+    <item name="toolbar_title" type="id" />
+    <item name="navigation_icon" type="id" />
+    <item name="toolbar" type="id" />
+    <item name="appbar_layout" type="id" />
+</resources>

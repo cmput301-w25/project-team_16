@@ -1,35 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Outer layer: gradient border -->
     <item>
         <shape android:shape="rectangle">
-            <!-- Background color -->
-<!--            <solid android:color="#ECD4D4"/>-->
-
-<!--            &lt;!&ndash; Border (stroke) &ndash;&gt;-->
-            <stroke
-                android:width="2dp"
-                android:color="#1E293F"/>
-
+            <gradient
+                android:angle="0"
+                android:startColor="#60CCBC"
+                android:centerColor="#f5cea3"
+                android:endColor="#f5aea3"
+                android:type="linear"/>
             <corners android:radius="20dp"/>
+        </shape>
+    </item>
+
+    <!-- Inner layer: fill -->
+    <item
+        android:top="2dp"
+        android:bottom="2dp"
+        android:left="2dp"
+        android:right="2dp">
+        <shape android:shape="rectangle">
             <gradient
                 android:angle="180"
                 android:startColor="#e2f4f8"
                 android:endColor="#fdf1f5"
                 android:type="linear" />
+            <corners android:radius="18dp"/>
         </shape>
     </item>
 </layer-list>
 
 
-<!--    android:width="24dp"-->
-<!--    android:height="24dp"-->
-<!--    android:viewportWidth="24"-->
-<!--    android:viewportHeight="24"-->
-<!--    android:angle="0"-->
-<!--    android:startColor="#f5fea3"-->
-<!--    android:centerColor="#f5cea3"-->
-<!--    android:endColor="#f5aea3"-->
-<!--    android:type="linear"/>-->
 
 
 
