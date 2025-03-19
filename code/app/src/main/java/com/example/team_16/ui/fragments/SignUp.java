@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -72,7 +74,13 @@ public class SignUp extends Fragment {
         signUpButton = view.findViewById(R.id.signUpButton);
 
         // Handle sign up button click
-        signUpButton.setOnClickListener(v -> attemptSignUp());
+        signUpButton.setOnClickListener(v -> {
+            attemptSignUp();
+
+            Animation scaleDown = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_down);
+            signUpButton.startAnimation(scaleDown);
+        });
+
 
         return view;
     }

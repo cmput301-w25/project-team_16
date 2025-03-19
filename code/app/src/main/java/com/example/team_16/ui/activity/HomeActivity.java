@@ -2,8 +2,10 @@ package com.example.team_16.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +21,7 @@ import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.fragments.AddMood;
 import com.example.team_16.ui.fragments.Feed;
+import com.example.team_16.ui.fragments.FilterFragment;
 import com.example.team_16.ui.fragments.FilterableFragment;
 import com.example.team_16.ui.fragments.Maps;
 import com.example.team_16.ui.fragments.Profile;
@@ -34,6 +37,9 @@ public class HomeActivity extends AppCompatActivity {
     private ImageView filterIcon;
     private TextView toolbarTitle;
     private boolean isNavigatingFragments = false;
+
+    private int previousNavItemId = -1;
+    private int currentNavItemId = R.id.nav_feed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +74,13 @@ public class HomeActivity extends AppCompatActivity {
     private void initializeToolbar() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         // Hide the default ActionBar title
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+
+        // Initialize custom back button
+        ImageView backButton = toolbar.findViewById(R.id.navigation_icon);
+        backButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         // Custom title TextView
         toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
@@ -79,12 +90,14 @@ public class HomeActivity extends AppCompatActivity {
         filterIcon = toolbar.findViewById(R.id.filter_icon);
         filterIcon.setOnClickListener(v -> handleFilterClick());
 
-        // Update back button visibility based on fragments in the back stack
+        // Initial update
         updateBackButtonVisibility();
-
-        // If the toolbar's back arrow is clicked, call onBackPressedDispatcher
-        toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
     }
+
+    public int getCurrentNavItemId() {
+        return currentNavItemId;
+    }
+
 
     /**
      * Set up the bottom navigation with fragment switching.
@@ -96,9 +109,12 @@ public class HomeActivity extends AppCompatActivity {
             Fragment selectedFragment = null;
             String title = "";
 
+            previousNavItemId = currentNavItemId;
+            currentNavItemId = itemId;
+
             if (itemId == R.id.nav_feed) {
                 selectedFragment = new Feed();
-                title = "Feed";
+                title = "Explore";
             } else if (itemId == R.id.nav_search) {
                 selectedFragment = new Search();
                 title = "Search";
@@ -133,15 +149,30 @@ public class HomeActivity extends AppCompatActivity {
         toolbarTitle.setText(title);
         isNavigatingFragments = true;
 
-        // Clear any back stack entries when switching main tabs
         clearBackStack();
 
-        // Replace without adding to back stack for main tabs
+        int enterAnim = R.anim.slide_in_right;
+        int exitAnim = R.anim.slide_out_left;
+
+        Menu menu = bottomNavigationView.getMenu();
+        int previousOrder = menu.findItem(previousNavItemId).getOrder();
+        int currentOrder = menu.findItem(itemId).getOrder();
+
+        if (currentOrder < previousOrder) {
+            enterAnim = R.anim.slide_in_left;
+            exitAnim = R.anim.slide_out_right;
+        }
+
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        enterAnim,
+                        exitAnim,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
+                )
                 .replace(R.id.fragment_container, fragment)
                 .commit();
 
-        // Show or hide the filter icon depending on the selected tab
         updateFilterIconVisibility(itemId);
     }
 
@@ -173,7 +204,26 @@ public class HomeActivity extends AppCompatActivity {
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             updateBackButtonVisibility();
             updateFilterIconFromCurrentFragment();
+
+
+            // Update toolbar title based on current fragment type
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof Feed) {
+                setToolbarTitle("Feed");
+            } else if (currentFragment instanceof Profile) {
+                setToolbarTitle("Profile");
+            } else if (currentFragment instanceof Maps) {
+                setToolbarTitle("Maps");
+            } else if (currentFragment instanceof Search) {
+                setToolbarTitle("Search");
+            } else if (currentFragment instanceof AddMood) {
+                setToolbarTitle("Add Mood");
+            } else if (currentFragment instanceof FilterFragment) {
+                setToolbarTitle("Filter");
+            }
+            // ... add other fragments as needed
         });
+
     }
 
     /**
@@ -226,8 +276,19 @@ public class HomeActivity extends AppCompatActivity {
      */
     private void updateBackButtonVisibility() {
         boolean canGoBack = (getSupportFragmentManager().getBackStackEntryCount() > 0);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(canGoBack);
-        getSupportActionBar().setDisplayShowHomeEnabled(canGoBack);
+
+
+        // Update custom back button visibility
+        ImageView backButton = toolbar.findViewById(R.id.navigation_icon);
+        backButton.setVisibility(canGoBack ? View.VISIBLE : View.GONE);
+
+        // Keep title centered using proper layout param handling
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        toolbarTitle.setLayoutParams(params);
     }
 
     /**
@@ -236,11 +297,16 @@ public class HomeActivity extends AppCompatActivity {
     public void navigateToFragment(Fragment fragment, String title) {
         setToolbarTitle(title);
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        R.anim.fade_in,
+                        R.anim.fade_out,
+                        R.anim.fade_in,
+                        R.anim.fade_out
+                )
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
     }
-
     /**
      * Programmatically set the selected bottom navigation item.
      */

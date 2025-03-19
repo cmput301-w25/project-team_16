@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:color/transparent"
+    android:padding="0dp">
+
+    <!-- Search bar for trigger reason -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/search_bar"
+        android:elevation="4dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_search"
+            app:tint="#A1824A" />
+
+        <EditText
+            android:id="@+id/search_bar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:hint="@string/trigger_reason"
+            android:textColor="#000000"
+            android:textColorHint="#A1824A"
+            android:textSize="16sp"
+            android:singleLine="true"
+            android:background="@null"
+            android:paddingVertical="0dp"
+            android:gravity="center_vertical"/>
+    </LinearLayout>
+
+    <!-- Empty State View -->
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_filter"
+            android:layout_marginBottom="16dp"
+            app:tint="#D3D3D3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Filters Selected"
+            android:textSize="18sp"
+            android:textColor="#808080"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select filters to refine your mood history"
+            android:textSize="14sp"
+            android:textColor="#A0A0A0"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
+    <!-- Main scrollable content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <!-- Time Period Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time Period"
+                android:textSize="18sp"
+                android:textColor="#F5F0E5"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <!-- List of time periods -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/allTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="10dp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/stroke_background"
+                    android:text="All Time"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/lastYear"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:textColor="@color/white"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="10dp"
+                    android:background="@drawable/stroke_background"
+                    android:text="Last Year"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/lastMonth"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:layout_marginBottom="8dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="10dp"
+                    android:background="@drawable/stroke_background"
+                    android:text="Last Month"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/lastWeek"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/white"
+                    android:paddingVertical="8dp"
+                    android:background="@drawable/stroke_background"
+                    android:text="Last Week"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <!-- Emotional States Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Emotional States"
+                android:textColor="#F5F0E5"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"/>
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="4"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp">
+
+                <!-- Replaced Buttons with AppCompatButton -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/anger_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:backgroundTint="#F44336"
+                    android:textColor="#FFFFFF"
+                    android:text="@string/anger_text" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/confusion_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#673AB7"
+                    android:text="@string/confusion_text" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/disgust_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#8BC34A"
+                    android:text="@string/disgust_text" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/fear_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#455362"
+                    android:text="@string/fear_text" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/happiness_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#FFA500"
+                    android:text="@string/happiness_text" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/sadness_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#2196F3"
+                    android:text="@string/sadness_text" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/shame_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#D96CD7"
+                    android:text="@string/shame_text" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/surprise_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#FF9800"
+                    android:text="@string/surprise_text" />
+            </GridLayout>
+
+            <!-- Events Section -->
+
+            <LinearLayout
+                android:id="@+id/event_type_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Events"
+                    android:textColor="#F5F0E5"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/myOwnMoodHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="12dp"
+                    android:background="@drawable/stroke_background"
+                    android:text="My Own Mood History"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/eventsFromPeopleIFollow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="12dp"
+                    android:background="@drawable/stroke_background"
+                    android:text="Events from People I Follow"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/nearbyEvents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="12dp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/stroke_background"
+                    android:text="Nearby Events within 5km"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <!-- Bottom buttons replaced with AppCompatButton -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:id="@+id/resetButton"
+                    android:layout_width="140dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="16dp"
+                    android:backgroundTint="#E3E8F2"
+                    android:text="Reset"
+                    android:textColor="#000000" />
+
+                <Button
+                    android:id="@+id/applyButton"
+                    android:layout_width="140dp"
+                    android:layout_height="48dp"
+                    android:backgroundTint="#F5C754"
+                    android:text="Apply"
+                    android:textColor="#000000" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
+
+
