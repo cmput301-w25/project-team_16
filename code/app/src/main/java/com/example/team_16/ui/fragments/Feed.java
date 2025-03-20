@@ -173,13 +173,6 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
                 }
             }
 
-            if (matches && criteria.eventType != null) {
-                if (criteria.eventType.equals("Events from People I Follow")) {
-                    if (event.getUserID().equals(userProfile.getId())) {
-                        matches = false;
-                    }
-                }
-            }
 
             if (matches) {
                 filtered.add(event);

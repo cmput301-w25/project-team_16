@@ -33,6 +33,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#75F44336"
                 android:text="@string/anger_text" />
@@ -42,6 +43,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#75C084FC"
                 android:text="@string/confusion_text" />
@@ -51,6 +53,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#75059669"
                 android:text="@string/disgust_text" />
@@ -60,6 +63,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#75374151"
                 android:text="@string/fear_text" />
@@ -69,6 +73,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#75FACC15"
                 android:text="@string/happiness_text" />
@@ -78,6 +83,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#7560A5FA"
                 android:text="@string/sadness_text" />
@@ -87,6 +93,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#75F472B6"
                 android:text="@string/shame_text" />
@@ -96,6 +103,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
                 android:layout_margin="2dp"
                 android:backgroundTint="#75FB923C"
                 android:text="@string/surprise_text" />
