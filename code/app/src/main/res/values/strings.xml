@@ -34,7 +34,7 @@
     <string name="sadness_text">☹️ Sadness</string>
     <string name="shame_text">😔 Shame</string>
     <string name="surprise_text">😳 Surprise</string>
-    <string name="trigger_optional_text">Trigger? (Optional)</string>
+    <string name="trigger_optional_text">Reason</string>
     <string name="word_limit_text">Max 3 words, 20 characters</string>
     <string name="who_were_you_with_text">Who were you with?</string>
     <string name="alone_text">Alone</string>
@@ -48,7 +48,7 @@
     <string name="save_mood_text">Save Mood</string>
     <string name="delete_entry_text">Delete Entry</string>
 
-    <string name="user_handle">@UserHandle</string>
+    <string name="user_handle">/@UserHandle</string>
     <string name="content_area_description">Main content area</string>
     <string name="feed_content_description">Mood feed list</string>
     <string name="maps_content_description">Maps showing mood data</string>

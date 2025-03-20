@@ -22,7 +22,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="MoodTracker"
-            android:textColor="#FFFFFF"
             android:textSize="32sp"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/inter_bold"/>
@@ -35,7 +34,8 @@
             android:layout_height="48dp"
             android:text="@string/get_started"
             android:stateListAnimator="@null"
-            android:textColor="@color/tab_button_text"
+            android:backgroundTint="@color/navy"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:background="@drawable/item_bg"
             android:elevation="8dp"/>

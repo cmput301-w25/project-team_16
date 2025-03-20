@@ -17,7 +17,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/how_are_you_feeling_text"
-            android:textColor="#F5F0E5"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -71,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:layout_margin="4dp"
-                android:backgroundTint="#FFA500"
+                android:backgroundTint="#FFEB3B"
                 android:text="@string/happiness_text" />
 
             <Button
@@ -108,7 +107,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/trigger_optional_text"
-            android:textColor="#F5F0E5"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -118,7 +116,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:hint="Why? (Optional)"
-            android:textColor="@android:color/white"
             android:textColorHint="@android:color/darker_gray"
             android:inputType="text"
              />
@@ -129,17 +126,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="@string/_20_characters_left_3_words_left"
-            android:textColor="#F5F0E5"
             android:textSize="14sp" />
 
         <!-- Who were you with? -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/who_were_you_with_text"
-            android:textSize="16sp"
-            android:textColor="#F5F0E5"
-            android:textStyle="bold" />
 
         <GridLayout
             android:layout_width="match_parent"
@@ -154,7 +143,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="4dp"
                 android:backgroundTint="#ecd4d3"
                 android:text="@string/alone_text"
                 android:textColor="#573d3e" />
@@ -163,7 +151,6 @@
                 android:id="@+id/one_person_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
                 android:layout_columnWeight="1"
                 android:backgroundTint="#ecd4d3"
                 android:text="@string/one_person_text"
@@ -174,7 +161,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                android:layout_margin="4dp"
                 android:backgroundTint="#ecd4d3"
                 android:text="@string/two_person_text"
                 android:textColor="#573d3e" />
@@ -183,7 +169,6 @@
                 android:id="@+id/crowd_button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="4dp"
                 android:layout_columnWeight="1"
                 android:backgroundTint="#ecd4d3"
                 android:text="@string/crowd_text"
@@ -196,7 +181,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/add_photo_text"
-            android:textColor="#F5F0E5"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -214,7 +198,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="#ecd4d3"
-                android:layout_margin="4dp"
                 android:text="@string/take_photo_text"
                 android:textColor="#573d3e" />
 
@@ -224,7 +207,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="#ecd4d3"
-                android:layout_margin="4dp"
                 android:text="@string/choose_photo_text"
                 android:textColor="#573d3e" />
         </LinearLayout>
@@ -239,31 +221,24 @@
             android:text="@string/add_location_text"
             android:textColor="#573d3e" />
 
-        <LinearLayout
+        <!-- Save Mood -->
+        <Button
+            android:layout_columnWeight="1"
+            android:id="@+id/save_mood_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="1dp"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#61a5fa"
+            android:text="@string/save_mood_text"
+            android:textColor="@android:color/white" />
 
-            <Button
-                android:id="@+id/delete_entry_button"
-                android:layout_width="140dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="16dp"
-                android:backgroundTint="#f3a3a6"
-                android:text="@string/delete_entry_text"
-                android:textColor="#000000" />
-
-            <Button
-                android:id="@+id/save_mood_button"
-                android:layout_width="140dp"
-                android:layout_height="48dp"
-                android:backgroundTint="#F5C754"
-                android:text="@string/save_mood_text"
-                android:textColor="#000000" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/delete_entry_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#f3a3a6"
+            android:text="@string/delete_entry_text"
+            android:textColor="#FF0000" />
 
     </LinearLayout>
 </ScrollView>
