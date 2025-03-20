@@ -100,5 +100,6 @@
     <string name="trigger_reason">Trigger Reason</string>
     <string name="get_started">Get Started</string>
     <string name="copyright">© 2024 Team_16. All rights reserved</string>
+    <string name="user_name">User Name</string>
 
 </resources>
