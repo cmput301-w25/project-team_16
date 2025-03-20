@@ -47,7 +47,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         // Enable edge-to-edge layout
-        EdgeToEdge.enable(this);
+        //EdgeToEdge.enable(this);
 
         // Check for a valid user session
         UserProfile userProfile = ((MoodTrackerApp) getApplication()).getCurrentUserProfile();

@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         // show login UI
         setContentView(R.layout.activity_main);
-        EdgeToEdge.enable(this);
+        //EdgeToEdge.enable(this);
 
         // Initialize UI elements
         loginLinearLayout = findViewById(R.id.loginLinear);

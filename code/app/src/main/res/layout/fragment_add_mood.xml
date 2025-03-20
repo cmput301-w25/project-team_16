@@ -129,6 +129,14 @@
             android:textSize="14sp" />
 
         <!-- Who were you with? -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/who_were_you_with_text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+
 
         <GridLayout
             android:layout_width="match_parent"
