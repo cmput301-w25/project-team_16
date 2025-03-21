@@ -116,5 +116,7 @@
     <string name="mood_description_placeholder">Text (20 Characters)</string>
     <string name="with_people_format">With: # Of People</string>
     <string name="post_time_location_format">06:50  2025–03-02  Vancouver, BC</string>
+    <string name="unknown_user">Unknown User</string>
+    <string name="unknown">\@unknown</string>
 
 </resources>

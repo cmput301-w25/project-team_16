@@ -1,10 +1,12 @@
 package com.example.team_16.models;
-import android.util.Log;
+import android.graphics.Color;
+
+import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
 /**
- * Represents an emotional state with a display name.
+ * Represents an emotional state with a display name, associated gradient, and text color.
  */
 public class EmotionalState {
     private final String name;  // Display name
@@ -12,7 +14,6 @@ public class EmotionalState {
     /**
      * Creates a new emotional state with the given name.
      *
-     * @param name The display name of the emotional state
      * @throws NullPointerException if name is null
      * @throws IllegalArgumentException if name is empty or blank
      */
@@ -37,12 +38,62 @@ public class EmotionalState {
         return name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        EmotionalState that = (EmotionalState) o;
-        return Objects.equals(name, that.name);
+    /**
+     * Gets the resource ID for the gradient background associated with this emotional state.
+     *
+     * @return The resource ID for the gradient drawable
+     */
+    public int getGradientResourceId() {
+        switch (name) {
+            case "Happiness":
+                return com.example.team_16.R.drawable.gradient_happiness;
+            case "Surprise":
+                return com.example.team_16.R.drawable.gradient_surprise;
+            case "Anger":
+                return com.example.team_16.R.drawable.gradient_anger;
+            case "Confusion":
+                return com.example.team_16.R.drawable.gradient_confusion;
+            case "Disgust":
+                return com.example.team_16.R.drawable.gradient_disgust;
+            case "Fear":
+                return com.example.team_16.R.drawable.gradient_fear;
+            case "Sadness":
+                return com.example.team_16.R.drawable.gradient_sadness;
+            case "Shame":
+                return com.example.team_16.R.drawable.gradient_shame;
+            default:
+                // Return a default gradient if no matching emotion is found
+                return com.example.team_16.R.drawable.gradient_default;
+        }
+    }
+
+    /**
+     * Gets the text color associated with this emotional state.
+     * Colors are darker variants of the gradient start color.
+     *
+     * @return The color as an int (including alpha)
+     */
+    public int getTextColor() {
+        switch (name) {
+            case "Happiness":
+                return Color.parseColor("#594D01");  // Dark yellow-gold from FCD34D
+            case "Surprise":
+                return Color.parseColor("#593A01");  // Dark orange from F8AA6C
+            case "Anger":
+                return Color.parseColor("#590001");  // Dark red from EF4444
+            case "Confusion":
+                return Color.parseColor("#320159");  // Dark purple from BB80FF
+            case "Disgust":
+                return Color.parseColor("#015934");  // Dark green from 80FFA8
+            case "Fear":
+                return Color.parseColor("#353535");  // Dark gray from 898989
+            case "Sadness":
+                return Color.parseColor("#013159");  // Dark blue from 83B9FA
+            case "Shame":
+                return Color.parseColor("#590031");  // Dark pink from F392C7
+            default:
+                return Color.parseColor("#333333");  // Default dark gray
+        }
     }
 
     /**
@@ -68,7 +119,14 @@ public class EmotionalState {
                 return "😳";
         }
         return "";
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EmotionalState that = (EmotionalState) o;
+        return Objects.equals(name, that.name);
     }
 
     @Override
@@ -76,6 +134,7 @@ public class EmotionalState {
         return Objects.hash(name);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "EmotionalState{" +

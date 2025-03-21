@@ -1,6 +1,5 @@
 package com.example.team_16.ui.adapters;
 
-import static androidx.core.content.ContentProviderCompat.requireContext;
 
 import android.content.Context;
 import android.os.Build;
@@ -9,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,7 +20,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Adapter responsible for displaying and updating the recyclerView of mood events.
@@ -57,29 +54,35 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onBindViewHolder(@NonNull FeedViewHolder holder, int position) {
         MoodEvent event = moodEvents.get(position);
 
+        // Set emotional state text and emoji
         holder.mood_one_view.setText(event.getEmotionalState().getName());
         holder.emoji_one_view.setText(event.getEmotionalState().getEmoji());
+        holder.mood_one_view.setTextColor(event.getEmotionalState().getTextColor());
+
+        // Set the mood-specific gradient to the gradient banner
+        if (holder.gradient_top_view != null) {
+            holder.gradient_top_view.setImageResource(event.getEmotionalState().getGradientResourceId());
+        }
+
         String date = event.getFormattedDate();
         Date actualDate = event.getTimestamp().toDate();
         holder.with_amount_view.setText(event.getSocialSituation());
         holder.mood_description_view.setText(event.getTrigger());
+        holder.mood_description_view.setTextColor(event.getEmotionalState().getTextColor());
         holder.time_view.setText(date);
 
         holder.first_name_last_name_view.setText("Loading...");
         holder.profile_username_view.setText("");
 
-        FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), new FirebaseDB.FirebaseCallback<Map<String, Object>>() {
-            @Override
-            public void onCallback(Map<String, Object> userData) {
-                if (userData != null) {
-                    String fullName = (String) userData.get("fullName");
-                    String username = "@" + (String) userData.get("username");
-                    holder.first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
-                    holder.profile_username_view.setText(username != null ? username : "@unknown");
-                } else {
-                    holder.first_name_last_name_view.setText("Unknown User");
-                    holder.profile_username_view.setText("@unknown");
-                }
+        FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), userData -> {
+            if (userData != null) {
+                String fullName = (String) userData.get("fullName");
+                String username = "@" + userData.get("username");
+                holder.first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
+                holder.profile_username_view.setText(username);
+            } else {
+                holder.first_name_last_name_view.setText(R.string.unknown_user);
+                holder.profile_username_view.setText(R.string.unknown);
             }
         });
 
@@ -128,6 +131,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         TextView mood_description_view;
         ImageView mood_image_view;
         TextView time_view;
+        ImageView gradient_top_view; // Added for the gradient top banner
 
         public FeedViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -141,6 +145,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             mood_description_view = itemView.findViewById(R.id.mood_description);
             mood_image_view = itemView.findViewById(R.id.mood_image);
             time_view = itemView.findViewById(R.id.post_time);
+            gradient_top_view = itemView.findViewById(R.id.gradient_top); // Initialize the gradient view
+
         }
     }
 }
