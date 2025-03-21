@@ -111,22 +111,29 @@ public class HomeActivity extends AppCompatActivity {
 
             previousNavItemId = currentNavItemId;
             currentNavItemId = itemId;
+            showBottomNavigation();
 
             if (itemId == R.id.nav_feed) {
                 selectedFragment = new Feed();
                 title = "Feed";
+                makeToolbarScrollable();
             } else if (itemId == R.id.nav_search) {
                 selectedFragment = new Search();
                 title = "Search";
+                makeToolbarUnscrollable();
+
             } else if (itemId == R.id.nav_add) {
                 selectedFragment = new AddMood();
                 title = "Add Mood";
+                makeToolbarUnscrollable();
             } else if (itemId == R.id.nav_maps) {
                 selectedFragment = new Maps();
                 title = "Maps";
+                makeToolbarUnscrollable();
             } else if (itemId == R.id.nav_profile) {
                 selectedFragment = new Profile();
                 title = "Profile";
+                makeToolbarScrollable();
             }
 
             if (selectedFragment != null) {
@@ -192,7 +199,7 @@ public class HomeActivity extends AppCompatActivity {
         showBottomNavigation();
 
         setToolbarTitle(title);
-
+        hideBottomNavigation();
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(
                         R.anim.fade_in,
@@ -235,10 +242,17 @@ public class HomeActivity extends AppCompatActivity {
                 if (fm.getBackStackEntryCount() > 0) {
                     // If there's something in the back stack, pop it
                     fm.popBackStack();
+
+                    // After popping, check if we're on one of the main tabs
+                    if (fm.getBackStackEntryCount() == 0) {
+                        checkAndShowBottomNav();
+                    }
                 } else if (isNavigatingFragments) {
                     // If we're in a bottom nav tab with no back stack, go to 'Feed' if not on it
                     if (bottomNavigationView.getSelectedItemId() != R.id.nav_feed) {
                         bottomNavigationView.setSelectedItemId(R.id.nav_feed);
+                        showBottomNavigation(); // Ensure bottom nav is invisible
+                        makeToolbarScrollable();
                     } else {
                         finish();
                     }
@@ -248,30 +262,53 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        // Listen for back stack changes so we can update the toolbar/back arrow/filter icon
+        // Listen for back stack changes to update the toolbar/back arrow/filter icon
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             updateBackButtonVisibility();
             updateFilterIconFromCurrentFragment();
-
+            checkAndShowBottomNav();
 
             // Update toolbar title based on current fragment type
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof Feed) {
+                makeToolbarScrollable();
                 setToolbarTitle("Feed");
             } else if (currentFragment instanceof Profile) {
+                makeToolbarScrollable();
                 setToolbarTitle("Profile");
             } else if (currentFragment instanceof Maps) {
+                makeToolbarUnscrollable();
                 setToolbarTitle("Maps");
             } else if (currentFragment instanceof Search) {
                 setToolbarTitle("Search");
+                makeToolbarUnscrollable();
             } else if (currentFragment instanceof AddMood) {
+                makeToolbarUnscrollable();
                 setToolbarTitle("Add Mood");
             } else if (currentFragment instanceof FilterFragment) {
+                makeToolbarUnscrollable();
                 setToolbarTitle("Filter");
             }
             // ... add other fragments as needed
         });
 
+    }
+
+    /**
+     * Check if current fragment is one of the main 5 tabs and show bottom nav if needed
+     */
+    private void checkAndShowBottomNav() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        // Check if the current fragment is one of the main tabs
+        boolean isMainTab = (currentFragment instanceof Feed ||
+                currentFragment instanceof Search ||
+                currentFragment instanceof AddMood ||
+                currentFragment instanceof Maps ||
+                currentFragment instanceof Profile);
+
+        if (isMainTab) {
+            showBottomNavigation();
+        }
     }
 
     /**
@@ -430,6 +467,50 @@ public class HomeActivity extends AppCompatActivity {
                     .translationY(0)
                     .setDuration(200)
                     .start();
+        }
+    }
+
+    /**
+     * Makes the toolbar unscrollable by adjusting the AppBarLayout behavior.
+     * Call this method when you want to prevent the toolbar from scrolling with content.
+     */
+    public void makeToolbarUnscrollable() {
+        AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+        if (appBarLayout != null) {
+            // Get the layout parameters that should be of type AppBarLayout.LayoutParams
+            AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+
+            // Remove the scroll flags to make it fixed (unscrollable)
+            params.setScrollFlags(0); // 0 means no scroll flags
+
+            // Apply the updated layout parameters
+            toolbar.setLayoutParams(params);
+
+            // Ensure the toolbar is fully expanded and visible
+            appBarLayout.setExpanded(true, false);
+        }
+    }
+
+    /**
+     * Makes the toolbar scrollable by setting appropriate scroll flags.
+     * Call this method when you want to allow the toolbar to scroll with content.
+     */
+    public void makeToolbarScrollable() {
+        AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+        if (appBarLayout != null) {
+            // Get the layout parameters
+            AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+
+            // Set scroll flags to make it scrollable
+            // AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL enables scrolling
+            // AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS makes it reappear immediately when scrolling up
+            params.setScrollFlags(
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
+                            AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+            );
+
+            // Apply the updated layout parameters
+            toolbar.setLayoutParams(params);
         }
     }
 

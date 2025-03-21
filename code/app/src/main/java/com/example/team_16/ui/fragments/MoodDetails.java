@@ -1,4 +1,5 @@
 package com.example.team_16.ui.fragments;
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.team_16.MoodTrackerApp;
@@ -23,9 +25,7 @@ import com.example.team_16.models.Comment;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
-import com.example.team_16.ui.activity.HomeActivity;
 import com.example.team_16.ui.adapters.CommentAdapter;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.imageview.ShapeableImageView;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -33,6 +33,8 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+
 /**
  * Fragment responsible for displaying mood details with comments
  */
@@ -62,9 +64,6 @@ public class MoodDetails extends Fragment {
     private List<Comment> commentsList = new ArrayList<>();
     private CommentAdapter commentAdapter;
     // Save original scroll flags to restore them later
-    private int originalScrollFlags = -1;
-    private AppBarLayout savedAppBarLayout = null;
-    private View savedToolbarView = null;
 
     public MoodDetails() {
         // Required empty constructor
@@ -113,36 +112,10 @@ public class MoodDetails extends Fragment {
         return inflater.inflate(R.layout.fragment_mood_details, container, false);
     }
 
-    @Override
-    public void onDestroyView() {
-        // Show the toolbar again when leaving this fragment
-        if (getActivity() instanceof HomeActivity) {
-            ((HomeActivity) getActivity()).showToolbar();
-            ((HomeActivity) getActivity()).showBottomNavigation();
-        }
-        // Restore original scroll behavior
-        restoreAppBarScrolling();
-        super.onDestroyView();
-    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // Hide the toolbar when this fragment is displayed
-        if (getActivity() instanceof HomeActivity) {
-            HomeActivity activity = (HomeActivity) getActivity();
-            activity.hideBottomNavigation();
-            // Disable HomeActivity scrolling by freezing the AppBarLayout
-            try {
-                // Get the activity's content view properly
-                View rootView = activity.findViewById(android.R.id.content);
-                if (rootView instanceof ViewGroup) {
-                    disableAppBarScrolling((ViewGroup) rootView);
-                }
-            } catch (Exception e) {
-                Log.e("MoodDetails", "Error modifying parent activity layout", e);
-            }
-        }
 
         if (moodEvent == null) {
             Log.e("MoodDetails", "MoodEvent is null");
@@ -206,6 +179,7 @@ public class MoodDetails extends Fragment {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void displayMoodDetails() {
         // Set emotional state text and emoji
         mood_one_view.setText(moodEvent.getEmotionalState().getName());
@@ -274,19 +248,21 @@ public class MoodDetails extends Fragment {
     }
 
     private void loadComments() {
-        // This method would normally fetch comments from Firebase
-        // For now, we'll just work with the empty list we created
-        // If we had actual comments, we would update the UI like this:
-        if (commentsList.isEmpty()) {
-            commentsHeaderView.setText("Comments (0)");
-            commentsRecyclerView.setVisibility(View.GONE);
-            noCommentsView.setVisibility(View.VISIBLE);
-        } else {
-            commentsHeaderView.setText("Comments (" + commentsList.size() + ")");
-            commentsRecyclerView.setVisibility(View.VISIBLE);
-            noCommentsView.setVisibility(View.GONE);
-            commentAdapter.notifyDataSetChanged();
-        }
+        // This would normally fetch comments from Firebase
+        // For demonstration, let's create a method that would get called when data is fetched
+        fetchCommentsFromDatabase();
+    }
+
+    private void fetchCommentsFromDatabase() {
+        // This would be your actual database fetch logic
+        // For example:
+        //FirebaseDB.getInstance(requireContext()).fetchCommentsForMood(moodEvent.getId(), commentsList -> {
+            // Use the DiffUtil implementation to update the list
+        //    updateCommentsList(commentsList);
+        //});
+
+        // For now, we'll just work with the empty list
+        updateCommentsList(new ArrayList<>());
     }
 
     private void setupCommentInput() {
@@ -309,71 +285,98 @@ public class MoodDetails extends Fragment {
     }
 
     /**
-     * Recursively find and disable AppBarLayout scrolling in the parent activity
+     * Updates the comments list with new data using DiffUtil for efficient updates
+     * @param newComments new list of comments to display
      */
-    private void disableAppBarScrolling(ViewGroup viewGroup) {
-        // Look through all children
-        for (int i = 0; i < viewGroup.getChildCount(); i++) {
-            View child = viewGroup.getChildAt(i);
-            // If we find an AppBarLayout, disable its scrolling
-            if (child instanceof AppBarLayout) {
-                AppBarLayout appBarLayout = (AppBarLayout) child;
-                savedAppBarLayout = appBarLayout; // Save for later restoration
-                // Disable scrolling by setting all child views to have no scroll flags
-                for (int j = 0; j < appBarLayout.getChildCount(); j++) {
-                    View appBarChild = appBarLayout.getChildAt(j);
-                    if (appBarChild != null) {
-                        AppBarLayout.LayoutParams params =
-                                (AppBarLayout.LayoutParams) appBarChild.getLayoutParams();
-                        if (params != null) {
-                            // Save original flags before removing them
-                            originalScrollFlags = params.getScrollFlags();
-                            savedToolbarView = appBarChild;
-                            params.setScrollFlags(0); // Remove all scroll flags
-                            appBarChild.setLayoutParams(params);
-                        }
-                    }
-                }
-            }
-            // Recursively check any child ViewGroups
-            if (child instanceof ViewGroup) {
-                disableAppBarScrolling((ViewGroup) child);
-            }
+    private void updateCommentsList(List<Comment> newComments) {
+        if (newComments == null) {
+            newComments = new ArrayList<>();
+        }
+
+        // Create a copy of the current list to avoid modification issues
+        List<Comment> oldComments = new ArrayList<>(commentsList);
+
+        // Calculate differences
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+                new CommentDiffCallback(oldComments, newComments)
+        );
+
+        // Update data reference
+        this.commentsList.clear();
+        this.commentsList.addAll(newComments);
+
+        // Dispatch changes to RecyclerView
+        diffResult.dispatchUpdatesTo(commentAdapter);
+
+        // Update comments header and visibility
+        if (commentsList.isEmpty()) {
+            commentsHeaderView.setText("Comments (0)");
+            commentsRecyclerView.setVisibility(View.GONE);
+            noCommentsView.setVisibility(View.VISIBLE);
+        } else {
+            commentsHeaderView.setText("Comments (" + commentsList.size() + ")");
+            commentsRecyclerView.setVisibility(View.VISIBLE);
+            noCommentsView.setVisibility(View.GONE);
         }
     }
 
     /**
-     * Restore the original scrolling behavior of the AppBarLayout
+     * DiffUtil callback for efficiently updating the comments list
      */
-    private void restoreAppBarScrolling() {
-        try {
-            if (savedAppBarLayout != null && savedToolbarView != null && originalScrollFlags != -1) {
-                // Restore original scroll flags
-                AppBarLayout.LayoutParams params =
-                        (AppBarLayout.LayoutParams) savedToolbarView.getLayoutParams();
-                if (params != null) {
-                    params.setScrollFlags(originalScrollFlags);
-                    savedToolbarView.setLayoutParams(params);
-                    Log.d("MoodDetails", "Restored original scroll flags: " + originalScrollFlags);
-                }
-            } else if (originalScrollFlags == -1) {
-                // If we never saved any flags, set default ones
-                if (savedAppBarLayout != null && savedToolbarView != null) {
-                    AppBarLayout.LayoutParams params =
-                            (AppBarLayout.LayoutParams) savedToolbarView.getLayoutParams();
-                    if (params != null) {
-                        // Common scroll flags: scroll|enterAlways|snap
-                        int defaultFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
-                                AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS |
-                                AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP;
-                        params.setScrollFlags(defaultFlags);
-                        savedToolbarView.setLayoutParams(params);
-                        Log.d("MoodDetails", "Set default scroll flags: " + defaultFlags);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e("MoodDetails", "Error restoring AppBarLayout scrolling", e);
+    private static class CommentDiffCallback extends DiffUtil.Callback {
+        private final List<Comment> oldList;
+        private final List<Comment> newList;
+
+        public CommentDiffCallback(List<Comment> oldList, List<Comment> newList) {
+            this.oldList = oldList != null ? oldList : new ArrayList<>();
+            this.newList = newList != null ? newList : new ArrayList<>();
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            // Compare unique identifiers
+            Comment oldComment = oldList.get(oldItemPosition);
+            Comment newComment = newList.get(newItemPosition);
+
+            // Assuming Comment has an getId() method, adjust based on your Comment class implementation
+            return oldComment.getId().equals(newComment.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            Comment oldComment = oldList.get(oldItemPosition);
+            Comment newComment = newList.get(newItemPosition);
+
+            // Compare all relevant fields
+            // Adjust these fields based on your Comment class implementation
+            boolean sameText = Objects.equals(
+                    oldComment.getText(),
+                    newComment.getText()
+            );
+
+            boolean sameUserId = Objects.equals(
+                    oldComment.getUserId(),
+                    newComment.getUserId()
+            );
+
+            boolean sameTimestamp = Objects.equals(
+                    oldComment.getTimestamp(),
+                    newComment.getTimestamp()
+            );
+
+            return sameText && sameUserId && sameTimestamp;
         }
     }
+
+
 }

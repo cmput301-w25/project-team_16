@@ -1,8 +1,6 @@
 package com.example.team_16.ui.fragments;
 
-import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -415,7 +413,6 @@ public class FilterFragment extends Fragment {
             button.setElevation(0f);
         } else {
             // Unselected state
-            button.setTextColor(Color.WHITE);
 
             // Consider avoiding alpha changes as they can make text harder to read
             // Instead of alpha, you could use a different background tint or style
@@ -423,7 +420,23 @@ public class FilterFragment extends Fragment {
             // Optional: add elevation for depth
             button.setElevation(2f);
             button.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150);
+
+            // Reset background color and text color for time period buttons
+            if (isTimePeriodButton(button)) {
+                DrawableCompat.setTint(button.getBackground(), Color.parseColor("#ecd4d3"));
+                button.setTextColor(ContextCompat.getColor(requireContext(), R.color.time_period_button_color));
+            }
+            else {
+                button.setTextColor(Color.WHITE);
+            }
+
         }
+    }
+
+    // Helper function to check if the button is a time period selection button
+    private boolean isTimePeriodButton(AppCompatButton button) {
+        return button == allTimeButton || button == lastYearButton ||
+                button == lastMonthButton || button == lastWeekButton;
     }
 
     // Extract the selection logic for better readability

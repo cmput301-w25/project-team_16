@@ -120,4 +120,23 @@
     <string name="unknown">\@unknown</string>
     <string name="loading">Loading…</string>
 
+    <!-- Filter Fragment Strings -->
+    <string name="filter_trigger_reason">Search for trigger reason</string>
+    <string name="search_icon_description">Search icon</string>
+    <string name="filter_icon_description">Filter icon</string>
+    <string name="no_filters_selected">No Filters Selected</string>
+    <string name="select_filters_instruction">Select filters to refine your mood history</string>
+    <string name="time_period">Time Period</string>
+    <string name="all_time">All Time</string>
+    <string name="last_year">Last Year</string>
+    <string name="last_month">Last Month</string>
+    <string name="last_week">Last Week</string>
+    <string name="emotional_states">Emotional States</string>
+    <string name="events">Events</string>
+    <string name="my_own_mood_history">My Own Mood History</string>
+    <string name="events_from_people_i_follow">Events from People I Follow</string>
+    <string name="nearby_events_within_5km">Nearby Events within 5km</string>
+    <string name="reset">Reset</string>
+    <string name="apply">Apply</string>
+
 </resources>

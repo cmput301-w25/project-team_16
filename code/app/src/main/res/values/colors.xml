@@ -34,6 +34,7 @@
     <color name="primary_dark">#303F9F</color>
     <color name="primary_light">#C5CAE9</color>
     <color name="accent">#FF4081</color>
+    <color name="time_period_button_color">#402c2e</color>
 
 
 </resources>
