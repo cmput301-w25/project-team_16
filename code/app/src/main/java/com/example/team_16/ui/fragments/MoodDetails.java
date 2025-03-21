@@ -1,55 +1,84 @@
 package com.example.team_16.ui.fragments;
 
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
+import com.example.team_16.models.Comment;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
-import com.google.protobuf.NullValue;
+import com.example.team_16.ui.activity.HomeActivity;
+import com.example.team_16.ui.adapters.CommentAdapter;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-
-
-
-/** Fragment responsible for retrieving and displaying mood details when the item is
-*  clicked on by the user
-*/
+/**
+ * Fragment responsible for displaying mood details with comments
+ */
 public class MoodDetails extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
     private MoodEvent moodEvent;
     private String moodID;
-    private String fullName;
-    private String username;
-    private UserProfile userProfile;
     private Date actualDate;
     private String time_ago;
 
+    // UI Elements for mood details
+    private TextView mood_one_view;
+    private TextView emoji_one_view;
+    private TextView time_ago_view;
+    private TextView first_name_last_name_view;
+    private TextView profile_username_view;
+    private TextView with_amount_view;
+    private TextView mood_description_view;
+    private TextView post_time_view;
+
+    // UI Elements for comments
+    private RecyclerView commentsRecyclerView;
+    private TextView commentsHeaderView;
+    private TextView noCommentsView;
+    private EditText commentInputView;
+    private ImageButton sendCommentButton;
+    private ShapeableImageView commentProfilePictureView;
+
+    // Comments data
+    private List<Comment> commentsList = new ArrayList<>();
+    private CommentAdapter commentAdapter;
+
+    // Save original scroll flags to restore them later
+    private int originalScrollFlags = -1;
+    private AppBarLayout savedAppBarLayout = null;
+    private View savedToolbarView = null;
+
     public MoodDetails() {
+        // Required empty constructor
     }
 
     public static MoodDetails newInstance(String param1) {
@@ -63,7 +92,7 @@ public class MoodDetails extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
+        UserProfile userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
         if (getArguments() != null) {
             moodID = getArguments().getString(ARG_PARAM1);
         }
@@ -77,13 +106,9 @@ public class MoodDetails extends Fragment {
         // Retrieve the list of mood events from the followed users' history
         MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
         if (followingMoodHistory == null) {
-            Log.e("log", "mood history is null");
-        }
-        else {
-            Log.e("log", "history not null");
-            Log.e("log", followingMoodHistory.toString());
-            Log.e("log", followingMoodHistory.getAllEvents().toString());
-
+            Log.e("MoodDetails", "mood history is null");
+        } else {
+            Log.d("MoodDetails", "Found mood history with events");
         }
 
         List<MoodEvent> moodEvents = followingMoodHistory.getAllEvents();
@@ -91,37 +116,103 @@ public class MoodDetails extends Fragment {
         for (MoodEvent currentMoodEvent : moodEvents) {
             if (currentMoodEvent.getId().equals(moodID)) {
                 moodEvent = currentMoodEvent;
+                break;
             }
         }
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Using the new layout with comments
         return inflater.inflate(R.layout.fragment_mood_details, container, false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        // Show the toolbar again when leaving this fragment
+        if (getActivity() instanceof HomeActivity) {
+            ((HomeActivity) getActivity()).showToolbar();
+            ((HomeActivity) getActivity()).showBottomNavigation();
+        }
+
+        // Restore original scroll behavior
+        restoreAppBarScrolling();
+        super.onDestroyView();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (getView() == null || moodEvent == null) {
+
+        // Hide the toolbar when this fragment is displayed
+        if (getActivity() instanceof HomeActivity) {
+            HomeActivity activity = (HomeActivity) getActivity();
+            activity.hideBottomNavigation();
+
+            // Disable HomeActivity scrolling by freezing the AppBarLayout
+            try {
+                // Get the activity's content view properly
+                View rootView = activity.findViewById(android.R.id.content);
+                if (rootView instanceof ViewGroup) {
+                    disableAppBarScrolling((ViewGroup) rootView);
+                }
+            } catch (Exception e) {
+                Log.e("MoodDetails", "Error modifying parent activity layout", e);
+            }
+        }
+
+
+
+        if (moodEvent == null) {
+            Log.e("MoodDetails", "MoodEvent is null");
+            Toast.makeText(requireContext(), "Could not load mood details", Toast.LENGTH_SHORT).show();
             return;
         }
-        TextView mood_one_view = getView().findViewById(R.id.mood_one);
-        TextView emoji_one_view = getView().findViewById(R.id.emoji_one);
-        TextView time_ago_view = getView().findViewById(R.id.time_ago);
-        ImageView profile_picture_view = getView().findViewById(R.id.profile_picture);
-        TextView first_name_last_name_view = getView().findViewById(R.id.first_name_last_name);
-        TextView profile_username_view = getView().findViewById(R.id.profile_username);
-        TextView with_amount_view = getView().findViewById(R.id.with_amount);
-        TextView mood_description_view = getView().findViewById(R.id.mood_description);
-        ImageView mood_image_view = getView().findViewById(R.id.mood_image);
-        TextView time_view = getView().findViewById(R.id.post_time);
 
+        // Get references to the UI elements within the included layout
+        View moodDetailsContainer = view.findViewById(R.id.mood_details_container);
+
+        // Find mood detail views
+        mood_one_view = moodDetailsContainer.findViewById(R.id.mood_one);
+        emoji_one_view = moodDetailsContainer.findViewById(R.id.emoji_one);
+        time_ago_view = moodDetailsContainer.findViewById(R.id.time_ago);
+        ShapeableImageView profile_picture_view = moodDetailsContainer.findViewById(R.id.profile_picture);
+        first_name_last_name_view = moodDetailsContainer.findViewById(R.id.first_name_last_name);
+        profile_username_view = moodDetailsContainer.findViewById(R.id.profile_username);
+        with_amount_view = moodDetailsContainer.findViewById(R.id.with_amount);
+        mood_description_view = moodDetailsContainer.findViewById(R.id.mood_description);
+        TextView mood_description2_view = moodDetailsContainer.findViewById(R.id.mood_description2);
+        ShapeableImageView mood_image_view = moodDetailsContainer.findViewById(R.id.mood_image);
+        post_time_view = moodDetailsContainer.findViewById(R.id.post_time);
+
+        // Find comment section views
+        commentsHeaderView = view.findViewById(R.id.comments_header);
+        commentsRecyclerView = view.findViewById(R.id.comments_recycler_view);
+        noCommentsView = view.findViewById(R.id.no_comments_text);
+        commentInputView = view.findViewById(R.id.comment_input);
+        sendCommentButton = view.findViewById(R.id.send_comment_button);
+        commentProfilePictureView = view.findViewById(R.id.comment_profile_picture);
+
+        // Set up mood details data
+        displayMoodDetails();
+
+        // Set up comments RecyclerView
+        setupCommentsRecyclerView();
+
+        // Load comments for this mood event
+        loadComments();
+
+        // Set up comment input functionality
+        setupCommentInput();
+    }
+
+    private void displayMoodDetails() {
+        // Set initial loading state
         first_name_last_name_view.setText("Loading...");
         profile_username_view.setText("");
 
+        // Fetch user data
         FirebaseDB.getInstance(requireContext()).fetchUserById(moodEvent.getUserID(), new FirebaseDB.FirebaseCallback<Map<String, Object>>() {
             @Override
             public void onCallback(Map<String, Object> userData) {
@@ -129,79 +220,172 @@ public class MoodDetails extends Fragment {
                     String fullName = (String) userData.get("fullName");
                     String username = "@" + (String) userData.get("username");
 
-                    // Now set the text views AFTER we have the data
                     first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
                     profile_username_view.setText(username != null ? username : "@unknown");
                 } else {
-                    // Handle null user data
                     first_name_last_name_view.setText("Unknown User");
                     profile_username_view.setText("@unknown");
                 }
             }
         });
 
+        // Set mood event data
         mood_one_view.setText(moodEvent.getEmotionalState().getName());
         emoji_one_view.setText(moodEvent.getEmotionalState().getEmoji());
         String date = moodEvent.getFormattedDate();
         actualDate = moodEvent.getTimestamp().toDate();
         with_amount_view.setText(moodEvent.getSocialSituation());
         mood_description_view.setText(moodEvent.getTrigger());
-        time_view.setText(date);
 
+        // Make post time visible and set it
+        post_time_view.setVisibility(View.VISIBLE);
+        post_time_view.setText(date);
+
+        // Calculate and set "time ago" text
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
             LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
-            Duration duration = Duration.between(currentDateTime, eventDateTime);
+            Duration duration = Duration.between(eventDateTime, currentDateTime);
             int hour_difference = (int) Math.abs(duration.toHours());
+
             if (hour_difference >= 24) {
                 int day_difference = Math.floorDiv(hour_difference, 24);
-                time_ago = day_difference + " days ago";
+                time_ago = "- " + day_difference + (day_difference == 1 ? " day ago" : " days ago");
+            } else if (hour_difference == 0) {
+                time_ago = "- Just now";
             } else {
-                time_ago = hour_difference + " hours ago";
+                time_ago = "- " + hour_difference + (hour_difference == 1 ? " hour ago" : " hours ago");
             }
             time_ago_view.setText(time_ago);
         } else {
-            time_ago_view.setVisibility(View.GONE);
+            time_ago_view.setText("- Recently");
         }
-
-//        ImageView edit_button_view = view.findViewById(R.id.edit_button);
-//        if (userProfile.getId().equals(moodEvent.getUserID()) == Boolean.FALSE) {
-//            edit_button_view.setVisibility(View.GONE);
-//        }
-//        edit_button_view.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (userProfile == null) {
-//                    Toast.makeText(requireContext(), "Cannot load user profile, please try again.", Toast.LENGTH_SHORT).show();
-//                } else {
-//                    // Launch EditMood logic here
-//                }
-//            }
-//        });
-
     }
 
-        //    image code for onViewCreated
-//
-//
-//    // optional image visibility check
-//        if (mood_image_fileurl.equals("")) {
-//        mood_image_view.setVisibility(View.GONE);
-//    }
-//
-//    // For photos, we can add Glide to our dependencies, sync gradle, then use the following code:
-//            Glide.with(this)
-//                    .load(mood_image_fileurl) // Replace this with firebase image url, which should be saved to the database (along with the image itself) during the uploading of the image
-//    // .placeholder(R.drawable.placeholder) // optional, we can add a placeholder while loading
-//    // .error(R.drawable.error_image) // also optional, we can add an error image if it doesnt load
-//                    .into(mood_image_view);
-//
-//    // doing the same for the profile picture:
-//            Glide.with(this)
-//                    .load(profile_image_fileurl)
-//                    .into(profile_picture_view);
+    private void setupCommentsRecyclerView() {
+        // Initialize the RecyclerView with a LinearLayoutManager
+        commentAdapter = new CommentAdapter(commentsList);
+        commentsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        commentsRecyclerView.setAdapter(commentAdapter);
 
-    //}
+        // Initially show the "no comments" message
+        commentsHeaderView.setText("Comments (0)");
+        commentsRecyclerView.setVisibility(View.GONE);
+        noCommentsView.setVisibility(View.VISIBLE);
+        noCommentsView.setText("No comments yet. Be the first to comment!");
+    }
 
+    private void loadComments() {
+        // This method would normally fetch comments from Firebase
+        // For now, we'll just work with the empty list we created
+
+        // If we had actual comments, we would update the UI like this:
+        if (commentsList.isEmpty()) {
+            commentsHeaderView.setText("Comments (0)");
+            commentsRecyclerView.setVisibility(View.GONE);
+            noCommentsView.setVisibility(View.VISIBLE);
+        } else {
+            commentsHeaderView.setText("Comments (" + commentsList.size() + ")");
+            commentsRecyclerView.setVisibility(View.VISIBLE);
+            noCommentsView.setVisibility(View.GONE);
+            commentAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void setupCommentInput() {
+        // Setup the comment input area
+        commentInputView.setEnabled(true);
+        commentInputView.setHint("Add a comment...");
+        sendCommentButton.setEnabled(true);
+
+        // Setup the user's profile image in the comment section
+        commentProfilePictureView.setImageResource(android.R.drawable.sym_def_app_icon);
+
+        // Set click listener for the send button
+        sendCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String commentText = commentInputView.getText().toString().trim();
+                if (!commentText.isEmpty()) {
+                    // In a full implementation, this would add the comment to Firebase
+                    // For now, we'll just show a toast message
+                    Toast.makeText(requireContext(), "Comment feature coming soon!", Toast.LENGTH_SHORT).show();
+                    commentInputView.setText("");
+                }
+            }
+        });
+    }
+
+    /**
+     * Recursively find and disable AppBarLayout scrolling in the parent activity
+     */
+    private void disableAppBarScrolling(ViewGroup viewGroup) {
+        // Look through all children
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
+
+            // If we find an AppBarLayout, disable its scrolling
+            if (child instanceof AppBarLayout) {
+                AppBarLayout appBarLayout = (AppBarLayout) child;
+                savedAppBarLayout = appBarLayout; // Save for later restoration
+
+                // Disable scrolling by setting all child views to have no scroll flags
+                for (int j = 0; j < appBarLayout.getChildCount(); j++) {
+                    View appBarChild = appBarLayout.getChildAt(j);
+                    if (appBarChild != null) {
+                        AppBarLayout.LayoutParams params =
+                                (AppBarLayout.LayoutParams) appBarChild.getLayoutParams();
+                        if (params != null) {
+                            // Save original flags before removing them
+                            originalScrollFlags = params.getScrollFlags();
+                            savedToolbarView = appBarChild;
+
+                            params.setScrollFlags(0); // Remove all scroll flags
+                            appBarChild.setLayoutParams(params);
+                        }
+                    }
+                }
+            }
+
+            // Recursively check any child ViewGroups
+            if (child instanceof ViewGroup) {
+                disableAppBarScrolling((ViewGroup) child);
+            }
+        }
+    }
+
+    /**
+     * Restore the original scrolling behavior of the AppBarLayout
+     */
+    private void restoreAppBarScrolling() {
+        try {
+            if (savedAppBarLayout != null && savedToolbarView != null && originalScrollFlags != -1) {
+                // Restore original scroll flags
+                AppBarLayout.LayoutParams params =
+                        (AppBarLayout.LayoutParams) savedToolbarView.getLayoutParams();
+                if (params != null) {
+                    params.setScrollFlags(originalScrollFlags);
+                    savedToolbarView.setLayoutParams(params);
+                    Log.d("MoodDetails", "Restored original scroll flags: " + originalScrollFlags);
+                }
+            } else if (originalScrollFlags == -1) {
+                // If we never saved any flags, set default ones
+                if (savedAppBarLayout != null && savedToolbarView != null) {
+                    AppBarLayout.LayoutParams params =
+                            (AppBarLayout.LayoutParams) savedToolbarView.getLayoutParams();
+                    if (params != null) {
+                        // Common scroll flags: scroll|enterAlways|snap
+                        int defaultFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
+                                AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS |
+                                AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP;
+                        params.setScrollFlags(defaultFlags);
+                        savedToolbarView.setLayoutParams(params);
+                        Log.d("MoodDetails", "Set default scroll flags: " + defaultFlags);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e("MoodDetails", "Error restoring AppBarLayout scrolling", e);
+        }
+    }
 }
-

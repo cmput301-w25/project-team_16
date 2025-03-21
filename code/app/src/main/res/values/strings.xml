@@ -102,4 +102,19 @@
     <string name="copyright">© 2024 Team_16. All rights reserved</string>
     <string name="user_name">User Name</string>
 
+
+    <!-- Mood Details Fragment -->
+    <string name="mood_happy">Happy</string>
+    <string name="emoji_happy">😊</string>
+    <string name="happy_emoji_description">Happy emoji</string>
+    <string name="time_ago_format">- 1 hour ago</string>
+    <string name="top_banner_background">Banner background</string>
+    <string name="profile_picture_description">Profile picture</string>
+    <string name="mood_image_description">Mood related image</string>
+    <string name="placeholder_full_name">First Last</string>
+    <string name="placeholder_username">-@username</string>
+    <string name="mood_description_placeholder">Text (20 Characters)</string>
+    <string name="with_people_format">With: # Of People</string>
+    <string name="post_time_location_format">06:50  2025-03-02  Vancouver, BC</string>
+
 </resources>

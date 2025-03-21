@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -12,6 +13,8 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -26,6 +29,7 @@ import com.example.team_16.ui.fragments.FilterableFragment;
 import com.example.team_16.ui.fragments.Maps;
 import com.example.team_16.ui.fragments.Profile;
 import com.example.team_16.ui.fragments.Search;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Objects;
@@ -114,7 +118,7 @@ public class HomeActivity extends AppCompatActivity {
 
             if (itemId == R.id.nav_feed) {
                 selectedFragment = new Feed();
-                title = "Explore";
+                title = "Feed";
             } else if (itemId == R.id.nav_search) {
                 selectedFragment = new Search();
                 title = "Search";
@@ -149,6 +153,10 @@ public class HomeActivity extends AppCompatActivity {
         toolbarTitle.setText(title);
         isNavigatingFragments = true;
 
+        // Force UI elements to be visible when navigating
+        showToolbar();
+        showBottomNavigation();
+
         clearBackStack();
 
         int enterAnim = R.anim.slide_in_right;
@@ -174,6 +182,50 @@ public class HomeActivity extends AppCompatActivity {
                 .commit();
 
         updateFilterIconVisibility(itemId);
+
+        // Reset scroll position using the direct ID
+        resetScrollPosition();
+    }
+
+    /**
+     * Navigate to another fragment and add it to the back stack (will show the back arrow).
+     */
+    public void navigateToFragment(Fragment fragment, String title) {
+        // Force UI elements to be visible when navigating
+        showToolbar();
+        showBottomNavigation();
+
+        setToolbarTitle(title);
+
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        R.anim.fade_in,
+                        R.anim.fade_out,
+                        R.anim.fade_in,
+                        R.anim.fade_out
+                )
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+
+        // Reset scroll position
+        resetScrollPosition();
+    }
+
+    /**
+     * Helper method to reset the scroll position
+     */
+    private void resetScrollPosition() {
+        // Find the fragment container
+        View fragmentContainer = findViewById(R.id.fragment_container);
+        if (fragmentContainer != null) {
+            // Get its parent - should be the NestedScrollView
+            View parent = (View) fragmentContainer.getParent();
+            if (parent instanceof NestedScrollView) {
+                NestedScrollView scrollView = (NestedScrollView) parent;
+                scrollView.smoothScrollTo(0, 0);
+            }
+        }
     }
 
     /**
@@ -291,22 +343,7 @@ public class HomeActivity extends AppCompatActivity {
         toolbarTitle.setLayoutParams(params);
     }
 
-    /**
-     * Navigate to another fragment and add it to the back stack (will show the back arrow).
-     */
-    public void navigateToFragment(Fragment fragment, String title) {
-        setToolbarTitle(title);
-        getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(
-                        R.anim.fade_in,
-                        R.anim.fade_out,
-                        R.anim.fade_in,
-                        R.anim.fade_out
-                )
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
-    }
+
     /**
      * Programmatically set the selected bottom navigation item.
      */
@@ -329,23 +366,7 @@ public class HomeActivity extends AppCompatActivity {
         finish();
     }
 
-    /**
-     * Hide the toolbar entirely.
-     */
-    public void hideToolbar() {
-        if (toolbar.getVisibility() == View.VISIBLE) {
-            toolbar.setVisibility(View.GONE);
-        }
-    }
 
-    /**
-     * Show the toolbar if it was hidden.
-     */
-    public void showToolbar() {
-        if (toolbar.getVisibility() == View.GONE) {
-            toolbar.setVisibility(View.VISIBLE);
-        }
-    }
 
     /**
      * Update the toolbar title text.
@@ -357,9 +378,70 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Control toolbar visibility directly.
+     * Hide the toolbar with animation.
      */
-    public void setToolbarVisibility(boolean isVisible) {
-        toolbar.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    public void hideToolbar() {
+        if (toolbar != null && toolbar.getVisibility() == View.VISIBLE) {
+            // Try to collapse the AppBarLayout
+            AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+            if (appBarLayout != null) {
+                // Collapse first, then hide
+                appBarLayout.setExpanded(false, true);
+
+                // Optionally hide completely after animation
+                // Uncomment if you want the toolbar to be completely hidden
+                // appBarLayout.postDelayed(() -> toolbar.setVisibility(View.GONE), 250);
+            }
+        }
     }
+
+    /**
+     * Show the toolbar if it was hidden.
+     */
+    public void showToolbar() {
+        if (toolbar != null && toolbar.getVisibility() == View.GONE) {
+            // Make sure it's visible first
+            toolbar.setVisibility(View.VISIBLE);
+        }
+
+        // Try to expand the AppBarLayout if it exists and is not already expanded
+        AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+        if (appBarLayout != null) {
+            appBarLayout.setExpanded(true, true);
+        }
+    }
+
+
+
+    /**
+     * Hide the bottom navigation bar.
+     */
+    public void hideBottomNavigation() {
+        if (bottomNavigationView != null && bottomNavigationView.getVisibility() == View.VISIBLE) {
+            // Animate hiding
+            bottomNavigationView.animate()
+                    .translationY(bottomNavigationView.getHeight())
+                    .setDuration(200)
+                    .withEndAction(() -> bottomNavigationView.setVisibility(View.GONE))
+                    .start();
+        }
+    }
+
+    /**
+     * Show the bottom navigation if it was hidden.
+     */
+    public void showBottomNavigation() {
+        if (bottomNavigationView != null &&
+                (bottomNavigationView.getVisibility() == View.GONE || bottomNavigationView.getTranslationY() > 0)) {
+            // Make sure it's visible first
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            // Animate showing
+            bottomNavigationView.animate()
+                    .translationY(0)
+                    .setDuration(200)
+                    .start();
+        }
+    }
+
+
 }
