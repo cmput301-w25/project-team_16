@@ -196,7 +196,7 @@ public class HomeActivity extends AppCompatActivity {
     public void navigateToFragment(Fragment fragment, String title) {
         // Force UI elements to be visible when navigating
         showToolbar();
-        showBottomNavigation();
+        makeToolbarUnscrollable();
 
         setToolbarTitle(title);
         hideBottomNavigation();
