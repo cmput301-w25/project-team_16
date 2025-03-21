@@ -20,12 +20,15 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import androidx.recyclerview.widget.DiffUtil;
+import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Adapter responsible for displaying and updating the recyclerView of mood events.
  */
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> {
-    private Context context;
+    private final Context context;
     private List<MoodEvent> moodEvents;
     private OnItemClickListener listener;
 
@@ -40,7 +43,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
     public FeedAdapter(Context context, List<MoodEvent> moodEvents) {
         this.context = context;
-        this.moodEvents = moodEvents;
+        this.moodEvents = moodEvents != null ? moodEvents : new ArrayList<>();
     }
 
     @NonNull
@@ -71,7 +74,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         holder.mood_description_view.setTextColor(event.getEmotionalState().getTextColor());
         holder.time_view.setText(date);
 
-        holder.first_name_last_name_view.setText("Loading...");
+        holder.first_name_last_name_view.setText(R.string.loading);
         holder.profile_username_view.setText("");
 
         FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), userData -> {
@@ -116,8 +119,26 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     }
 
     public void updateData(List<MoodEvent> newData) {
-        this.moodEvents = newData;
-        notifyDataSetChanged();
+        if (newData == null) {
+            newData = new ArrayList<>();
+        }
+
+        // Create a copy of the current list to avoid modification issues
+        List<MoodEvent> oldData = new ArrayList<>();
+        if (moodEvents != null) {
+            oldData.addAll(moodEvents);
+        }
+
+        // Calculate differences
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+                new MoodEventDiffCallback(oldData, newData)
+        );
+
+        // Update data reference
+        this.moodEvents = new ArrayList<>(newData);
+
+        // Dispatch changes to RecyclerView
+        diffResult.dispatchUpdatesTo(this);
     }
 
     public static class FeedViewHolder extends RecyclerView.ViewHolder {
@@ -147,6 +168,66 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             time_view = itemView.findViewById(R.id.post_time);
             gradient_top_view = itemView.findViewById(R.id.gradient_top); // Initialize the gradient view
 
+        }
+    }
+
+    private static class MoodEventDiffCallback extends DiffUtil.Callback {
+        private final List<MoodEvent> oldList;
+        private final List<MoodEvent> newList;
+
+        public MoodEventDiffCallback(List<MoodEvent> oldList, List<MoodEvent> newList) {
+            this.oldList = oldList != null ? oldList : new ArrayList<>();
+            this.newList = newList != null ? newList : new ArrayList<>();
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            // Compare unique identifiers
+            MoodEvent oldEvent = oldList.get(oldItemPosition);
+            MoodEvent newEvent = newList.get(newItemPosition);
+
+            // Assuming MoodEvent has an getId() method
+            return oldEvent.getId().equals(newEvent.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            MoodEvent oldEvent = oldList.get(oldItemPosition);
+            MoodEvent newEvent = newList.get(newItemPosition);
+
+            // Compare all relevant fields
+            boolean sameEmotionalState = Objects.equals(
+                    oldEvent.getEmotionalState(),
+                    newEvent.getEmotionalState()
+            );
+
+            boolean sameTrigger = Objects.equals(
+                    oldEvent.getTrigger(),
+                    newEvent.getTrigger()
+            );
+
+            boolean sameSocialSituation = Objects.equals(
+                    oldEvent.getSocialSituation(),
+                    newEvent.getSocialSituation()
+            );
+
+            boolean sameTimestamp = Objects.equals(
+                    oldEvent.getTimestamp(),
+                    newEvent.getTimestamp()
+            );
+
+            return sameEmotionalState && sameTrigger &&
+                    sameSocialSituation && sameTimestamp;
         }
     }
 }
