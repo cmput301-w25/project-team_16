@@ -1,6 +1,5 @@
 package com.example.team_16.ui.adapters;
 
-
 import android.content.Context;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -10,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
@@ -65,6 +65,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         // Set the mood-specific gradient to the gradient banner
         if (holder.gradient_top_view != null) {
             holder.gradient_top_view.setImageResource(event.getEmotionalState().getGradientResourceId());
+        }
+
+        // Set the bottom content background with white + subtle gradient overlay
+        if (holder.bottom_content_view != null) {
+            holder.bottom_content_view.setBackgroundResource(event.getEmotionalState().getBottomGradientResourceId());
         }
 
         String date = event.getFormattedDate();
@@ -153,6 +158,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         ImageView mood_image_view;
         TextView time_view;
         ImageView gradient_top_view; // Added for the gradient top banner
+        ConstraintLayout bottom_content_view; // Bottom content container
 
         public FeedViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -167,7 +173,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             mood_image_view = itemView.findViewById(R.id.mood_image);
             time_view = itemView.findViewById(R.id.post_time);
             gradient_top_view = itemView.findViewById(R.id.gradient_top); // Initialize the gradient view
-
+            bottom_content_view = itemView.findViewById(R.id.bottom_content); // Initialize the bottom content container
         }
     }
 

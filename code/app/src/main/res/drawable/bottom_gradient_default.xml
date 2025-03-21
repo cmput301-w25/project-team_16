@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- White background layer -->
     <item>
@@ -18,9 +19,13 @@
                 android:height="24dp"
                 android:viewportWidth="24"
                 android:viewportHeight="24"
-                android:startColor="#33EF4444"
-                android:endColor="#334488EF"
-                android:angle="315"/>
+                android:type="sweep"
+                android:centerX="0.5"
+                android:centerY="-0.2"
+                android:startColor="#33FF0000"
+                android:centerColor="#3300FF00"
+                android:endColor="#33FF0000"
+                android:gradientRadius="180"/>
             <corners
                 android:topLeftRadius="0dp"
                 android:topRightRadius="0dp"
@@ -28,6 +33,4 @@
                 android:bottomRightRadius="20dp"/>
         </shape>
     </item>
-
-
 </layer-list>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- White background layer -->
     <item>
@@ -28,6 +29,13 @@
                 android:bottomRightRadius="20dp"/>
         </shape>
     </item>
-
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#1F000000"
+                android:endColor="@android:color/transparent"
+                android:angle="90" />
+        </shape>
+    </item>
 
 </layer-list>

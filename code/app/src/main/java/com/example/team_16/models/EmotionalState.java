@@ -68,6 +68,36 @@ public class EmotionalState {
     }
 
     /**
+     * Gets the resource ID for the bottom background associated with this emotional state.
+     * These backgrounds have a white base with 20% opacity gradient overlay.
+     *
+     * @return The resource ID for the bottom background drawable
+     */
+    public int getBottomGradientResourceId() {
+        switch (name) {
+            case "Happiness":
+                return com.example.team_16.R.drawable.bottom_gradient_happiness;
+            case "Surprise":
+                return com.example.team_16.R.drawable.bottom_gradient_surprise;
+            case "Anger":
+                return com.example.team_16.R.drawable.bottom_gradient_anger;
+            case "Confusion":
+                return com.example.team_16.R.drawable.bottom_gradient_confusion;
+            case "Disgust":
+                return com.example.team_16.R.drawable.bottom_gradient_disgust;
+            case "Fear":
+                return com.example.team_16.R.drawable.bottom_gradient_fear;
+            case "Sadness":
+                return com.example.team_16.R.drawable.bottom_gradient_sadness;
+            case "Shame":
+                return com.example.team_16.R.drawable.bottom_gradient_shame;
+            default:
+                // Return a default bottom background if no matching emotion is found
+                return com.example.team_16.R.drawable.bottom_gradient_default;
+        }
+    }
+
+    /**
      * Gets the text color associated with this emotional state.
      * Colors are darker variants of the gradient start color.
      *

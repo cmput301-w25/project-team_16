@@ -3,7 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:background="@drawable/gradient_background"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
@@ -36,7 +38,6 @@
             android:layout_height="wrap_content"
             android:text="No Mood Events Found"
             android:textSize="18sp"
-            android:textColor="#F5F0E5"
             android:textStyle="bold"/>
 
         <TextView
