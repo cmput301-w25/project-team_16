@@ -8,13 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,8 +45,6 @@ public class MoodDetails extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private MoodEvent moodEvent;
     private String moodID;
-    private Date actualDate;
-    private String time_ago;
 
     // UI Elements for mood details
     private TextView mood_one_view;
@@ -111,7 +107,7 @@ public class MoodDetails extends Fragment {
             Log.d("MoodDetails", "Found mood history with events");
         }
 
-        List<MoodEvent> moodEvents = followingMoodHistory.getAllEvents();
+        List<MoodEvent> moodEvents = followingMoodHistory != null ? followingMoodHistory.getAllEvents() : null;
 
         for (MoodEvent currentMoodEvent : moodEvents) {
             if (currentMoodEvent.getId().equals(moodID)) {
@@ -233,7 +229,7 @@ public class MoodDetails extends Fragment {
         mood_one_view.setText(moodEvent.getEmotionalState().getName());
         emoji_one_view.setText(moodEvent.getEmotionalState().getEmoji());
         String date = moodEvent.getFormattedDate();
-        actualDate = moodEvent.getTimestamp().toDate();
+        Date actualDate = moodEvent.getTimestamp().toDate();
         with_amount_view.setText(moodEvent.getSocialSituation());
         mood_description_view.setText(moodEvent.getTrigger());
 
@@ -248,6 +244,7 @@ public class MoodDetails extends Fragment {
             Duration duration = Duration.between(eventDateTime, currentDateTime);
             int hour_difference = (int) Math.abs(duration.toHours());
 
+            String time_ago;
             if (hour_difference >= 24) {
                 int day_difference = Math.floorDiv(hour_difference, 24);
                 time_ago = "- " + day_difference + (day_difference == 1 ? " day ago" : " days ago");

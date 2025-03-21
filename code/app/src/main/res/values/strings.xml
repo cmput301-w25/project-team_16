@@ -5,7 +5,7 @@
     <string name="accepted">Accepted</string>
     <string name="pending">Pending</string>
 
-    <string name="search_for_users">Search for users...</string>
+    <string name="search_for_users">Search for users…</string>
 
     <string name="no_follow_requests">No follow requests</string>
 
@@ -115,6 +115,6 @@
     <string name="placeholder_username">-@username</string>
     <string name="mood_description_placeholder">Text (20 Characters)</string>
     <string name="with_people_format">With: # Of People</string>
-    <string name="post_time_location_format">06:50  2025-03-02  Vancouver, BC</string>
+    <string name="post_time_location_format">06:50  2025–03-02  Vancouver, BC</string>
 
 </resources>

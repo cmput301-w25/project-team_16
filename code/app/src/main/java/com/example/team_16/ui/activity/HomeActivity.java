@@ -4,16 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -86,9 +83,8 @@ public class HomeActivity extends AppCompatActivity {
         ImageView backButton = toolbar.findViewById(R.id.navigation_icon);
         backButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
-        // Custom title TextView
+        //initialize toolbar
         toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
-        toolbarTitle.setText("Feed");
 
         // Filter icon
         filterIcon = toolbar.findViewById(R.id.filter_icon);
@@ -344,12 +340,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * Programmatically set the selected bottom navigation item.
-     */
-    public void setSelectedNavItem(int itemId) {
-        bottomNavigationView.setSelectedItemId(itemId);
-    }
 
     /**
      * Log out the user and go back to the login screen.
