@@ -1,5 +1,6 @@
 package com.example.team_16.database;
 
+import com.example.team_16.models.Comment;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
 import com.google.firebase.firestore.DocumentReference;
@@ -41,6 +42,7 @@ public class FirebaseDB {
     private static final String MOODS_COLLECTION = "mood_events";
     private static final String FOLLOW_REQUESTS_COLLECTION = "follow_requests";
     private static final String FOLLOWING_COLLECTION = "following";
+    private static final String COMMENTS_SUBCOLLECTION = "comments";
 
     /**
      * Interface for callbacks
@@ -700,5 +702,55 @@ public class FirebaseDB {
                     callback.onCallback(new ArrayList<>());
                 });
     }
+
+    public void addCommentToMoodEvent(String moodEventId, Comment comment, FirebaseCallback<Comment> callback) {
+        // Create a reference to the subcollection "comments" under this mood event
+        DocumentReference newCommentRef = db.collection(MOODS_COLLECTION)
+                .document(moodEventId)
+                .collection(COMMENTS_SUBCOLLECTION)
+                .document();
+
+        // Set the ID in the Comment object, plus its timestamp if you like
+        comment.setId(newCommentRef.getId());
+        comment.setTimestamp(System.currentTimeMillis());
+
+        newCommentRef.set(comment)
+                .addOnSuccessListener(aVoid -> {
+                    // Return the updated comment (with ID/timestamp)
+                    callback.onCallback(comment);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error adding comment", e);
+                    callback.onCallback(null);
+                });
+    }
+
+    /**
+     * Fetch all comments for a given moodEventId, ordered by descending timestamp
+     */
+    public void fetchCommentsForMoodEvent(String moodEventId, FirebaseCallback<List<Comment>> callback) {
+        db.collection(MOODS_COLLECTION)
+                .document(moodEventId)
+                .collection(COMMENTS_SUBCOLLECTION)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Comment> comments = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        Comment comment = doc.toObject(Comment.class);
+                        // Make sure we have a valid Comment object
+                        if (comment != null) {
+                            comments.add(comment);
+                        }
+                    }
+                    callback.onCallback(comments);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error fetching comments", e);
+                    // Return empty list on failure
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
 
 }
