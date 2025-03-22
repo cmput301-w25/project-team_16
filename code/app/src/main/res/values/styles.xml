@@ -22,8 +22,11 @@
         <item name="android:textAllCaps">false</item>
     </style>
 
-
-
-
+    <color name="error_color">#FF0000</color>
+    <style name="CustomErrorTextAppearance" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:textColor">@color/error_color</item>
+        <item name="android:padding">4dp</item>
+    </style>
 
 </resources>

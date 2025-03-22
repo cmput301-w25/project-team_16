@@ -2,6 +2,7 @@ package com.example.team_16.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -23,6 +25,8 @@ import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.fragments.ResetPassword;
 import com.example.team_16.ui.fragments.SignUp;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 /**
  * This is the login screen of the app.
@@ -31,7 +35,10 @@ import com.example.team_16.ui.fragments.SignUp;
  */
 public class MainActivity extends AppCompatActivity {
     // UI elements
-    private EditText usernameEditText, passwordEditText;
+    // TextInputLayouts
+    private TextInputLayout usernameInputLayout, passwordInputLayout;
+    // EditTexts
+    private TextInputEditText usernameEditText, passwordEditText;
     private Button loginButton, signUpButton, resetPasswordButton;
     private LinearLayout loginLinearLayout;
     private FrameLayout fragmentContainer;
@@ -56,11 +63,14 @@ public class MainActivity extends AppCompatActivity {
         // Initialize UI elements
         loginLinearLayout = findViewById(R.id.loginLinear);
         fragmentContainer = findViewById(R.id.fragment_container);
+        usernameInputLayout = findViewById(R.id.usernameInputLayout);
+        passwordInputLayout = findViewById(R.id.passwordInputLayout);
         usernameEditText = findViewById(R.id.username);
         passwordEditText = findViewById(R.id.password);
         loginButton = findViewById(R.id.loginButton);
         signUpButton = findViewById(R.id.signUpButton);
         resetPasswordButton = findViewById(R.id.resetPasswordButton);
+
 
         loginButton.setOnClickListener(v -> {
             Animation scale_down = AnimationUtils.loadAnimation(this, R.anim.scale_down);
@@ -69,22 +79,48 @@ public class MainActivity extends AppCompatActivity {
             String username = usernameEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
 
-            if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(MainActivity.this, "Please enter both username and password!", Toast.LENGTH_SHORT).show();
-            } else {
-                firebaseDB.login(username, password, message -> {
-                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
 
-                    if (message.equals("Login successful!")) {
-                        String userId = firebaseDB.getCurrentUserId();
-                        loadUserProfileAndNavigate(userId);
-                    }
-                });
+            // The next piece of code is to get the red error messages
+            boolean hasError = false;
+
+            // Check username field
+            if (username.isEmpty()) {
+                usernameInputLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Username required"));
+                hasError = true;
+            } else {
+                usernameEditText.setError(null);
+                usernameInputLayout.setError(null);
             }
+            // Check password field
+            if (password.isEmpty()) {
+                passwordInputLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Password required"));
+                hasError = true;
+            } else {
+                passwordEditText.setError(null);
+                passwordInputLayout.setError(null);
+            }
+            // If any field is empty, show toast and stop processing
+            if (hasError) {
+                Toast.makeText(MainActivity.this, "Please enter both username and password!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            firebaseDB.login(username, password, message -> {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+
+                if (message.equals("Login successful!")) {
+                    String userId = firebaseDB.getCurrentUserId();
+                    loadUserProfileAndNavigate(userId);
+                }
+            });
         });
 
         // Show the SignUp Fragment
         signUpButton.setOnClickListener(v -> {
+            // Clear errors on login fields before showing sign-up
+            usernameEditText.setError(null);
+            passwordEditText.setError(null);
+
             Animation scale_down = AnimationUtils.loadAnimation(this, R.anim.scale_down);
             signUpButton.startAnimation(scale_down);
 
@@ -93,6 +129,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Show the ResetPassword Fragment
         resetPasswordButton.setOnClickListener(v -> {
+            // Clear errors on login fields before showing sign-up
+            usernameEditText.setError(null);
+            passwordEditText.setError(null);
+
             Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.scale_down);
             resetPasswordButton.startAnimation(scaleDown);
 
@@ -152,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
      * Load user profile from Firebase and navigate to home screen
      * @param userId The ID of the user who just logged in.
      */
-    private void loadUserProfileAndNavigate(String userId) {
+    public void loadUserProfileAndNavigate(String userId) {
         // May implement a loading progress bar if we choose so.
         // Show loading indicator if needed - loadingProgressBar.setVisibility(View.VISIBLE);
 
