@@ -1,5 +1,6 @@
 package com.example.team_16.ui.adapters;
 
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,12 +13,11 @@ import com.example.team_16.R;
 import com.example.team_16.models.Comment;
 import com.google.android.material.imageview.ShapeableImageView;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
-/**
- * Adapter for the comments list in a RecyclerView
- * TODO: This is a placeholder implementation that will be fully developed when the comments feature is implemented
- */
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
 
     private List<Comment> comments;
@@ -29,7 +29,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @NonNull
     @Override
     public CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_comment, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_comment, parent, false);
         return new CommentViewHolder(view);
     }
 
@@ -45,10 +46,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     }
 
     public static class CommentViewHolder extends RecyclerView.ViewHolder {
-        private ShapeableImageView userImage;
-        private TextView userName;
-        private TextView commentText;
-        private TextView commentTime;
+        private final ShapeableImageView userImage;
+        private final TextView userName;
+        private final TextView commentText;
+        private final TextView commentTime;
 
         public CommentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -59,20 +60,41 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         }
 
         public void bind(Comment comment) {
-            // TODO: When implementing comments feature, update this method to:
-            // 1. Display the comment user's name
-            // 2. Display the actual comment text
-            // 3. Format and display the timestamp (like "2 hours ago")
-            // 4. Load the user's profile image using Glide or similar library
-            // 5. Implement interaction features (like, reply, etc.)
+            // Basic placeholder logic
+            userImage.setImageResource(android.R.drawable.sym_def_app_icon);
 
-            // Placeholder implementation
             userName.setText(comment.getUserName());
             commentText.setText(comment.getText());
-            commentTime.setText("Coming soon");
-            userImage.setImageResource(android.R.drawable.sym_def_app_icon);
+
+            // Compute "time ago" from comment.getTimestamp() (stored as a long)
+            long timestampMillis = comment.getTimestamp();
+            String timeAgoStr = "Just now";
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime commentTimeObj = LocalDateTime.ofInstant(
+                        java.time.Instant.ofEpochMilli(timestampMillis),
+                        ZoneId.systemDefault()
+                );
+                Duration diff = Duration.between(commentTimeObj, now);
+                long hours = diff.toHours();
+
+                if (hours >= 24) {
+                    long days = hours / 24;
+                    timeAgoStr = days == 1 ? "1 day ago" : days + " days ago";
+                } else if (hours == 0) {
+                    long minutes = diff.toMinutes();
+                    if (minutes <= 1) {
+                        timeAgoStr = "Just now";
+                    } else {
+                        timeAgoStr = minutes + " mins ago";
+                    }
+                } else {
+                    timeAgoStr = hours == 1 ? "1 hour ago" : hours + " hours ago";
+                }
+            }
+
+            commentTime.setText(timeAgoStr);
         }
     }
-
-    // TODO: Implement full comment functionality when the feature is ready
 }

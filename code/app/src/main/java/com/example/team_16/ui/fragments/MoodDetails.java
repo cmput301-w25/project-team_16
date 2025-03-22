@@ -1,4 +1,5 @@
 package com.example.team_16.ui.fragments;
+
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -18,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
@@ -27,6 +30,7 @@ import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.adapters.CommentAdapter;
 import com.google.android.material.imageview.ShapeableImageView;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,6 +46,7 @@ public class MoodDetails extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private MoodEvent moodEvent;
     private String moodID;
+
     // UI Elements for mood details
     private TextView mood_one_view;
     private TextView emoji_one_view;
@@ -53,6 +58,7 @@ public class MoodDetails extends Fragment {
     private TextView post_time_view;
     private ImageView gradient_top_view;
     private ConstraintLayout bottom_content_view;
+
     // UI Elements for comments
     private RecyclerView commentsRecyclerView;
     private TextView commentsHeaderView;
@@ -60,10 +66,10 @@ public class MoodDetails extends Fragment {
     private EditText commentInputView;
     private ImageButton sendCommentButton;
     private ShapeableImageView commentProfilePictureView;
+
     // Comments data
     private List<Comment> commentsList = new ArrayList<>();
     private CommentAdapter commentAdapter;
-    // Save original scroll flags to restore them later
 
     public MoodDetails() {
         // Required empty constructor
@@ -80,6 +86,7 @@ public class MoodDetails extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         UserProfile userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
         if (getArguments() != null) {
             moodID = getArguments().getString(ARG_PARAM1);
@@ -89,15 +96,15 @@ public class MoodDetails extends Fragment {
             requireActivity().finish();
             return;
         }
+
         // Retrieve the list of mood events from the followed users' history
         MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
-        if (followingMoodHistory == null) {
-            Log.e("MoodDetails", "mood history is null");
-        } else {
-            Log.d("MoodDetails", "Found mood history with events");
+        List<MoodEvent> moodEvents = (followingMoodHistory != null) ? followingMoodHistory.getAllEvents() : null;
+        if (moodEvents == null) {
+            Log.e("MoodDetails", "Mood history is null");
+            return;
         }
-        List<MoodEvent> moodEvents = followingMoodHistory != null ? followingMoodHistory.getAllEvents() : null;
-        assert moodEvents != null;
+
         for (MoodEvent currentMoodEvent : moodEvents) {
             if (currentMoodEvent.getId().equals(moodID)) {
                 moodEvent = currentMoodEvent;
@@ -112,7 +119,6 @@ public class MoodDetails extends Fragment {
         return inflater.inflate(R.layout.fragment_mood_details, container, false);
     }
 
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -125,6 +131,7 @@ public class MoodDetails extends Fragment {
 
         // Get references to the UI elements within the included layout
         View moodDetailsContainer = view.findViewById(R.id.mood_details_container);
+
         // Find mood detail views
         mood_one_view = moodDetailsContainer.findViewById(R.id.mood_one);
         emoji_one_view = moodDetailsContainer.findViewById(R.id.emoji_one);
@@ -137,9 +144,11 @@ public class MoodDetails extends Fragment {
         TextView mood_description2_view = moodDetailsContainer.findViewById(R.id.mood_description2);
         ShapeableImageView mood_image_view = moodDetailsContainer.findViewById(R.id.mood_image);
         post_time_view = moodDetailsContainer.findViewById(R.id.post_time);
+
         // Find gradient views for styling
         gradient_top_view = moodDetailsContainer.findViewById(R.id.gradient_top);
         bottom_content_view = moodDetailsContainer.findViewById(R.id.bottom_content);
+
         // Find comment section views
         commentsHeaderView = view.findViewById(R.id.comments_header);
         commentsRecyclerView = view.findViewById(R.id.comments_recycler_view);
@@ -150,12 +159,16 @@ public class MoodDetails extends Fragment {
 
         // Apply emotion-based styling
         applyEmotionStyling();
+
         // Set up mood details data
         displayMoodDetails();
+
         // Set up comments RecyclerView
         setupCommentsRecyclerView();
-        // Load comments for this mood event
+
+        // Load comments for this mood event from Firestore
         loadComments();
+
         // Set up comment input functionality
         setupCommentInput();
     }
@@ -168,10 +181,12 @@ public class MoodDetails extends Fragment {
             // Apply the emotion text color
             mood_one_view.setTextColor(moodEvent.getEmotionalState().getTextColor());
             mood_description_view.setTextColor(moodEvent.getEmotionalState().getTextColor());
+
             // Apply the gradient background to the top banner
             if (gradient_top_view != null) {
                 gradient_top_view.setImageResource(moodEvent.getEmotionalState().getGradientResourceId());
             }
+
             // Apply the white background with subtle gradient overlay to the bottom content
             if (bottom_content_view != null) {
                 bottom_content_view.setBackgroundResource(moodEvent.getEmotionalState().getBottomGradientResourceId());
@@ -198,20 +213,21 @@ public class MoodDetails extends Fragment {
         first_name_last_name_view.setText(R.string.loading);
         profile_username_view.setText("");
 
-        // Fetch user data using callback (same approach as in FeedAdapter)
-        FirebaseDB.getInstance(requireContext()).fetchUserById(moodEvent.getUserID(), userData -> {
-            if (userData != null) {
-                String fullName = (String) userData.get("fullName");
-                String username = "@" + userData.get("username");
-                first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
-                profile_username_view.setText(username);
-            } else {
-                first_name_last_name_view.setText(R.string.unknown_user);
-                profile_username_view.setText(R.string.unknown);
-            }
-        });
+        // Fetch user data using callback
+        FirebaseDB.getInstance(requireContext())
+                .fetchUserById(moodEvent.getUserID(), userData -> {
+                    if (userData != null) {
+                        String fullName = (String) userData.get("fullName");
+                        String username = "@" + userData.get("username");
+                        first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
+                        profile_username_view.setText(username);
+                    } else {
+                        first_name_last_name_view.setText(R.string.unknown_user);
+                        profile_username_view.setText(R.string.unknown);
+                    }
+                });
 
-        // Calculate and display time ago
+        // Calculate and display "time ago"
         Date actualDate = moodEvent.getTimestamp().toDate();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
@@ -223,11 +239,13 @@ public class MoodDetails extends Fragment {
 
             if (hour_difference >= 24) {
                 int day_difference = hour_difference / 24;
-                time_ago = "- " + day_difference + (day_difference == 1 ? " day ago" : " days ago");
+                time_ago = "- " + day_difference +
+                        (day_difference == 1 ? " day ago" : " days ago");
             } else if (hour_difference == 0) {
                 time_ago = "- Just now";
             } else {
-                time_ago = "- " + hour_difference + (hour_difference == 1 ? " hour ago" : " hours ago");
+                time_ago = "- " + hour_difference +
+                        (hour_difference == 1 ? " hour ago" : " hours ago");
             }
             time_ago_view.setText(time_ago);
         } else {
@@ -236,11 +254,11 @@ public class MoodDetails extends Fragment {
     }
 
     private void setupCommentsRecyclerView() {
-        // Initialize the RecyclerView with a LinearLayoutManager
         commentAdapter = new CommentAdapter(commentsList);
         commentsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         commentsRecyclerView.setAdapter(commentAdapter);
-        // Initially show the "no comments" message
+
+        // Initially, show "no comments" message
         commentsHeaderView.setText("Comments (0)");
         commentsRecyclerView.setVisibility(View.GONE);
         noCommentsView.setVisibility(View.VISIBLE);
@@ -248,52 +266,62 @@ public class MoodDetails extends Fragment {
     }
 
     private void loadComments() {
-        // This would normally fetch comments from Firebase
-        // For demonstration, let's create a method that would get called when data is fetched
-        fetchCommentsFromDatabase();
-    }
-
-    private void fetchCommentsFromDatabase() {
-        // This would be your actual database fetch logic
-        // For example:
-        //FirebaseDB.getInstance(requireContext()).fetchCommentsForMood(moodEvent.getId(), commentsList -> {
-            // Use the DiffUtil implementation to update the list
-        //    updateCommentsList(commentsList);
-        //});
-
-        // For now, we'll just work with the empty list
-        updateCommentsList(new ArrayList<>());
+        FirebaseDB.getInstance(requireContext())
+                .fetchCommentsForMoodEvent(moodEvent.getId(), fetchedComments -> {
+                    updateCommentsList(fetchedComments);
+                });
     }
 
     private void setupCommentInput() {
-        // Setup the comment input area
-        commentInputView.setEnabled(true);
-        commentInputView.setHint("Add a comment...");
-        sendCommentButton.setEnabled(true);
-        // Setup the user's profile image in the comment section
+        // Display user’s current profile pic (placeholder for now):
         commentProfilePictureView.setImageResource(android.R.drawable.sym_def_app_icon);
-        // Set click listener for the send button
+
+        // When user clicks "Send"
         sendCommentButton.setOnClickListener(v -> {
             String commentText = commentInputView.getText().toString().trim();
             if (!commentText.isEmpty()) {
-                // In a full implementation, this would add the comment to Firebase
-                // For now, we'll just show a toast message
-                Toast.makeText(requireContext(), "Comment feature coming soon!", Toast.LENGTH_SHORT).show();
-                commentInputView.setText("");
+                addNewComment(commentText);
             }
         });
     }
 
+    private void addNewComment(String commentText) {
+        // Example: You might get the current user from your global app or a local function
+        UserProfile userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
+        if (userProfile == null) {
+            Toast.makeText(requireContext(), "User not logged in.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create Comment object
+        Comment newComment = new Comment(
+                userProfile.getId(),
+                userProfile.getFullName(), // or userProfile.getUsername()
+                commentText
+        );
+
+        // Push to Firestore
+        FirebaseDB.getInstance(requireContext())
+                .addCommentToMoodEvent(moodEvent.getId(), newComment, savedComment -> {
+                    if (savedComment == null) {
+                        Toast.makeText(requireContext(), "Error posting comment.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Comment posted!", Toast.LENGTH_SHORT).show();
+                        commentInputView.setText("");
+                        // Reload comments or insert locally
+                        loadComments();
+                    }
+                });
+    }
+
     /**
-     * Updates the comments list with new data using DiffUtil for efficient updates
-     * @param newComments new list of comments to display
+     * Use DiffUtil to efficiently update the RecyclerView with new comment data.
      */
     private void updateCommentsList(List<Comment> newComments) {
         if (newComments == null) {
             newComments = new ArrayList<>();
         }
-
-        // Create a copy of the current list to avoid modification issues
+        // Copy old list
         List<Comment> oldComments = new ArrayList<>(commentsList);
 
         // Calculate differences
@@ -301,14 +329,14 @@ public class MoodDetails extends Fragment {
                 new CommentDiffCallback(oldComments, newComments)
         );
 
-        // Update data reference
-        this.commentsList.clear();
-        this.commentsList.addAll(newComments);
+        // Update our data
+        commentsList.clear();
+        commentsList.addAll(newComments);
 
-        // Dispatch changes to RecyclerView
+        // Dispatch changes to adapter
         diffResult.dispatchUpdatesTo(commentAdapter);
 
-        // Update comments header and visibility
+        // Update header and no-comments text
         if (commentsList.isEmpty()) {
             commentsHeaderView.setText("Comments (0)");
             commentsRecyclerView.setVisibility(View.GONE);
@@ -328,8 +356,8 @@ public class MoodDetails extends Fragment {
         private final List<Comment> newList;
 
         public CommentDiffCallback(List<Comment> oldList, List<Comment> newList) {
-            this.oldList = oldList != null ? oldList : new ArrayList<>();
-            this.newList = newList != null ? newList : new ArrayList<>();
+            this.oldList = (oldList != null) ? oldList : new ArrayList<>();
+            this.newList = (newList != null) ? newList : new ArrayList<>();
         }
 
         @Override
@@ -344,11 +372,9 @@ public class MoodDetails extends Fragment {
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            // Compare unique identifiers
+            // Compare by unique ID
             Comment oldComment = oldList.get(oldItemPosition);
             Comment newComment = newList.get(newItemPosition);
-
-            // Assuming Comment has an getId() method, adjust based on your Comment class implementation
             return oldComment.getId().equals(newComment.getId());
         }
 
@@ -357,26 +383,13 @@ public class MoodDetails extends Fragment {
             Comment oldComment = oldList.get(oldItemPosition);
             Comment newComment = newList.get(newItemPosition);
 
-            // Compare all relevant fields
-            // Adjust these fields based on your Comment class implementation
-            boolean sameText = Objects.equals(
-                    oldComment.getText(),
-                    newComment.getText()
-            );
+            // Compare relevant fields
+            boolean sameText = Objects.equals(oldComment.getText(), newComment.getText());
+            boolean sameUserId = Objects.equals(oldComment.getUserId(), newComment.getUserId());
+            boolean sameUserName = Objects.equals(oldComment.getUserName(), newComment.getUserName());
+            boolean sameTimestamp = (oldComment.getTimestamp() == newComment.getTimestamp());
 
-            boolean sameUserId = Objects.equals(
-                    oldComment.getUserId(),
-                    newComment.getUserId()
-            );
-
-            boolean sameTimestamp = Objects.equals(
-                    oldComment.getTimestamp(),
-                    newComment.getTimestamp()
-            );
-
-            return sameText && sameUserId && sameTimestamp;
+            return sameText && sameUserId && sameUserName && sameTimestamp;
         }
     }
-
-
 }

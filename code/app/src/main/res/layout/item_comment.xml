@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingTop="8dp"
@@ -28,7 +27,7 @@
         android:textColor="@color/text_primary"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@+id/comment_user_image"
+        app:layout_constraintStart_toEndOf="@id/comment_user_image"
         app:layout_constraintTop_toTopOf="@+id/comment_user_image"
         tools:text="John Doe" />
 
@@ -41,9 +40,9 @@
         android:textColor="@color/text_primary"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/comment_user_image"
-        app:layout_constraintTop_toBottomOf="@+id/comment_user_name"
-        tools:text="This is a sample comment text. It can be quite long and will wrap to the next line if necessary." />
+        app:layout_constraintStart_toEndOf="@id/comment_user_image"
+        app:layout_constraintTop_toBottomOf="@id/comment_user_name"
+        tools:text="This is a sample comment text. It can be quite long and will wrap to the next line." />
 
     <TextView
         android:id="@+id/comment_time"
@@ -52,16 +51,15 @@
         android:layout_marginTop="4dp"
         android:textColor="@color/text_secondary"
         android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="@+id/comment_text"
-        app:layout_constraintTop_toBottomOf="@+id/comment_text"
+        app:layout_constraintStart_toStartOf="@id/comment_text"
+        app:layout_constraintTop_toBottomOf="@id/comment_text"
         tools:text="2 hours ago" />
-
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="8dp"
         android:background="#EEEEEE"
-        app:layout_constraintTop_toBottomOf="@+id/comment_time" />
+        app:layout_constraintTop_toBottomOf="@id/comment_time" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,7 +18,7 @@
         android:layout_marginHorizontal="16dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="@drawable/search_bar"
+        android:background="@drawable/item_bg"
         android:elevation="4dp">
 
         <ImageView
@@ -84,7 +84,7 @@
         android:text="@string/no_follow_requests"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:layout_gravity="center"
-        android:textColor="#F5F0E5"
+        android:textColor="@color/customGrey"
         android:layout_marginTop="24dp"
         android:visibility="gone"/>
 
