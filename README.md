@@ -32,4 +32,4 @@
 - [Wiki Link](https://github.com/cmput301-w25/project-team_16/wiki)
 - [Scrum Board](https://github.com/orgs/cmput301-w25/projects/92)
 - [UI Mockups](https://github.com/cmput301-w25/project-team_16/wiki/UI-Mockups-and-Storyboard-Sequence)
-- [UML]
+- [UML](https://github.com/cmput301-w25/project-team_16/wiki/UML)
