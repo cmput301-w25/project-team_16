@@ -4,27 +4,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_background"
     android:fitsSystemWindows="true">
 
-    <!-- AppBarLayout with Toolbar (scroll flags removed) -->
+    <!-- AppBarLayout with scroll flags -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#01796F"
+        android:background="@android:color/transparent"
         app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/toolbar_color"
             android:elevation="4dp"
-            android:background="@drawable/toolbar_background"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:contentInsetStart="0dp"
-            app:contentInsetStartWithNavigation="0dp">
+            app:contentInsetStartWithNavigation="0dp"
+            app:layout_scrollFlags="scroll|enterAlways|snap">
+
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -46,10 +47,9 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:textSize="20sp"
-                    android:textColor="#F5F0E5"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     android:fontFamily="@font/inter_bold" />
-
                 <ImageView
                     android:id="@+id/filter_icon"
                     android:layout_width="wrap_content"
@@ -60,39 +60,36 @@
                     android:src="@drawable/ic_filter"
                     android:visibility="gone"
                     android:contentDescription="@string/filter" />
-
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Main Content with margins to avoid overlapping -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/main_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:layout_marginBottom="56dp"
         android:fillViewport="true"
-        android:contentDescription="@string/content_area_description">
+        android:contentDescription="@string/content_area_description"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <FrameLayout
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:background="@drawable/gradient_background" />
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Navigation with fixed height and no hide behavior -->
+    <!-- Bottom Navigation with scroll behavior -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="90dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="@drawable/bottom_nav_background"
-        android:backgroundTint="@android:color/transparent"
-        android:clipToOutline="true"
-        app:itemIconTint="@drawable/bottom_nav_icon_colors"
+        android:background="@color/white"
         android:fitsSystemWindows="true"
         app:itemIconSize="30dp"
         app:labelVisibilityMode="unlabeled"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
         app:menu="@menu/bottom_navigation_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

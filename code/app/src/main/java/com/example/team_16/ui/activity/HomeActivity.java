@@ -9,9 +9,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -26,6 +26,7 @@ import com.example.team_16.ui.fragments.FilterableFragment;
 import com.example.team_16.ui.fragments.Maps;
 import com.example.team_16.ui.fragments.Profile;
 import com.example.team_16.ui.fragments.Search;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Objects;
@@ -47,7 +48,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         // Enable edge-to-edge layout
-        EdgeToEdge.enable(this);
+        //EdgeToEdge.enable(this);
 
         // Check for a valid user session
         UserProfile userProfile = ((MoodTrackerApp) getApplication()).getCurrentUserProfile();
@@ -82,9 +83,8 @@ public class HomeActivity extends AppCompatActivity {
         ImageView backButton = toolbar.findViewById(R.id.navigation_icon);
         backButton.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
-        // Custom title TextView
+        //initialize toolbar
         toolbarTitle = toolbar.findViewById(R.id.toolbar_title);
-        toolbarTitle.setText("Feed");
 
         // Filter icon
         filterIcon = toolbar.findViewById(R.id.filter_icon);
@@ -111,22 +111,29 @@ public class HomeActivity extends AppCompatActivity {
 
             previousNavItemId = currentNavItemId;
             currentNavItemId = itemId;
+            showBottomNavigation();
 
             if (itemId == R.id.nav_feed) {
                 selectedFragment = new Feed();
-                title = "Explore";
+                title = "Feed";
+                makeToolbarScrollable();
             } else if (itemId == R.id.nav_search) {
                 selectedFragment = new Search();
                 title = "Search";
+                makeToolbarUnscrollable();
+
             } else if (itemId == R.id.nav_add) {
                 selectedFragment = new AddMood();
                 title = "Add Mood";
+                makeToolbarUnscrollable();
             } else if (itemId == R.id.nav_maps) {
                 selectedFragment = new Maps();
                 title = "Maps";
+                makeToolbarUnscrollable();
             } else if (itemId == R.id.nav_profile) {
                 selectedFragment = new Profile();
                 title = "Profile";
+                makeToolbarScrollable();
             }
 
             if (selectedFragment != null) {
@@ -148,6 +155,10 @@ public class HomeActivity extends AppCompatActivity {
     private void handleNavigation(Fragment fragment, String title, int itemId) {
         toolbarTitle.setText(title);
         isNavigatingFragments = true;
+
+        // Force UI elements to be visible when navigating
+        showToolbar();
+        showBottomNavigation();
 
         clearBackStack();
 
@@ -174,6 +185,50 @@ public class HomeActivity extends AppCompatActivity {
                 .commit();
 
         updateFilterIconVisibility(itemId);
+
+        // Reset scroll position using the direct ID
+        resetScrollPosition();
+    }
+
+    /**
+     * Navigate to another fragment and add it to the back stack (will show the back arrow).
+     */
+    public void navigateToFragment(Fragment fragment, String title) {
+        // Force UI elements to be visible when navigating
+        showToolbar();
+        makeToolbarUnscrollable();
+
+        setToolbarTitle(title);
+        hideBottomNavigation();
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        R.anim.fade_in,
+                        R.anim.fade_out,
+                        R.anim.fade_in,
+                        R.anim.fade_out
+                )
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+
+        // Reset scroll position
+        resetScrollPosition();
+    }
+
+    /**
+     * Helper method to reset the scroll position
+     */
+    private void resetScrollPosition() {
+        // Find the fragment container
+        View fragmentContainer = findViewById(R.id.fragment_container);
+        if (fragmentContainer != null) {
+            // Get its parent - should be the NestedScrollView
+            View parent = (View) fragmentContainer.getParent();
+            if (parent instanceof NestedScrollView) {
+                NestedScrollView scrollView = (NestedScrollView) parent;
+                scrollView.smoothScrollTo(0, 0);
+            }
+        }
     }
 
     /**
@@ -187,10 +242,17 @@ public class HomeActivity extends AppCompatActivity {
                 if (fm.getBackStackEntryCount() > 0) {
                     // If there's something in the back stack, pop it
                     fm.popBackStack();
+
+                    // After popping, check if we're on one of the main tabs
+                    if (fm.getBackStackEntryCount() == 0) {
+                        checkAndShowBottomNav();
+                    }
                 } else if (isNavigatingFragments) {
                     // If we're in a bottom nav tab with no back stack, go to 'Feed' if not on it
                     if (bottomNavigationView.getSelectedItemId() != R.id.nav_feed) {
                         bottomNavigationView.setSelectedItemId(R.id.nav_feed);
+                        showBottomNavigation(); // Ensure bottom nav is invisible
+                        makeToolbarScrollable();
                     } else {
                         finish();
                     }
@@ -200,30 +262,53 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        // Listen for back stack changes so we can update the toolbar/back arrow/filter icon
+        // Listen for back stack changes to update the toolbar/back arrow/filter icon
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             updateBackButtonVisibility();
             updateFilterIconFromCurrentFragment();
-
+            checkAndShowBottomNav();
 
             // Update toolbar title based on current fragment type
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
             if (currentFragment instanceof Feed) {
+                makeToolbarScrollable();
                 setToolbarTitle("Feed");
             } else if (currentFragment instanceof Profile) {
+                makeToolbarScrollable();
                 setToolbarTitle("Profile");
             } else if (currentFragment instanceof Maps) {
+                makeToolbarUnscrollable();
                 setToolbarTitle("Maps");
             } else if (currentFragment instanceof Search) {
                 setToolbarTitle("Search");
+                makeToolbarUnscrollable();
             } else if (currentFragment instanceof AddMood) {
+                makeToolbarUnscrollable();
                 setToolbarTitle("Add Mood");
             } else if (currentFragment instanceof FilterFragment) {
+                makeToolbarUnscrollable();
                 setToolbarTitle("Filter");
             }
             // ... add other fragments as needed
         });
 
+    }
+
+    /**
+     * Check if current fragment is one of the main 5 tabs and show bottom nav if needed
+     */
+    private void checkAndShowBottomNav() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        // Check if the current fragment is one of the main tabs
+        boolean isMainTab = (currentFragment instanceof Feed ||
+                currentFragment instanceof Search ||
+                currentFragment instanceof AddMood ||
+                currentFragment instanceof Maps ||
+                currentFragment instanceof Profile);
+
+        if (isMainTab) {
+            showBottomNavigation();
+        }
     }
 
     /**
@@ -291,28 +376,7 @@ public class HomeActivity extends AppCompatActivity {
         toolbarTitle.setLayoutParams(params);
     }
 
-    /**
-     * Navigate to another fragment and add it to the back stack (will show the back arrow).
-     */
-    public void navigateToFragment(Fragment fragment, String title) {
-        setToolbarTitle(title);
-        getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(
-                        R.anim.fade_in,
-                        R.anim.fade_out,
-                        R.anim.fade_in,
-                        R.anim.fade_out
-                )
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
-    }
-    /**
-     * Programmatically set the selected bottom navigation item.
-     */
-    public void setSelectedNavItem(int itemId) {
-        bottomNavigationView.setSelectedItemId(itemId);
-    }
+
 
     /**
      * Log out the user and go back to the login screen.
@@ -329,23 +393,7 @@ public class HomeActivity extends AppCompatActivity {
         finish();
     }
 
-    /**
-     * Hide the toolbar entirely.
-     */
-    public void hideToolbar() {
-        if (toolbar.getVisibility() == View.VISIBLE) {
-            toolbar.setVisibility(View.GONE);
-        }
-    }
 
-    /**
-     * Show the toolbar if it was hidden.
-     */
-    public void showToolbar() {
-        if (toolbar.getVisibility() == View.GONE) {
-            toolbar.setVisibility(View.VISIBLE);
-        }
-    }
 
     /**
      * Update the toolbar title text.
@@ -357,9 +405,114 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     /**
-     * Control toolbar visibility directly.
+     * Hide the toolbar with animation.
      */
-    public void setToolbarVisibility(boolean isVisible) {
-        toolbar.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    public void hideToolbar() {
+        if (toolbar != null && toolbar.getVisibility() == View.VISIBLE) {
+            // Try to collapse the AppBarLayout
+            AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+            if (appBarLayout != null) {
+                // Collapse first, then hide
+                appBarLayout.setExpanded(false, true);
+
+                // Optionally hide completely after animation
+                // Uncomment if you want the toolbar to be completely hidden
+                // appBarLayout.postDelayed(() -> toolbar.setVisibility(View.GONE), 250);
+            }
+        }
     }
+
+    /**
+     * Show the toolbar if it was hidden.
+     */
+    public void showToolbar() {
+        if (toolbar != null && toolbar.getVisibility() == View.GONE) {
+            // Make sure it's visible first
+            toolbar.setVisibility(View.VISIBLE);
+        }
+
+        // Try to expand the AppBarLayout if it exists and is not already expanded
+        AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+        if (appBarLayout != null) {
+            appBarLayout.setExpanded(true, true);
+        }
+    }
+
+
+
+    /**
+     * Hide the bottom navigation bar.
+     */
+    public void hideBottomNavigation() {
+        if (bottomNavigationView != null && bottomNavigationView.getVisibility() == View.VISIBLE) {
+            // Animate hiding
+            bottomNavigationView.animate()
+                    .translationY(bottomNavigationView.getHeight())
+                    .setDuration(200)
+                    .withEndAction(() -> bottomNavigationView.setVisibility(View.GONE))
+                    .start();
+        }
+    }
+
+    /**
+     * Show the bottom navigation if it was hidden.
+     */
+    public void showBottomNavigation() {
+        if (bottomNavigationView != null &&
+                (bottomNavigationView.getVisibility() == View.GONE || bottomNavigationView.getTranslationY() > 0)) {
+            // Make sure it's visible first
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            // Animate showing
+            bottomNavigationView.animate()
+                    .translationY(0)
+                    .setDuration(200)
+                    .start();
+        }
+    }
+
+    /**
+     * Makes the toolbar unscrollable by adjusting the AppBarLayout behavior.
+     * Call this method when you want to prevent the toolbar from scrolling with content.
+     */
+    public void makeToolbarUnscrollable() {
+        AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+        if (appBarLayout != null) {
+            // Get the layout parameters that should be of type AppBarLayout.LayoutParams
+            AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+
+            // Remove the scroll flags to make it fixed (unscrollable)
+            params.setScrollFlags(0); // 0 means no scroll flags
+
+            // Apply the updated layout parameters
+            toolbar.setLayoutParams(params);
+
+            // Ensure the toolbar is fully expanded and visible
+            appBarLayout.setExpanded(true, false);
+        }
+    }
+
+    /**
+     * Makes the toolbar scrollable by setting appropriate scroll flags.
+     * Call this method when you want to allow the toolbar to scroll with content.
+     */
+    public void makeToolbarScrollable() {
+        AppBarLayout appBarLayout = findViewById(R.id.appbar_layout);
+        if (appBarLayout != null) {
+            // Get the layout parameters
+            AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+
+            // Set scroll flags to make it scrollable
+            // AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL enables scrolling
+            // AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS makes it reappear immediately when scrolling up
+            params.setScrollFlags(
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL |
+                            AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS
+            );
+
+            // Apply the updated layout parameters
+            toolbar.setLayoutParams(params);
+        }
+    }
+
+
 }

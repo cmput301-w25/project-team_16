@@ -9,5 +9,7 @@
     <style name="Theme.Team_16" parent="Base.Theme.Team_16">
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="buttonStyle">@style/RoundedButtonStyle</item>
     </style>
 </resources>
