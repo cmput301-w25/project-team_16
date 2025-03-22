@@ -262,27 +262,22 @@ public class AddMood extends Fragment {
      */
     private void updateTriggerCounter(TextView counterView, String text) {
         int charRemaining = 20 - text.length();
-        int wordCount = text.trim().isEmpty() ? 0 : text.trim().split("\\s+").length;
-        int wordRemaining = 3 - wordCount;
 
         // Ensure it doesn't show negative values
         charRemaining = Math.max(charRemaining, 0);
-        wordRemaining = Math.max(wordRemaining, 0);
 
-        counterView.setText(charRemaining + " characters left | " + wordRemaining + " words left");
+        counterView.setText(charRemaining + " characters left");
     }
+
     /**
-     * Validates the trigger input for character length and word count.
+     * Validates the trigger input for character length.
      */
     private void validateTriggerInput() {
         String text = triggerInput.getText().toString().trim();
         int charCount = text.length();
-        int wordCount = text.isEmpty() ? 0 : text.split("\\s+").length;
 
         if (charCount > 20) {
             triggerInput.setError("Maximum 20 characters allowed.");
-        } else if (wordCount > 3) {
-            triggerInput.setError("Maximum 3 words allowed.");
         } else {
             triggerInput.setError(null); // Clear error when valid
         }
@@ -296,9 +291,8 @@ public class AddMood extends Fragment {
     private void resetForm() {
         triggerInput.setText("");  // Clear input field
         triggerInput.setError(null); // Clear any validation errors
-        triggerCounter.setText("20 characters left | 3 words left");
+        triggerCounter.setText("20 characters left");
     }
-
 
     private int getMoodButtonId(String moodName) {
         switch (moodName) {
