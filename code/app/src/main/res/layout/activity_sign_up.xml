@@ -31,7 +31,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Sign Up"
-            android:textColor="@color/white"
             android:textSize="40sp"
             android:textStyle="bold"
             android:gravity="center"
@@ -42,7 +41,7 @@
             android:layout_width="300dp"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/item_bg"
+            android:background="@drawable/edit_text_background"
             android:padding="12dp"
             android:textSize="20sp"
             android:hint="Full Name"
@@ -55,7 +54,7 @@
             android:layout_width="300dp"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/item_bg"
+            android:background="@drawable/edit_text_background"
             android:padding="12dp"
             android:textSize="20sp"
             android:hint="Username"
@@ -68,7 +67,7 @@
             android:layout_width="300dp"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/item_bg"
+            android:background="@drawable/edit_text_background"
             android:padding="12dp"
             android:textSize="20sp"
             android:hint="Email"
@@ -82,7 +81,7 @@
             android:layout_width="300dp"
             android:layout_height="60dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/item_bg"
+            android:background="@drawable/edit_text_background"
             android:padding="12dp"
             android:textSize="20sp"
             android:hint="Password"
@@ -95,14 +94,13 @@
             android:id="@+id/signUpButton"
             android:layout_width="300dp"
             android:layout_height="60dp"
-            android:backgroundTint="#F5C754"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/navy"
             android:padding="12dp"
             android:text="Sign Up"
-            android:layout_marginTop="30dp"
-            android:textColor="@android:color/background_dark"
-            android:textSize="20dp" />
+            android:textSize="20dp"
+            android:textColor="@android:color/white"/>
     </LinearLayout>
 </RelativeLayout>
-
 
 

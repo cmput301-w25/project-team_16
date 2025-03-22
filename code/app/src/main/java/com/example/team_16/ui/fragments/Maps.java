@@ -121,14 +121,6 @@ public class Maps extends Fragment implements FilterableFragment, FilterFragment
                 }
             }
 
-            if (matches && criteria.eventType != null) {
-                if (criteria.eventType.equals("Nearby Events within 5km")) {
-                    // Implement location check here
-                    if (!isEventWithin5Km(event)) {
-                        matches = false;
-                    }
-                }
-            }
 
             if (matches) {
                 filtered.add(event);

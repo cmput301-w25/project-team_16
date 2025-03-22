@@ -4,175 +4,198 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mood_frame"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:context=".ui.fragments.MoodDetails">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- CardView wrapper for margin, rounded corners and shadow -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardView"
+        <!-- Top Banner Part -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/top_banner"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="4dp"
-            app:cardUseCompatPadding="true"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:cardPreventCornerOverlap="false"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Your original card content -->
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <ImageView
+                android:id="@+id/gradient_top"
                 android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:contentDescription="@string/top_banner_background"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/gradient_shape_2" />
+
+            <TextView
+                android:id="@+id/mood_one"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/item_bg">
+                android:layout_marginStart="16dp"
+                android:text="@string/mood_happy"
+                android:textColor="#C0000000"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/emoji_one"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Profile Section -->
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/constraintLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    app:layout_constraintTop_toTopOf="parent">
+            <TextView
+                android:id="@+id/emoji_one"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:contentDescription="@string/happy_emoji_description"
+                android:text="@string/emoji_happy"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                    <ImageView
-                        android:id="@+id/gradient_top"
-                        android:layout_width="match_parent"
-                        android:layout_height="108dp"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:srcCompat="@drawable/gradient_shape_2" />
+            <TextView
+                android:id="@+id/time_ago"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:text="@string/time_ago_format"
+                android:textColor="#CFFFFF"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/profile_picture"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="13dp"
-                        android:layout_marginTop="6dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:shapeAppearanceOverlay="@style/CircularImageViewStyle"
-                        app:srcCompat="@drawable/image" />
+        <!-- Bottom Content Part with 20dp radius -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_background"
+            android:elevation="4dp"
+            android:paddingBottom="16dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/top_banner">
 
-                    <TextView
-                        android:id="@+id/first_name_last_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="13dp"
-                        android:text="First Last"
-                        android:textColor="#000000"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toEndOf="@id/profile_picture"
-                        app:layout_constraintTop_toTopOf="@id/profile_picture" />
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profile_picture"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:contentDescription="@string/profile_picture_description"
+                android:scaleType="centerCrop"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/CircularImageViewStyle"
+                app:srcCompat="@android:drawable/sym_def_app_icon" />
 
-                    <TextView
-                        android:id="@+id/profile_username"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:text="-@username"
-                        android:textColor="#888888"
-                        app:layout_constraintStart_toEndOf="@id/profile_picture"
-                        app:layout_constraintTop_toBottomOf="@id/first_name_last_name" />
+            <TextView
+                android:id="@+id/first_name_last_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/placeholder_full_name"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/profile_picture"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
-                        android:id="@+id/time_ago"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:layout_marginEnd="16dp"
-                        android:text="- 1 hour ago"
-                        android:textColor="#FFFFFF"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/profile_username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@string/placeholder_username"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                app:layout_constraintStart_toEndOf="@+id/profile_picture"
+                app:layout_constraintTop_toBottomOf="@+id/first_name_last_name" />
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/with_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/with_people_format"
+                android:textColor="@color/accent_gold"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Emoji & Mood Section -->
-                <TextView
-                    android:id="@+id/emoji_one"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:text="😊"
-                    android:textSize="22sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+            <TextView
+                android:id="@+id/mood_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/mood_description_placeholder"
+                android:textColor="@color/accent_coral"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/profile_username" />
 
-                <TextView
-                    android:id="@+id/mood_one"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Happy"
-                    android:textColor="#9E6F32"
-                    android:textSize="19sp"
-                    app:layout_constraintStart_toEndOf="@+id/emoji_one"
-                    app:layout_constraintTop_toTopOf="@+id/emoji_one" />
+            <TextView
+                android:id="@+id/mood_description2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="16dp"
+                android:textColor="@color/accent_coral"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/mood_description" />
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/mood_image"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="16dp"
+                android:contentDescription="@string/mood_image_description"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                app:layout_constraintDimensionRatio="16:9"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/mood_description2"
+                app:shapeAppearanceOverlay="@style/RoundedImageViewStyle"
+                tools:srcCompat="@tools:sample/backgrounds/scenic"
+                tools:visibility="invisible" />
 
-                <TextView
-                    android:id="@+id/with_amount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="19dp"
-                    android:layout_marginEnd="14dp"
-                    android:text="With: # Of People"
-                    android:textColor="#A9772B"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+            <TextView
+                android:id="@+id/post_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/post_time_location_format"
+                android:textColor="@color/text_tertiary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/mood_image"
+                tools:visibility="invisible" />
 
-                <TextView
-                    android:id="@+id/mood_description"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginTop="20dp"
-                    android:text="Text (20 Characters)"
-                    android:textColor="#C15837"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/emoji_one" />
-
-                <TextView
-                    android:id="@+id/mood_description2"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="13dp"
-                    android:layout_marginBottom="20dp"
-                    android:textColor="#C15837"
-                    app:layout_constraintBottom_toTopOf="@+id/post_time"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/mood_description" />
-
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/mood_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="319dp"
-                    android:layout_marginBottom="14dp"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
-                    tools:srcCompat="@tools:sample/backgrounds/scenic" />
-
-                <TextView
-                    android:id="@+id/post_time"
-                    android:layout_width="match_parent"
-                    android:layout_height="22dp"
-                    android:layout_marginBottom="10dp"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/mood_image" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
-
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

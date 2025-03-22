@@ -5,7 +5,7 @@
     <string name="accepted">Accepted</string>
     <string name="pending">Pending</string>
 
-    <string name="search_for_users">Search for users...</string>
+    <string name="search_for_users">Search for users…</string>
 
     <string name="no_follow_requests">No follow requests</string>
 
@@ -34,7 +34,7 @@
     <string name="sadness_text">☹️ Sadness</string>
     <string name="shame_text">😔 Shame</string>
     <string name="surprise_text">😳 Surprise</string>
-    <string name="trigger_optional_text">Trigger? (Optional)</string>
+    <string name="trigger_optional_text">Reason</string>
     <string name="word_limit_text">Max 3 words, 20 characters</string>
     <string name="who_were_you_with_text">Who were you with?</string>
     <string name="alone_text">Alone</string>
@@ -48,7 +48,7 @@
     <string name="save_mood_text">Save Mood</string>
     <string name="delete_entry_text">Delete Entry</string>
 
-    <string name="user_handle">@UserHandle</string>
+    <string name="user_handle">/@UserHandle</string>
     <string name="content_area_description">Main content area</string>
     <string name="feed_content_description">Mood feed list</string>
     <string name="maps_content_description">Maps showing mood data</string>
@@ -100,5 +100,43 @@
     <string name="trigger_reason">Trigger Reason</string>
     <string name="get_started">Get Started</string>
     <string name="copyright">© 2024 Team_16. All rights reserved</string>
+    <string name="user_name">User Name</string>
+
+
+    <!-- Mood Details Fragment -->
+    <string name="mood_happy">Happy</string>
+    <string name="emoji_happy">😊</string>
+    <string name="happy_emoji_description">Happy emoji</string>
+    <string name="time_ago_format">- 1 hour ago</string>
+    <string name="top_banner_background">Banner background</string>
+    <string name="profile_picture_description">Profile picture</string>
+    <string name="mood_image_description">Mood related image</string>
+    <string name="placeholder_full_name">First Last</string>
+    <string name="placeholder_username">-@username</string>
+    <string name="mood_description_placeholder">Text (20 Characters)</string>
+    <string name="with_people_format">With: # Of People</string>
+    <string name="post_time_location_format">06:50  2025–03–02  Vancouver, BC</string>
+    <string name="unknown_user">Unknown User</string>
+    <string name="unknown">\@unknown</string>
+    <string name="loading">Loading…</string>
+
+    <!-- Filter Fragment Strings -->
+    <string name="filter_trigger_reason">Search for trigger reason</string>
+    <string name="search_icon_description">Search icon</string>
+    <string name="filter_icon_description">Filter icon</string>
+    <string name="no_filters_selected">No Filters Selected</string>
+    <string name="select_filters_instruction">Select filters to refine your mood history</string>
+    <string name="time_period">Time Period</string>
+    <string name="all_time">All Time</string>
+    <string name="last_year">Last Year</string>
+    <string name="last_month">Last Month</string>
+    <string name="last_week">Last Week</string>
+    <string name="emotional_states">Emotional States</string>
+    <string name="events">Events</string>
+    <string name="my_own_mood_history">My Own Mood History</string>
+    <string name="events_from_people_i_follow">Events from People I Follow</string>
+    <string name="nearby_events_within_5km">Nearby Events within 5km</string>
+    <string name="reset">Reset</string>
+    <string name="apply">Apply</string>
 
 </resources>

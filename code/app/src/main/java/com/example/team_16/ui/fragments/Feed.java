@@ -84,17 +84,11 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
 
         adapter.setOnItemClickListener(event -> {
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .setCustomAnimations(
-                            R.anim.slide_up_enter,
-                            R.anim.fade_out,
-                            R.anim.fade_in,
-                            R.anim.slide_down_exit
-                    )
-                    .replace(R.id.fragment_container, moodDetailsFragment)
-                    .addToBackStack(null)
-                    .commit();
+
+            // Replace direct fragment transaction with navigateToFragment
+            if (getActivity() instanceof HomeActivity) {
+                ((HomeActivity) getActivity()).navigateToFragment(moodDetailsFragment, "Mood Details");
+            }
         });
         updateEmptyState();
     }
@@ -173,13 +167,6 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
                 }
             }
 
-            if (matches && criteria.eventType != null) {
-                if (criteria.eventType.equals("Events from People I Follow")) {
-                    if (event.getUserID().equals(userProfile.getId())) {
-                        matches = false;
-                    }
-                }
-            }
 
             if (matches) {
                 filtered.add(event);

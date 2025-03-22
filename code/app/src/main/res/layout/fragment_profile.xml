@@ -46,10 +46,9 @@
                     android:id="@+id/userName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="User Name"
+                    android:text="@string/user_name"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#F5F0E5"/>
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/userHandle"
@@ -57,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/user_handle"
                     android:textSize="14sp"
-                    android:textColor="#F5F0E5"/>
+                    />
             </LinearLayout>
 
             <!-- Edit Profile Button (Aligned Right) -->
@@ -67,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:text="Edit Profile"
                 android:backgroundTint="#1E293F"
-                android:textColor="#FFFFFF"/>
+                />
         </LinearLayout>
 
         <LinearLayout
@@ -82,16 +81,14 @@
                 android:layout_height="wrap_content"
                 android:text="# Following"
                 android:textSize="14sp"
-                android:textColor="@color/white"
-                android:layout_marginEnd="16dp" />
+                android:layout_marginEnd="16dp"/>
 
             <TextView
                 android:id="@+id/followersStats"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Followers"
-                android:textSize="14sp"
-                android:textColor="@color/white" />
+                android:text="# Followers"
+                android:textSize="14sp"/>
         </LinearLayout>
 
 
@@ -101,8 +98,7 @@
             android:layout_height="wrap_content"
             android:text="Total Mood Entries: "
             android:textSize="14sp"
-            android:layout_marginTop="20dp"
-            android:textColor="#F5F0E5"/>
+            android:layout_marginTop="20dp"/>
 
         <TextView
             android:id="@+id/mostFrequentMoodTxt"
@@ -110,8 +106,7 @@
             android:layout_height="wrap_content"
             android:text="Most Frequent Mood: "
             android:textSize="14sp"
-            android:layout_marginTop="4dp"
-            android:textColor="#F5F0E5"/>
+            android:layout_marginTop="4dp"/>
 
         <!-- Mood History Title -->
         <TextView
@@ -121,8 +116,7 @@
             android:text="Mood History"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_marginTop="16dp"
-            android:textColor="#F5F0E5"/>
+            android:layout_marginTop="16dp"/>
 
         <!-- RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
