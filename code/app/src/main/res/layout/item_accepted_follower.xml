@@ -54,7 +54,7 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/button_remove"
             android:layout_width="100dp"
-            android:layout_height="38dp"
+            android:layout_height="40dp"
             android:background="@drawable/unfollow_button_bg"
             android:text="@string/remove"
             android:textColor="#FF0000"
