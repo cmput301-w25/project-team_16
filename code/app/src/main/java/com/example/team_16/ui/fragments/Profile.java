@@ -194,6 +194,8 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                 });
     }
 
+    // ============= FILTER LOGIC =============
+
     @Override
     public void onFilterClicked() {
         FilterFragment filterFragment = new FilterFragment();
@@ -212,6 +214,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
     @Override
     public void onResetFilter() {
+        // Reset to full list
         filteredMoodEvents = new ArrayList<>(fullMoodEvents);
         adapter.updateData(filteredMoodEvents);
     }
@@ -223,6 +226,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         for (MoodEvent event : fullMoodEvents) {
             boolean matches = true;
 
+            // Time Period check
             if (!"All Time".equals(criteria.timePeriod)) {
                 long diffMillis = now.getTime() - event.getTimestamp().toDate().getTime();
                 long daysDiff = diffMillis / (1000 * 60 * 60 * 24);
@@ -236,6 +240,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                 }
             }
 
+            // Emotional State filter
             if (matches && criteria.emotionalState != null) {
                 String eventMood = event.getEmotionalState().getName();
                 if (!criteria.emotionalState.equalsIgnoreCase(eventMood)) {
@@ -243,6 +248,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                 }
             }
 
+            // Trigger reason filter
             if (matches && criteria.triggerReason != null && !criteria.triggerReason.isEmpty()) {
                 String trigger = event.getTrigger() == null ? "" : event.getTrigger().toLowerCase();
                 if (!trigger.contains(criteria.triggerReason.toLowerCase())) {
