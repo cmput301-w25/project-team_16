@@ -94,6 +94,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
         setupMoodHistoryRecyclerView();
     }
+
     private void setupMoodHistoryRecyclerView() {
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         moodHistoryRecyclerView.setNestedScrollingEnabled(true);
