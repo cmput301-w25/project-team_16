@@ -52,16 +52,19 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Any initialization logic
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
@@ -87,13 +90,15 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     }
 
     private void setupMoodHistoryData() {
-        PersonalMoodHistory personalMoodHistory = userProfile.getPersonalMoodHistory();
-        fullMoodEvents = personalMoodHistory.getAllEvents();
+        fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
+
         Collections.reverse(fullMoodEvents);
+
         filteredMoodEvents = new ArrayList<>(fullMoodEvents);
 
         setupMoodHistoryRecyclerView();
     }
+
     private void setupMoodHistoryRecyclerView() {
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         moodHistoryRecyclerView.setNestedScrollingEnabled(true);
@@ -152,7 +157,6 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                 });
     }
 
-    // Filter implementation
     @Override
     public void onFilterClicked() {
         FilterFragment filterFragment = new FilterFragment();
@@ -176,47 +180,45 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     }
 
     private void applyFilter(FilterFragment.FilterCriteria criteria) {
-        List<MoodEvent> filtered = new ArrayList<>();
-        Date currentDate = new Date();
+        List<MoodEvent> newFilteredList = new ArrayList<>();
+        Date now = new Date();
 
         for (MoodEvent event : fullMoodEvents) {
             boolean matches = true;
 
-            // Time Period Filter
-            if (!criteria.timePeriod.equals("All Time")) {
-                Date eventDate = event.getTimestamp().toDate();
-                long diff = currentDate.getTime() - eventDate.getTime();
-                long daysDiff = diff / (1000 * 60 * 60 * 24);
+            if (!"All Time".equals(criteria.timePeriod)) {
+                long diffMillis = now.getTime() - event.getTimestamp().toDate().getTime();
+                long daysDiff = diffMillis / (1000 * 60 * 60 * 24);
 
-                if (criteria.timePeriod.equals("Last Year") && daysDiff > 365) {
+                if ("Last Year".equals(criteria.timePeriod) && daysDiff > 365) {
                     matches = false;
-                } else if (criteria.timePeriod.equals("Last Month") && daysDiff > 30) {
+                } else if ("Last Month".equals(criteria.timePeriod) && daysDiff > 30) {
                     matches = false;
-                } else if (criteria.timePeriod.equals("Last Week") && daysDiff > 7) {
+                } else if ("Last Week".equals(criteria.timePeriod) && daysDiff > 7) {
                     matches = false;
                 }
             }
 
-            // Emotional State Filter
             if (matches && criteria.emotionalState != null) {
-                if (!criteria.emotionalState.equalsIgnoreCase(event.getEmotionalState().getName())) {
+                String eventMood = event.getEmotionalState().getName();
+                if (!criteria.emotionalState.equalsIgnoreCase(eventMood)) {
                     matches = false;
                 }
             }
 
-            // Trigger Reason Filter
-            if (matches && !criteria.triggerReason.isEmpty()) {
-                if (event.getTrigger() == null || !event.getTrigger().toLowerCase().contains(criteria.triggerReason.toLowerCase())) {
+            if (matches && criteria.triggerReason != null && !criteria.triggerReason.isEmpty()) {
+                String trigger = event.getTrigger() == null ? "" : event.getTrigger().toLowerCase();
+                if (!trigger.contains(criteria.triggerReason.toLowerCase())) {
                     matches = false;
                 }
             }
 
             if (matches) {
-                filtered.add(event);
+                newFilteredList.add(event);
             }
         }
 
-        filteredMoodEvents = filtered;
+        filteredMoodEvents = newFilteredList;
         adapter.updateData(filteredMoodEvents);
     }
 
@@ -225,68 +227,5 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         super.onResume();
         ((HomeActivity) requireActivity()).setToolbarTitle("Profile");
         refreshCounts();
-    }
-
-    // Adapter class with updateData method
-    public static class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
-        private final List<MoodEvent> moodEvents;
-        private final LayoutInflater inflater;
-        private ItemClickListener clickListener;
-
-        public MoodHistoryAdapter(Context context, List<MoodEvent> data) {
-            this.inflater = LayoutInflater.from(context);
-            this.moodEvents = data;
-        }
-
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = inflater.inflate(R.layout.fragment_profile, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            MoodEvent event = moodEvents.get(position);
-            holder.bindData(event);
-        }
-
-        @Override
-        public int getItemCount() {
-            return moodEvents.size();
-        }
-
-        public void updateData(List<MoodEvent> newEvents) {
-            moodEvents.clear();
-            moodEvents.addAll(newEvents);
-            notifyDataSetChanged();
-        }
-
-        public void setOnItemClickListener(ItemClickListener listener) {
-            this.clickListener = listener;
-        }
-
-        public interface ItemClickListener {
-            void onItemClick(MoodEvent event);
-        }
-
-        public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-            // Your view holder implementation
-            ViewHolder(View itemView) {
-                super(itemView);
-                itemView.setOnClickListener(this);
-            }
-
-            void bindData(MoodEvent event) {
-                // Bind data to views
-            }
-
-            @Override
-            public void onClick(View view) {
-                if (clickListener != null) {
-                    clickListener.onItemClick(moodEvents.get(getAdapterPosition()));
-                }
-            }
-        }
     }
 }
