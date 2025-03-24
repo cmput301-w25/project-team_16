@@ -128,12 +128,9 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         userHandle.setText("@" + userProfile.getUsername());
         totalMoodEntriesTxt.setText("Total Mood Entries: " + fullMoodEvents.size());
 
-        // Find the most frequent mood event
         String mostFrequentMood = getMostFrequentMood();
         if (mostFrequentMood != null) {
             mostFrequentMoodTxt.setText("Most Frequent Mood: " + mostFrequentMood);
-        } else {
-            mostFrequentMoodTxt.setText("Most Frequent Mood: N/A");
         }
     }
 
@@ -144,7 +141,6 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
             EmotionalState mood = event.getEmotionalState();
             String moodString = mood.toString();
             String moodName = moodString.substring(moodString.indexOf("'") + 1, moodString.lastIndexOf("'"));
-
             moodCount.put(moodName, moodCount.getOrDefault(moodName, 0) + 1);
         }
         String mostFrequent = null;
