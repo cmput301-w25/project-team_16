@@ -218,7 +218,7 @@ public class FirebaseDB {
             FirebaseCallback<List<MoodEvent>> callback) {
 
         Query query = db.collection(MOODS_COLLECTION)
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("userID", userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING);
 
         // Apply date filter if startDate is provided

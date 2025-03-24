@@ -30,107 +30,121 @@ import java.util.Map;
  * Adapter responsible for displaying and updating recyclerView of mood events
  */
 public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
-    private Context context;
-    private List<MoodEvent> moodEvents;
-    private OnItemClickListener listener;
 
-    /**
-     * Interface for item clicks
-     */
+    private final Context context;
+    private final List<MoodEvent> moodEvents;
+    private OnItemClickListener onItemClickListener;
+
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
     }
+
     public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
+        this.onItemClickListener = listener;
     }
 
+    // Constructor
     public MoodHistoryAdapter(Context context, List<MoodEvent> moodEvents) {
         this.context = context;
-        this.moodEvents = moodEvents != null ? moodEvents : new ArrayList<>(); // Ensure it's never null
+        this.moodEvents = moodEvents;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the item layout
-        View view = LayoutInflater.from(context).inflate(R.layout.mood_history_recyclerview, parent, false);
+        View view = LayoutInflater.from(context)
+                .inflate(R.layout.mood_history_recyclerview, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MoodEvent event = moodEvents.get(position);
-        holder.mood_view.setText(event.getEmotionalState().getName());
-        String date = event.getFormattedDate();
+
+        // Basic data
+        holder.moodView.setText(event.getEmotionalState().getName());
+        holder.withAmountView.setText(event.getSocialSituation() == null
+                ? "" : event.getSocialSituation());
+        holder.moodDescription.setText(event.getTrigger());
+        holder.fullNameView.setText("Loading...");
+        holder.profileUsername.setText("");
+
         Date actualDate = event.getTimestamp().toDate();
-        holder.with_amount.setText(event.getSocialSituation());
-        holder.mood_description.setText(event.getTrigger());
-        holder.time_view.setText(date);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime eventDateTime = LocalDateTime.ofInstant(
+                    actualDate.toInstant(), ZoneId.systemDefault()
+            );
+            Duration duration = Duration.between(eventDateTime, now);
+            int hours = (int) duration.toHours();
 
-        holder.full_name.setText("Loading...");
-        holder.profile_username.setText("");
+            if (hours >= 24) {
+                int days = hours / 24;
+                holder.timeView.setText(days + " days ago");
+            } else {
+                holder.timeView.setText(hours + " hours ago");
+            }
+        } else {
+            holder.timeView.setText("Time not supported");
+        }
 
-        FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), new FirebaseDB.FirebaseCallback<Map<String, Object>>() {
-            @Override
-            public void onCallback(Map<String, Object> userData) {
-                if (userData != null) {
-                    String fullName = (String) userData.get("fullName");
-                    String username = "@" + (String) userData.get("username");
-                    holder.full_name.setText(fullName != null ? fullName : "Unknown");
-                    holder.profile_username.setText(username != null ? username : "@unknown");
-                } else {
-                    holder.full_name.setText("Unknown User");
-                    holder.profile_username.setText("@unknown");
-                }
+        FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), userData -> {
+            if (userData != null) {
+                String fullName = (String) userData.get("fullName");
+                String username = (String) userData.get("username");
+                holder.fullNameView.setText(fullName != null ? fullName : "Unknown");
+                holder.profileUsername.setText(
+                        username != null ? "@" + username : "@unknown"
+                );
+            } else {
+                holder.fullNameView.setText("Unknown User");
+                holder.profileUsername.setText("@unknown");
             }
         });
 
-        // Handle time_ago calculation
-        String time_ago = "";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
-            Duration duration = Duration.between(eventDateTime, currentDateTime); // Note: order was reversed
-            int hour_difference = (int) Math.abs(duration.toHours());
-            if (hour_difference >= 24) {
-                int day_difference = Math.floorDiv(hour_difference, 24);
-                time_ago = day_difference + " days ago";
-            } else {
-                time_ago = hour_difference + " hours ago";
-            }
-            holder.time_view.setText(time_ago);
-        } else {
-            holder.time_view.setVisibility(View.GONE); // Hide if not supported
-        }
-        Log.d("MoodHistory", "Number of events: " + moodEvents.size());
-
+        Log.d("MoodHistoryAdapter", "Binding item at position " + position);
     }
 
     @Override
     public int getItemCount() {
-        return moodEvents.size(); // Return the size of moodEvents list
+        return moodEvents.size();
     }
 
-    // ViewHolder class
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView mood_view, emoji_view, time_view, full_name,
-                profile_username, with_amount, mood_description, post_time;
-        ImageView profile_picture, mood_image;
+    public void updateData(List<MoodEvent> newData) {
+        moodEvents.clear();
+        moodEvents.addAll(newData);
+        notifyDataSetChanged();
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView moodView, timeView, fullNameView, profileUsername, withAmountView, moodDescription;
+        ImageView profilePicture, moodImage;
+        TextView emojiView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            mood_view = itemView.findViewById(R.id.moodView);
-            emoji_view = itemView.findViewById(R.id.emojiView);
-            time_view = itemView.findViewById(R.id.timeView);
-            profile_picture = itemView.findViewById(R.id.profilePicture);
-            full_name = itemView.findViewById(R.id.fullNameView);
-            profile_username = itemView.findViewById(R.id.profileUsername);
-            with_amount = itemView.findViewById(R.id.withAmountView);
-            mood_description = itemView.findViewById(R.id.moodDescription);
-            mood_image= itemView.findViewById(R.id.moodImage);
-            post_time = itemView.findViewById(R.id.postTime);
+
+            moodView        = itemView.findViewById(R.id.moodView);
+            emojiView       = itemView.findViewById(R.id.emojiView);
+            timeView        = itemView.findViewById(R.id.timeView);
+            profilePicture  = itemView.findViewById(R.id.profilePicture);
+            fullNameView    = itemView.findViewById(R.id.fullNameView);
+            profileUsername = itemView.findViewById(R.id.profileUsername);
+            withAmountView  = itemView.findViewById(R.id.withAmountView);
+            moodDescription = itemView.findViewById(R.id.moodDescription);
+            moodImage       = itemView.findViewById(R.id.moodImage);
+            itemView.setOnClickListener(this);
         }
 
+        @Override
+        public void onClick(View view) {
+            if (onItemClickListener != null) {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    MoodEvent event = moodEvents.get(position);
+                    onItemClickListener.onItemClick(event);
+                }
+            }
+        }
     }
-
 }
