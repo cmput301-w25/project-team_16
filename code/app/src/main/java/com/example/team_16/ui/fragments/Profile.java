@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
+import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.PersonalMoodHistory;
 import com.example.team_16.models.UserProfile;
@@ -26,7 +27,9 @@ import com.example.team_16.ui.adapters.MoodHistoryAdapter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Profile extends Fragment implements FilterableFragment, FilterFragment.FilterListener {
 
@@ -34,6 +37,8 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     private TextView userHandle;
     private TextView followingStats;
     private TextView followersStats;
+    private TextView totalMoodEntriesTxt;
+    private  TextView mostFrequentMoodTxt;
     private UserProfile userProfile;
     private RecyclerView moodHistoryRecyclerView;
 
@@ -86,13 +91,15 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         userHandle = view.findViewById(R.id.userHandle);
         followingStats = view.findViewById(R.id.followingStats);
         followersStats = view.findViewById(R.id.followersStats);
+        totalMoodEntriesTxt = view.findViewById(R.id.totalMoodEntriesTxt);
+        mostFrequentMoodTxt = view.findViewById(R.id.mostFrequentMoodTxt);
         moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
     }
 
     private void setupMoodHistoryData() {
         fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
 
-        Collections.reverse(fullMoodEvents);
+        //Collections.reverse(fullMoodEvents);
 
         filteredMoodEvents = new ArrayList<>(fullMoodEvents);
 
@@ -119,6 +126,36 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     private void setupProfileInfo() {
         username.setText(userProfile.getFullName());
         userHandle.setText("@" + userProfile.getUsername());
+        totalMoodEntriesTxt.setText("Total Mood Entries: " + fullMoodEvents.size());
+
+        // Find the most frequent mood event
+        String mostFrequentMood = getMostFrequentMood();
+        if (mostFrequentMood != null) {
+            mostFrequentMoodTxt.setText("Most Frequent Mood: " + mostFrequentMood);
+        } else {
+            mostFrequentMoodTxt.setText("Most Frequent Mood: N/A");
+        }
+    }
+
+    private String getMostFrequentMood() {
+        if (fullMoodEvents.isEmpty()) return null;
+        HashMap<String, Integer> moodCount = new HashMap<>();
+        for (MoodEvent event : fullMoodEvents) {
+            EmotionalState mood = event.getEmotionalState();
+            String moodString = mood.toString();
+            String moodName = moodString.substring(moodString.indexOf("'") + 1, moodString.lastIndexOf("'"));
+
+            moodCount.put(moodName, moodCount.getOrDefault(moodName, 0) + 1);
+        }
+        String mostFrequent = null;
+        int maxCount = 0;
+        for (Map.Entry<String, Integer> entry : moodCount.entrySet()) {
+            if (entry.getValue() > maxCount) {
+                mostFrequent = entry.getKey();
+                maxCount = entry.getValue();
+            }
+        }
+        return mostFrequent;
     }
 
     private void setupClickListeners() {
