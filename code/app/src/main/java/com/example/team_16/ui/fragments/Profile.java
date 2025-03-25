@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -84,6 +85,23 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         setupProfileInfo();
         setupClickListeners();
         refreshCounts();
+
+        // new code: Setup Edit Profile button click listener
+        Button editProfileButton = view.findViewById(R.id.btnEditProfile);
+        editProfileButton.setOnClickListener(v -> {
+            // Navigate to the EditProfileFragment
+            EditProfileFragment editFragment = new EditProfileFragment();
+            // Optionally pass current profile data via Bundle
+            Bundle bundle = new Bundle();
+            bundle.putString("username", userProfile.getUsername());
+            bundle.putString("fullName", userProfile.getFullName());
+
+            editFragment.setArguments(bundle);
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, editFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
     private void initializeViews(View view) {
