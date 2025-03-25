@@ -303,11 +303,29 @@ UserProfile {
      * @param email New email address
      * @param callback Callback to handle update result
      */
+    // Derek: I edited teh update profile , the new version is below this one
     public void updateProfile(String fullName, String email, FirebaseDB.FirebaseCallback<Boolean> callback) {
-        firebaseDB.updateUserProfile(this.id, fullName, email, success -> {
+        firebaseDB.updateUserProfile(this.id, fullName, email, null, success -> {  // pass null for username
             if (success) {
                 this.fullName = fullName;
                 this.email = email;
+            }
+            if (callback != null) {
+                callback.onCallback(success);
+            }
+        });
+    }
+
+    /**
+     * Update user profile (fullName, email, username)
+     */
+    // have not implemented email yet
+    public void updateProfile(String fullName, String email, String username, FirebaseDB.FirebaseCallback<Boolean> callback) {
+        firebaseDB.updateUserProfile(this.id, fullName, email, username, success -> {
+            if (success) {
+                this.fullName = fullName;
+                this.email = email;
+                this.username = username;
             }
             if (callback != null) {
                 callback.onCallback(success);
@@ -332,6 +350,11 @@ UserProfile {
 
     public String getUsername() {
         return username;
+    }
+
+    // new code: Setter for username to support updating the username in EditProfileFragment
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getFullName() {
