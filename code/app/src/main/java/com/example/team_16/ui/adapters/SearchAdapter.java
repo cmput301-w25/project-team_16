@@ -22,6 +22,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     public interface OnFollowClickListener {
         void onFollowClick(String targetUserId);
         void onUnfollowClick(String targetUserId);
+
+        // New - added to click on users
+        void onUserClick(String targetUserId);
+
     }
 
     public SearchAdapter(OnFollowClickListener listener) {
@@ -54,6 +58,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         String userId = (String) user.get("id");
 
         holder.personName.setText(username);
+
+        // New code to click on profile - Entire row clicked -> open user profile
+        holder.itemView.setOnClickListener(v -> {
+            if (followClickListener != null) {
+                followClickListener.onUserClick(userId);
+            }
+        });
+        // end of new code
 
         if (followingIds.contains(userId)) {
             // UNFOLLOW state
