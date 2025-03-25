@@ -122,7 +122,6 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                     .commit();
         });
     }
-
     private void setupProfileInfo() {
         username.setText(userProfile.getFullName());
         userHandle.setText("@" + userProfile.getUsername());
@@ -136,13 +135,17 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
     private String getMostFrequentMood() {
         if (fullMoodEvents.isEmpty()) return null;
+
+        // HashMap to store mood counts
         HashMap<String, Integer> moodCount = new HashMap<>();
+
+        // Loop through all mood events and count their occurrences
         for (MoodEvent event : fullMoodEvents) {
-            EmotionalState mood = event.getEmotionalState();
-            String moodString = mood.toString();
-            String moodName = moodString.substring(moodString.indexOf("'") + 1, moodString.lastIndexOf("'"));
-            moodCount.put(moodName, moodCount.getOrDefault(moodName, 0) + 1);
+            EmotionalState mood = event.getEmotionalState(); // Assuming this gives you the full EmotionalState object
+            String moodString = mood.getEmoji(); // Get the emoji corresponding to the mood
+            moodCount.put(moodString, moodCount.getOrDefault(moodString, 0) + 1);
         }
+        // Determine the most frequent mood (emoji)
         String mostFrequent = null;
         int maxCount = 0;
         for (Map.Entry<String, Integer> entry : moodCount.entrySet()) {
@@ -151,6 +154,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                 maxCount = entry.getValue();
             }
         }
+
         return mostFrequent;
     }
 
