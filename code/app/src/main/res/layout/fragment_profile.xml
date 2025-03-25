@@ -131,6 +131,40 @@
             android:layout_height="match_parent"
             android:layout_marginTop="8dp"/>
 
+        <!-- Empty State View -->
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_empty_state"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No Mood Events Found"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Adjust your filters or check back later."
+                android:textSize="14sp"
+                android:textColor="#F5F0E5"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
     </LinearLayout>
+
+
 
 </androidx.core.widget.NestedScrollView>

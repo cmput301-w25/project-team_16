@@ -192,6 +192,44 @@
 
         </GridLayout>
 
+        <!-- Post Type Selection -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Post Type"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="1"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/public_post_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="2dp"
+                android:backgroundTint="#ecd4d3"
+                android:text="Public"
+                android:textColor="#573d3e" />
+
+            <Button
+                android:id="@+id/private_post_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="2dp"
+                android:backgroundTint="#ecd4d3"
+                android:text="Private"
+                android:textColor="#573d3e" />
+        </GridLayout>
+
+
         <!-- Add Photo -->
         <TextView
             android:layout_width="wrap_content"
