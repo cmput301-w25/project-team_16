@@ -1,6 +1,7 @@
 package com.example.team_16.ui.fragments;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -12,9 +13,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
+import android.Manifest;
 import com.example.team_16.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -34,7 +39,8 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
     private LatLng selectedLatLng;
     private String selectedPlaceName;
     private Button saveButton, cancelButton;
-    private Context context;
+    private FusedLocationProviderClient fusedLocationClient;
+
 
     public interface LocationSelectionListener {
         void onLocationSelected(LatLng latLng, String placeName);
@@ -55,6 +61,9 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
         // Initialize buttons
         saveButton = view.findViewById(R.id.save_location_button);
         cancelButton = view.findViewById(R.id.cancel_location_button);
+
+        // Initialize location provider
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         // Initialize the map fragment
         SupportMapFragment mapFragment = (SupportMapFragment)
@@ -95,6 +104,7 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
         mMap.getUiSettings().setScrollGesturesEnabled(true); // Allow scrolling
         mMap.getUiSettings().setRotateGesturesEnabled(true); // Allow rotation
 
+        /*
         // Move the camera to a default location (Edmonton)
         LatLng defaultLocation = new LatLng(53.6316, -113.3239);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10));
@@ -109,10 +119,35 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
             getAddressFromLatLng(latLng);
         });
     }
+    */
 
-    public interface AddressCallback {
-        void onAddressRetrieved(String placeName);
+        try {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                if (location != null) {
+                    LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f));
+                    selectedLatLng = userLatLng;
+                    selectedMarker = mMap.addMarker(new MarkerOptions().position(userLatLng).title("Your Location"));
+                    getAddressFromLatLng(userLatLng);
+                } else {
+                    Toast.makeText(getContext(), "Could not get current location.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Location permission error.", Toast.LENGTH_SHORT).show();
+        }
+
+        mMap.setOnMapClickListener(latLng -> {
+            if (selectedMarker != null) {
+                selectedMarker.remove();
+            }
+            selectedLatLng = latLng;
+            selectedMarker = mMap.addMarker(new MarkerOptions().position(latLng).title("Selected Location"));
+            getAddressFromLatLng(latLng);
+        });
     }
+
 
     /**
      * Uses Geocoder to retrieve a place name from latitude and longitude.

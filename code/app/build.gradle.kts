@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.core)
     implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     testImplementation(libs.espresso.core)
     testImplementation(libs.ext.junit)
