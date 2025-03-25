@@ -122,14 +122,19 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                     .commit();
         });
     }
+    private String getMostRecentMood() {
+        if (fullMoodEvents.isEmpty()) return null;
+        MoodEvent recentEvent = fullMoodEvents.get(0);
+        return recentEvent.getEmotionalState().getEmoji();
+    }
     private void setupProfileInfo() {
         username.setText(userProfile.getFullName());
         userHandle.setText("@" + userProfile.getUsername());
         totalMoodEntriesTxt.setText("Total Mood Entries: " + fullMoodEvents.size());
 
-        String mostFrequentMood = getMostFrequentMood();
-        if (mostFrequentMood != null) {
-            mostFrequentMoodTxt.setText("Most Frequent Mood: " + mostFrequentMood);
+        String recentMood = getMostRecentMood();
+        if (recentMood != null) {
+            mostFrequentMoodTxt.setText("Most Recent Mood: " + recentMood);
         }
     }
 
@@ -231,30 +236,36 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                 long diffMillis = now.getTime() - event.getTimestamp().toDate().getTime();
                 long daysDiff = diffMillis / (1000 * 60 * 60 * 24);
 
-                if ("Last Year".equals(criteria.timePeriod) && daysDiff > 365) {
-                    matches = false;
-                } else if ("Last Month".equals(criteria.timePeriod) && daysDiff > 30) {
-                    matches = false;
-                } else if ("Last Week".equals(criteria.timePeriod) && daysDiff > 7) {
-                    matches = false;
+                switch (criteria.timePeriod) {
+                    case "Last Year":
+                        if (daysDiff > 365) matches = false;
+                        break;
+                    case "Last Month":
+                        if (daysDiff > 30) matches = false;
+                        break;
+                    case "Last Week":
+                        if (daysDiff > 7) matches = false;
+                        break;
                 }
             }
 
             // Emotional State filter
             if (matches && criteria.emotionalState != null) {
-                String eventMood = event.getEmotionalState().getName();
-                if (!criteria.emotionalState.equalsIgnoreCase(eventMood)) {
+                String eventMoodName = event.getEmotionalState().getName();
+                if (!criteria.emotionalState.equalsIgnoreCase(eventMoodName)) {
                     matches = false;
                 }
             }
 
             // Trigger reason filter
             if (matches && criteria.triggerReason != null && !criteria.triggerReason.isEmpty()) {
-                String trigger = event.getTrigger() == null ? "" : event.getTrigger().toLowerCase();
+                String trigger = event.getTrigger() != null ? event.getTrigger().toLowerCase() : "";
                 if (!trigger.contains(criteria.triggerReason.toLowerCase())) {
                     matches = false;
                 }
             }
+
+            // Event type filters are ignored for Profile as they're hidden
 
             if (matches) {
                 newFilteredList.add(event);
