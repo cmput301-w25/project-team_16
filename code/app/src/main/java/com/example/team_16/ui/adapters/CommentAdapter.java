@@ -22,6 +22,21 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     private List<Comment> comments;
 
+    // new code
+    // Called when the user taps on a commenter's profile pass the commenter’s userId
+    public interface OnCommentUserClickListener {
+        void onUserClick(String userId);
+    }
+
+    private OnCommentUserClickListener userClickListener;
+
+
+     // Setter for the user-click listener
+    public void setOnCommentUserClickListener(OnCommentUserClickListener listener) {
+        this.userClickListener = listener;
+    }
+    // new code end
+
     public CommentAdapter(List<Comment> comments) {
         this.comments = comments;
     }
@@ -37,7 +52,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment comment = comments.get(position);
-        holder.bind(comment);
+        holder.bind(comment, userClickListener);
     }
 
     @Override
@@ -59,12 +74,24 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             commentTime = itemView.findViewById(R.id.comment_time);
         }
 
-        public void bind(Comment comment) {
+        public void bind(Comment comment, OnCommentUserClickListener userClickListener) {
             // Basic placeholder logic
             userImage.setImageResource(android.R.drawable.sym_def_app_icon);
 
             userName.setText(comment.getUserName());
             commentText.setText(comment.getText());
+
+            // new code
+            // Let user tap on the user's image or name to see their profile
+            View.OnClickListener profileClickListener = v -> {
+                if (userClickListener != null) {
+                    userClickListener.onUserClick(comment.getUserId());
+                }
+            };
+            userImage.setOnClickListener(profileClickListener);
+            userName.setOnClickListener(profileClickListener);
+            // end new code
+
 
             // Compute "time ago" from comment.getTimestamp() (stored as a long)
             long timestampMillis = comment.getTimestamp();

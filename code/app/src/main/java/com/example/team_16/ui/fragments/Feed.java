@@ -82,16 +82,30 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
         adapter = new FeedAdapter(getContext(), moodEvents);
         recyclerView.setAdapter(adapter);
 
+        // add new code to select a users profile
+        // If user taps entire feed item => open MoodDetails
         adapter.setOnItemClickListener(event -> {
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
-
-            // Replace direct fragment transaction with navigateToFragment
             if (getActivity() instanceof HomeActivity) {
-                ((HomeActivity) getActivity()).navigateToFragment(moodDetailsFragment, "Mood Details");
+                ((HomeActivity) getActivity())
+                        .navigateToFragment(moodDetailsFragment, "Mood Details");
             }
         });
+
+        // If user taps the post owner's profile then open OtherUserProfileFragment
+        adapter.setOnProfileClickListener(userId -> {
+            OtherUserProfileFragment fragment = OtherUserProfileFragment.newInstance(userId);
+            if (getActivity() instanceof HomeActivity) {
+                ((HomeActivity) getActivity())
+                        .navigateToFragment(fragment, "User Profile");
+            }
+        });
+
+        // update the empty state
         updateEmptyState();
     }
+
+    // end new code
 
     private void updateEmptyState() {
         if (moodEvents.isEmpty()) {
