@@ -8,10 +8,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,10 +45,13 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     private  TextView mostFrequentMoodTxt;
     private UserProfile userProfile;
     private RecyclerView moodHistoryRecyclerView;
+    private FilterFragment.FilterCriteria currentCriteria = null;
 
     private List<MoodEvent> fullMoodEvents;
-    private List<MoodEvent> filteredMoodEvents;
+    private List<MoodEvent> moodEvents;
     private MoodHistoryAdapter adapter;
+
+    private LinearLayout emptyState;
 
     public Profile() {
         // Required empty public constructor
@@ -112,15 +118,12 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         totalMoodEntriesTxt = view.findViewById(R.id.totalMoodEntriesTxt);
         mostFrequentMoodTxt = view.findViewById(R.id.mostFrequentMoodTxt);
         moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
+        emptyState = view.findViewById(R.id.emptyState);
     }
 
     private void setupMoodHistoryData() {
         fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
-
-        //Collections.reverse(fullMoodEvents);
-
-        filteredMoodEvents = new ArrayList<>(fullMoodEvents);
-
+        moodEvents = new ArrayList<>(fullMoodEvents);
         setupMoodHistoryRecyclerView();
     }
 
@@ -128,7 +131,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         moodHistoryRecyclerView.setNestedScrollingEnabled(true);
 
-        adapter = new MoodHistoryAdapter(getContext(), filteredMoodEvents);
+        adapter = new MoodHistoryAdapter(getContext(), moodEvents);
         moodHistoryRecyclerView.setAdapter(adapter);
 
         adapter.setOnItemClickListener(event -> {
@@ -217,68 +220,77 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                 });
     }
 
-    // ============= FILTER LOGIC =============
-
     @Override
     public void onFilterClicked() {
         FilterFragment filterFragment = new FilterFragment();
+
         Bundle args = new Bundle();
         args.putBoolean("hide_event_type_filters", true);
         filterFragment.setArguments(args);
+
         filterFragment.setFilterListener(this);
         ((HomeActivity) requireActivity()).navigateToFragment(filterFragment, "Filter");
     }
 
     @Override
     public void onApplyFilter(FilterFragment.FilterCriteria criteria) {
+        currentCriteria = criteria;
         applyFilter(criteria);
         getParentFragmentManager().popBackStack();
     }
 
     @Override
     public void onResetFilter() {
-        // Reset to full list
-        filteredMoodEvents = new ArrayList<>(fullMoodEvents);
-        adapter.updateData(filteredMoodEvents);
+        currentCriteria = null;
+        moodEvents = new ArrayList<>(fullMoodEvents);
+        if (adapter != null) {
+            adapter.updateData(moodEvents);
+        }
+        updateEmptyState();
+    }
+    private void updateEmptyState() {
+        if (moodEvents.isEmpty()) {
+            emptyState.setVisibility(View.VISIBLE);
+            moodHistoryRecyclerView.setVisibility(View.GONE);
+        } else {
+            emptyState.setVisibility(View.GONE);
+            moodHistoryRecyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void applyFilter(FilterFragment.FilterCriteria criteria) {
+
         List<MoodEvent> newFilteredList = new ArrayList<>();
-        Date now = new Date();
+        Date currentDate = new Date();
 
         for (MoodEvent event : fullMoodEvents) {
             boolean matches = true;
 
-            // Time Period check
-            if (!"All Time".equals(criteria.timePeriod)) {
-                long diffMillis = now.getTime() - event.getTimestamp().toDate().getTime();
-                long daysDiff = diffMillis / (1000 * 60 * 60 * 24);
+            // Time Period Filter
+            if (!criteria.timePeriod.equals("All Time")) {
+                Date eventDate = event.getTimestamp().toDate();
+                long diff = currentDate.getTime() - eventDate.getTime();
+                long daysDiff = diff / (1000 * 60 * 60 * 24);
 
-                switch (criteria.timePeriod) {
-                    case "Last Year":
-                        if (daysDiff > 365) matches = false;
-                        break;
-                    case "Last Month":
-                        if (daysDiff > 30) matches = false;
-                        break;
-                    case "Last Week":
-                        if (daysDiff > 7) matches = false;
-                        break;
+                if (criteria.timePeriod.equals("Last Year") && daysDiff > 365) {
+                    matches = false;
+                } else if (criteria.timePeriod.equals("Last Month") && daysDiff > 30) {
+                    matches = false;
+                } else if (criteria.timePeriod.equals("Last Week") && daysDiff > 7) {
+                    matches = false;
                 }
             }
 
             // Emotional State filter
             if (matches && criteria.emotionalState != null) {
-                String eventMoodName = event.getEmotionalState().getName();
-                if (!criteria.emotionalState.equalsIgnoreCase(eventMoodName)) {
+                if (!criteria.emotionalState.equalsIgnoreCase(event.getEmotionalState().getName())) {
                     matches = false;
                 }
             }
 
-            // Trigger reason filter
-            if (matches && criteria.triggerReason != null && !criteria.triggerReason.isEmpty()) {
-                String trigger = event.getTrigger() != null ? event.getTrigger().toLowerCase() : "";
-                if (!trigger.contains(criteria.triggerReason.toLowerCase())) {
+            // Trigger Reason Filter
+            if (matches && !TextUtils.isEmpty(criteria.triggerReason)) {
+                if (event.getTrigger() == null || !event.getTrigger().toLowerCase().contains(criteria.triggerReason.toLowerCase())) {
                     matches = false;
                 }
             }
@@ -290,8 +302,24 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
             }
         }
 
-        filteredMoodEvents = newFilteredList;
-        adapter.updateData(filteredMoodEvents);
+        moodEvents = newFilteredList;
+        if (adapter != null) {
+            adapter.updateData(moodEvents);
+        }
+        updateEmptyState();
+
+    }
+    private void loadData() {
+        fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
+        if (currentCriteria != null) {
+            applyFilter(currentCriteria);
+        } else {
+            moodEvents = new ArrayList<>(fullMoodEvents);
+            if (adapter != null) {
+                adapter.updateData(moodEvents);
+            }
+        }
+        updateEmptyState();
     }
 
     @Override
@@ -299,5 +327,6 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         super.onResume();
         ((HomeActivity) requireActivity()).setToolbarTitle("Profile");
         refreshCounts();
+        loadData();
     }
 }

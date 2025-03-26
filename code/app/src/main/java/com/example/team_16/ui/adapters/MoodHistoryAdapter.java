@@ -236,4 +236,5 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
                     && Objects.equals(oldEvent.getTimestamp(), newEvent.getTimestamp());
         }
     }
+
 }
