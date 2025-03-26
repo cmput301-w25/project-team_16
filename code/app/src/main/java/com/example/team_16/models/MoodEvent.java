@@ -31,6 +31,7 @@ public class MoodEvent {
 
     /** Optional description of the social context (e.g., "With friends") */
     private String socialSituation;
+    private String photoFilename;
 
     /**
      * Default constructor required for Firestore deserialization.
@@ -204,6 +205,14 @@ public class MoodEvent {
      */
     public void setSocialSituation(String socialSituation) {
         this.socialSituation = socialSituation;
+    }
+
+    public String getPhotoFilename() {
+        return photoFilename;
+    }
+
+    public void setPhotoFilename(String photoFilename) {
+        this.photoFilename = photoFilename;
     }
 
     /**

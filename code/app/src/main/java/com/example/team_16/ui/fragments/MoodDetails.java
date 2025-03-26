@@ -21,6 +21,9 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
@@ -30,6 +33,7 @@ import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.adapters.CommentAdapter;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -55,7 +59,10 @@ public class MoodDetails extends Fragment {
     private TextView profile_username_view;
     private TextView with_amount_view;
     private TextView mood_description_view;
+    private TextView mood_description_view2;
     private TextView post_time_view;
+
+    private ShapeableImageView mood_image_view;
     private ImageView gradient_top_view;
     private ConstraintLayout bottom_content_view;
 
@@ -141,8 +148,9 @@ public class MoodDetails extends Fragment {
         profile_username_view = moodDetailsContainer.findViewById(R.id.profile_username);
         with_amount_view = moodDetailsContainer.findViewById(R.id.with_amount);
         mood_description_view = moodDetailsContainer.findViewById(R.id.mood_description);
+        mood_description_view2 = moodDetailsContainer.findViewById(R.id.mood_description2);
         TextView mood_description2_view = moodDetailsContainer.findViewById(R.id.mood_description2);
-        ShapeableImageView mood_image_view = moodDetailsContainer.findViewById(R.id.mood_image);
+        mood_image_view = moodDetailsContainer.findViewById(R.id.mood_image);
         post_time_view = moodDetailsContainer.findViewById(R.id.post_time);
 
         // Find gradient views for styling
@@ -162,6 +170,7 @@ public class MoodDetails extends Fragment {
 
         // Set up mood details data
         displayMoodDetails();
+        Log.e("log", "hello...2");
 
         // Set up comments RecyclerView
         setupCommentsRecyclerView();
@@ -202,6 +211,11 @@ public class MoodDetails extends Fragment {
 
         // Set social situation and trigger
         with_amount_view.setText(moodEvent.getSocialSituation());
+
+        if (moodEvent.getTrigger() == "" && moodEvent.getPhotoFilename() != null) {
+            mood_description_view.setVisibility(View.GONE);
+            mood_description_view2.setVisibility(View.GONE);
+        }
         mood_description_view.setText(moodEvent.getTrigger());
 
         // Set formatted date
@@ -212,6 +226,23 @@ public class MoodDetails extends Fragment {
         // Set initial loading state for user data
         first_name_last_name_view.setText(R.string.loading);
         profile_username_view.setText("");
+
+        if (moodEvent.getPhotoFilename() != null) {
+            mood_image_view.setVisibility(View.VISIBLE);
+
+            FirebaseDB.getInstance(requireContext()).getReference(moodEvent.getPhotoFilename())
+                    .getDownloadUrl()
+                    .addOnSuccessListener(uri -> {
+                        Glide.with(requireContext())
+                                .load(uri)
+                                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                                .into(mood_image_view);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(getContext(), "Failed to load image ", Toast.LENGTH_SHORT).show();
+                    });
+
+        }
 
         // Fetch user data using callback
         FirebaseDB.getInstance(requireContext())

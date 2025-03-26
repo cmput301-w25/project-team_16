@@ -2,11 +2,16 @@ package com.example.team_16.ui.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -19,10 +24,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
@@ -30,7 +40,12 @@ import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.EmotionalStateRegistry;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 
 /**
@@ -44,12 +59,14 @@ public class AddMood extends Fragment {
     private TextView triggerCounter;
     private Button saveMoodButton, deleteMoodButton, takePhotoButton, choosePhotoButton, addLocationButton;
     private Button aloneButton, onePersonButton, twoPersonButton, crowdButton;
-    private Uri selectedPhotoUri;
+    private Uri selectedPhotoUri = null;
+    private Uri cameraImageUri = null;
     private String selectedMood, socialSetting;
     private Location selectedLocation;
 
     private static final int PICK_PHOTO_REQUEST = 1;
     private boolean isEditMode = false; //flag for adding or editing
+    private boolean isImageChanged = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -323,28 +340,83 @@ public class AddMood extends Fragment {
      */
     private void setupPhotoButtons() {
         choosePhotoButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
-            startActivityForResult(intent, PICK_PHOTO_REQUEST);
+
+            if (selectedPhotoUri == null) {
+                pickImageLauncher.launch(intent);
+            }
+            else {
+                Bundle args = new Bundle();
+                args.putParcelable("selectedUriOld", selectedPhotoUri);
+                args.putParcelable("selectedUri", null);
+                AddImage addImageFragment = AddImage.newInstance();
+                addImageFragment.setArguments(args);
+
+                getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
+                    if (selectedPhotoUri != result2.getParcelable("uri")) {
+                        selectedPhotoUri = result2.getParcelable("uri");
+                        isImageChanged = Boolean.TRUE;
+                    }
+                });
+
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, addImageFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
         });
 
         takePhotoButton.setOnClickListener(v -> {
-            // TODO: Implement camera functionality
-            Toast.makeText(requireContext(), "Camera functionality not implemented yet", Toast.LENGTH_SHORT).show();
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + System.currentTimeMillis() + ".jpg");
+            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MoodApp");
+
+            cameraImageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+
+            takePhotoLauncher.launch(cameraImageUri);
         });
     }
+
+    private final ActivityResultLauncher<Uri> takePhotoLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+                if (success && cameraImageUri != null) {
+                    cameraImageUri = selectedPhotoUri; // your app-wide image reference
+                }
+            });
 
     /**
      * Handles photo selection.
      */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_PHOTO_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            selectedPhotoUri = data.getData();
-            Toast.makeText(requireContext(), "Photo selected!", Toast.LENGTH_SHORT).show();
-        }
-    }
+    private ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    // Get the selected image URI.
+                    Uri imageUri = result.getData().getData();
+                    Bundle args = new Bundle();
+                    args.putParcelable("selectedUriOld", selectedPhotoUri);
+                    args.putParcelable("selectedUri", imageUri);
+                    AddImage addImageFragment = AddImage.newInstance();
+                    addImageFragment.setArguments(args);
+
+                    getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
+                        if (selectedPhotoUri != result2.getParcelable("uri")) {
+                            selectedPhotoUri = result2.getParcelable("uri");
+                            isImageChanged = Boolean.TRUE;
+                        }
+                    });
+
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, addImageFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+            }
+    );
+
 
     /**
      * Saves the mood event using UserProfile.
@@ -369,10 +441,10 @@ public class AddMood extends Fragment {
                 moodEvent.setTrigger(triggerText);
                 moodEvent.setSocialSituation(socialSetting);
 
-                if (selectedPhotoUri != null) {
-                    // Handle photo upload and set URI in moodEvent (if needed)
-                    // moodEvent.setPhotoUri(selectedPhotoUri.toString());
-                    // TODO: Upload photo to Firebase Storage and update event
+                if (selectedPhotoUri != null && isImageChanged) {
+                    deleteImageFromFirebase(moodEvent.getPhotoFilename());
+                    String filename = uploadImageToFirebase();
+                    moodEvent.setPhotoFilename(filename);
                 }
 
                 userProfile.editMoodEvent(moodEvent.getId(), moodEvent, success -> {
@@ -389,8 +461,8 @@ public class AddMood extends Fragment {
 
                 if (selectedPhotoUri != null) {
                     // Handle photo upload and set URI in newMoodEvent (if needed)
-                    // newMoodEvent.setPhotoUri(selectedPhotoUri.toString());
-                    // TODO: Upload photo to Firebase Storage
+                    String filename = uploadImageToFirebase();
+                    newMoodEvent.setPhotoFilename(filename);
                 }
 
                 userProfile.addMoodEvent(newMoodEvent, success -> {
@@ -405,6 +477,64 @@ public class AddMood extends Fragment {
         });
     }
 
+    private String uploadImageToFirebase() {
+        try {
+            InputStream inputStream = requireContext().getContentResolver().openInputStream(selectedPhotoUri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+
+            byte[] imageData = baos.toByteArray();
+
+            // 🔧 keep compressing if > 65536 bytes
+            int quality = 90;
+            while (imageData.length > 65536 && quality > 10) {
+                baos.reset();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
+                imageData = baos.toByteArray();
+                quality -= 10;
+            }
+
+            //FirebaseStorage storage = FirebaseStorage.getInstance();
+            String filename = "images/" + userProfile.getId() + System.currentTimeMillis() + "_mood.jpg";
+            StorageReference storageRef = FirebaseDB.getInstance(requireContext()).getReference(filename);
+            //StorageReference storageRef = storage.getReference()
+                    //.child(filename);
+
+            UploadTask uploadTask = storageRef.putBytes(imageData);
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+            }).addOnFailureListener(e -> {
+            });
+
+            return filename;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void deleteImageFromFirebase(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            Log.e("FirebaseStorage", "Filename is null or empty.");
+            return;
+        }
+
+        StorageReference storageRef = FirebaseDB.getInstance(requireContext()).getReference(filename);
+        //FirebaseStorage storage = FirebaseStorage.getInstance();
+        //StorageReference storageRef = storage.getReference().child(filename);
+
+        storageRef.delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FirebaseStorage", "File deleted successfully: " + filename);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseStorage", "Error deleting file: " + filename, e);
+                });
+    }
+
+
     private void updateUIForExistingMood() {
         if (moodEvent == null) return;
 
@@ -416,6 +546,7 @@ public class AddMood extends Fragment {
 
         // Show the updated trigger text
         triggerInput.setText(moodEvent.getTrigger());
+
     }
 
 
