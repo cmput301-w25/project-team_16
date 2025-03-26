@@ -366,8 +366,8 @@ public class AddMood extends Fragment {
                     addImageFragment.setArguments(args);
 
                     getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
-                        if (selectedPhotoUri != cameraImageUri) {
-                            selectedPhotoUri = cameraImageUri;
+                        if (selectedPhotoUri != result2.getParcelable("uri")) {
+                            selectedPhotoUri = result2.getParcelable("uri");
                             isImageChanged = Boolean.TRUE;
                         }
                     });

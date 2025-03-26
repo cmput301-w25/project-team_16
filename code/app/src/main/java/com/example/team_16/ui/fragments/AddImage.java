@@ -27,6 +27,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.team_16.R;
 import com.example.team_16.models.MoodEvent;
 
+import java.util.Objects;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link AddImage#newInstance} factory method to
@@ -107,12 +109,8 @@ public class AddImage extends Fragment {
         }
 
         updateButton.setOnClickListener(v -> {
-            if (type == "Camera") {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                intent.setType("image/*");
-                pickImageLauncher.launch(intent);
-            }
-            else {
+            if (Objects.equals(type, "Camera")) {
+
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + System.currentTimeMillis() + ".jpg");
                 contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
@@ -121,6 +119,14 @@ public class AddImage extends Fragment {
                 imageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
 
                 takePhotoLauncher.launch(imageUri);
+
+            }
+            else {
+
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                pickImageLauncher.launch(intent);
+
             }
 
         });
