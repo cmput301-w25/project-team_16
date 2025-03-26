@@ -1,6 +1,7 @@
 package com.example.team_16.models;
 
 import com.example.team_16.database.FirebaseDB;
+import com.example.team_16.models.MoodEvent;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,10 +17,10 @@ public class MoodHistory {
     public static final int MODE_FOLLOWING = 2;
 
     // Attributes
-    private final String userId;           // User ID this history belongs to
-    private final int mode;                // Either PERSONAL or FOLLOWING
-    private List<MoodEvent> moodEvents;    // Cached events
-    private final FirebaseDB firebaseDB;   // Firebase database reference
+    private final String userId;
+    private final int mode;
+    private List<MoodEvent> moodEvents;
+    private final FirebaseDB firebaseDB;
 
     /**
      * Constructor for a specific user's mood history
@@ -36,29 +37,12 @@ public class MoodHistory {
         loadEvents();
     }
 
-    /**
-     * Get the user ID this history belongs to
-     *
-     * @return the user ID
-     */
     public String getUserId() {
         return userId;
     }
-
-    /**
-     * Get the mode of this history
-     *
-     * @return either MODE_PERSONAL or MODE_FOLLOWING
-     */
     public int getMode() {
         return mode;
     }
-
-    /**
-     * Get the FirebaseDB instance
-     *
-     * @return the FirebaseDB instance
-     */
     protected FirebaseDB getFirebaseDB() {
         return firebaseDB;
     }
@@ -68,26 +52,30 @@ public class MoodHistory {
      */
     private void loadEvents() {
         if (mode == MODE_PERSONAL) {
-            // For personal history, load user's own events
             firebaseDB.getMoodEvents(
                     userId,
-                    null,   // No date filter
-                    null,   // No emotional state filter
-                    null,   // No search text
+                    null,
+                    null,
+                    null,
                     events -> {
                         setMoodEvents(events);
                         notifyDataLoaded();
                     }
             );
         } else if (mode == MODE_FOLLOWING) {
-            // For following mode, load followed users' events
             firebaseDB.getFollowingMoodEvents(
                     userId,
-                    null,   // No date filter
-                    null,   // No emotional state filter
-                    null,   // No search text
+                    null,
+                    null,
+                    null,
                     events -> {
-                        setMoodEvents(events);
+                        List<MoodEvent> publicEvents = new ArrayList<>();
+                        for (MoodEvent e : events) {
+                            if ("Public".equalsIgnoreCase(e.getPostType())) {
+                                publicEvents.add(e);
+                            }
+                        }
+                        setMoodEvents(publicEvents);
                         notifyDataLoaded();
                     }
             );
@@ -103,18 +91,10 @@ public class MoodHistory {
 
     private DataLoadCallback dataLoadCallback;
 
-    /**
-     * Set a callback to be notified when data is loaded
-     *
-     * @param callback The callback to be notified
-     */
     public void setDataLoadCallback(DataLoadCallback callback) {
         this.dataLoadCallback = callback;
     }
 
-    /**
-     * Notify that data has been loaded
-     */
     private void notifyDataLoaded() {
         if (dataLoadCallback != null) {
             dataLoadCallback.onDataLoaded(moodEvents);
@@ -145,7 +125,21 @@ public class MoodHistory {
         if (mode == MODE_PERSONAL) {
             firebaseDB.getMoodEvents(userId, startDate, emotionalState, searchText, callback);
         } else {
-            firebaseDB.getFollowingMoodEvents(userId, startDate, emotionalState, searchText, callback);
+            firebaseDB.getFollowingMoodEvents(
+                    userId,
+                    startDate,
+                    emotionalState,
+                    searchText,
+                    events -> {
+                        List<MoodEvent> publicEvents = new ArrayList<>();
+                        for (MoodEvent e : events) {
+                            if ("Public".equalsIgnoreCase(e.getPostType())) {
+                                publicEvents.add(e);
+                            }
+                        }
+                        callback.onCallback(publicEvents);
+                    }
+            );
         }
     }
 
@@ -165,10 +159,12 @@ public class MoodHistory {
      * @return The found event or null if not found
      */
     public MoodEvent getEventById(String eventId) {
-        return moodEvents.stream()
-                .filter(event -> event.getId().equals(eventId))
-                .findFirst()
-                .orElse(null);
+        for (MoodEvent event : moodEvents) {
+            if (event.getId().equals(eventId)) {
+                return event;
+            }
+        }
+        return null;
     }
 
     /**
@@ -178,17 +174,15 @@ public class MoodHistory {
      * @param callback Callback to receive results
      */
     public void getRecentEvents(int limit, FirebaseDB.FirebaseCallback<List<MoodEvent>> callback) {
-        // Get events from the last week
-        Date oneWeekAgo = new Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000);
+        Date oneWeekAgo = new Date(System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000);
 
         if (mode == MODE_PERSONAL) {
             firebaseDB.getMoodEvents(
                     userId,
                     oneWeekAgo,
-                    null,  // No emotional state filter
-                    null,  // No text search
+                    null,
+                    null,
                     events -> {
-                        // Limit the number of events if needed
                         List<MoodEvent> limitedEvents = events;
                         if (events.size() > limit) {
                             limitedEvents = events.subList(0, limit);
@@ -200,15 +194,19 @@ public class MoodHistory {
             firebaseDB.getFollowingMoodEvents(
                     userId,
                     oneWeekAgo,
-                    null,  // No emotional state filter
-                    null,  // No text search
+                    null,
+                    null,
                     events -> {
-                        // Limit the number of events if needed
-                        List<MoodEvent> limitedEvents = events;
-                        if (events.size() > limit) {
-                            limitedEvents = events.subList(0, limit);
+                        List<MoodEvent> publicEvents = new ArrayList<>();
+                        for (MoodEvent e : events) {
+                            if ("Public".equalsIgnoreCase(e.getPostType())) {
+                                publicEvents.add(e);
+                            }
                         }
-                        callback.onCallback(limitedEvents);
+                        if (publicEvents.size() > limit) {
+                            publicEvents = publicEvents.subList(0, limit);
+                        }
+                        callback.onCallback(publicEvents);
                     }
             );
         }
@@ -216,9 +214,6 @@ public class MoodHistory {
 
     /**
      * Protected method to update the mood events list
-     * Only this class and subclasses can call this method
-     *
-     * @param events The new list of events
      */
     protected void setMoodEvents(List<MoodEvent> events) {
         this.moodEvents = new ArrayList<>(events);

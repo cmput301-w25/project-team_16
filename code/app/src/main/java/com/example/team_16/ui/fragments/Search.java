@@ -117,6 +117,23 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
         adapter.setUsers(filteredUsers);
     }
 
+    // New Feature to click on users profile
+    @Override
+    public void onUserClick(String targetUserId) {
+        // Navigate to a new fragment that shows the clicked user's profile
+        goToUserProfile(targetUserId);
+    }
+
+    private void goToUserProfile(String targetUserId) {
+        OtherUserProfileFragment fragment = OtherUserProfileFragment.newInstance(targetUserId);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+    // end new code
+
     @Override
     public void onFollowClick(String targetUserId) {
         currentUser.sendFollowRequest(targetUserId, success -> {

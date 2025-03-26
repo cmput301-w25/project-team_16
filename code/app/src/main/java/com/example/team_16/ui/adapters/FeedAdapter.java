@@ -47,6 +47,21 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         void onItemClick(MoodEvent event);
     }
 
+    // new code added to click on profile
+    /**
+     * Interface for clicking on the post owner's profile (name or avatar).
+     */
+    public interface OnProfileClickListener {
+        void onProfileClick(String userId);
+    }
+
+    private OnProfileClickListener profileClickListener;
+
+    public void setOnProfileClickListener(OnProfileClickListener listener) {
+        this.profileClickListener = listener;
+    }
+    // end new code
+
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
@@ -149,6 +164,20 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 listener.onItemClick(event);
             }
         });
+
+        // new code
+        // Let user tap the name/avatar to see that user's profile
+        View.OnClickListener profileTap = v -> {
+            if (profileClickListener != null) {
+                profileClickListener.onProfileClick(event.getUserID());
+            }
+        };
+
+        // tapping the user’s name or user’s username or the profile avatar
+        holder.first_name_last_name_view.setOnClickListener(profileTap);
+        holder.profile_username_view.setOnClickListener(profileTap);
+        holder.profile_picture_view.setOnClickListener(profileTap);
+        // end new code
     }
 
     @Override

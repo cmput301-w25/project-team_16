@@ -222,7 +222,7 @@ public class FirebaseDB {
             FirebaseCallback<List<MoodEvent>> callback) {
 
         Query query = db.collection(MOODS_COLLECTION)
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("userID", userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING);
 
         // Apply date filter if startDate is provided
@@ -606,6 +606,7 @@ public class FirebaseDB {
             String userId,
             String fullName,
             String email,
+            String username,       // NEW
             FirebaseCallback<Boolean> callback) {
 
         // Create a map of updates
@@ -618,6 +619,13 @@ public class FirebaseDB {
 
         if (email != null && !email.trim().isEmpty()) {
             updates.put("email", email);
+        }
+
+        // new: Add the username fields
+        // for updating the user profile info
+        if (username != null && !username.trim().isEmpty()) {
+            updates.put("username", username);
+            updates.put("usernameLower", username.toLowerCase());  // for searching
         }
 
         // Check if there are any updates to make
