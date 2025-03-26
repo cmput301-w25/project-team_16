@@ -11,6 +11,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -320,7 +321,7 @@ public class AddMood extends Fragment {
                 Bundle args = new Bundle();
                 args.putParcelable("selectedUriOld", selectedPhotoUri);
                 args.putParcelable("selectedUri", null);
-                AddImage addImageFragment = AddImage.newInstance();
+                AddImage addImageFragment = AddImage.newInstance("Gallery");
                 addImageFragment.setArguments(args);
 
                 getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
@@ -347,14 +348,37 @@ public class AddMood extends Fragment {
             cameraImageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
 
             takePhotoLauncher.launch(cameraImageUri);
+
         });
     }
 
     private final ActivityResultLauncher<Uri> takePhotoLauncher =
             registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+
                 if (success && cameraImageUri != null) {
-                    cameraImageUri = selectedPhotoUri; // your app-wide image reference
+                    //cameraImageUri = selectedPhotoUri;
+                    //isImageChanged = Boolean.TRUE;
+
+                    Bundle args = new Bundle();
+                    args.putParcelable("selectedUriOld", selectedPhotoUri);
+                    args.putParcelable("selectedUri", cameraImageUri);
+                    AddImage addImageFragment = AddImage.newInstance("Camera");
+                    addImageFragment.setArguments(args);
+
+                    getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
+                        if (selectedPhotoUri != cameraImageUri) {
+                            selectedPhotoUri = cameraImageUri;
+                            isImageChanged = Boolean.TRUE;
+                        }
+                    });
+
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, addImageFragment)
+                            .addToBackStack(null)
+                            .commit();
+
                 }
+
             });
 
     /**
@@ -369,7 +393,7 @@ public class AddMood extends Fragment {
                     Bundle args = new Bundle();
                     args.putParcelable("selectedUriOld", selectedPhotoUri);
                     args.putParcelable("selectedUri", imageUri);
-                    AddImage addImageFragment = AddImage.newInstance();
+                    AddImage addImageFragment = AddImage.newInstance("Gallery");
                     addImageFragment.setArguments(args);
 
                     getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {

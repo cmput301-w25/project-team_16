@@ -1,6 +1,7 @@
 package com.example.team_16.ui.fragments;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,21 +33,26 @@ import com.example.team_16.models.MoodEvent;
  * create an instance of this fragment.
  */
 public class AddImage extends Fragment {
-    Uri imageUri;
-    Uri oldImageUri;
+    private Uri imageUri;
+    private Uri oldImageUri;
 
-    ImageView imageView;
-    TextView textView;
+    private ImageView imageView;
+    private TextView textView;
 
-    Bundle result = new Bundle();
+    private Bundle result = new Bundle();
+
+    private String type;
+
+    private static final String ARG_PARAM1 = "param1";
 
     public AddImage() {
         // Required empty public constructor
     }
 
-    public static AddImage newInstance() {
+    public static AddImage newInstance(String type) {
         AddImage fragment = new AddImage();
         Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, type);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,8 +61,16 @@ public class AddImage extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (getArguments() != null) {
+            type = getArguments().getString(ARG_PARAM1);
+        }
+
         oldImageUri = getArguments().getParcelable("selectedUriOld");
         imageUri = getArguments().getParcelable("selectedUri");
+
+        if (imageUri == null && oldImageUri != null) {
+            imageUri = oldImageUri;
+        }
 
     }
 
@@ -92,9 +107,22 @@ public class AddImage extends Fragment {
         }
 
         updateButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            intent.setType("image/*");
-            pickImageLauncher.launch(intent);
+            if (type == "Camera") {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                pickImageLauncher.launch(intent);
+            }
+            else {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + System.currentTimeMillis() + ".jpg");
+                contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MoodApp");
+
+                imageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+
+                takePhotoLauncher.launch(imageUri);
+            }
+
         });
 
         removeButton.setOnClickListener(v -> {
@@ -135,6 +163,23 @@ public class AddImage extends Fragment {
 
             }
     );
+
+    private final ActivityResultLauncher<Uri> takePhotoLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+
+                if (success && imageUri != null) {
+
+                    imageView.setVisibility(View.VISIBLE);
+                    textView.setVisibility(View.GONE);
+
+                    Glide.with(this)
+                            .load(imageUri)
+                            .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                            .into(imageView);
+
+                }
+
+            });
 
 
 }

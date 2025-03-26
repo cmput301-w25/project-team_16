@@ -1,18 +1,24 @@
 package com.example.team_16.ui.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.MoodEvent;
@@ -99,6 +105,26 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         // Set profile details with placeholders and fetch actual user info
         holder.fullNameView.setText(R.string.loading);
         holder.profileUsername.setText("");
+
+        if (event.getPhotoFilename() != null) {
+            holder.moodImage.setVisibility(View.VISIBLE);
+
+            Log.e("log", "images/" +  event.getUserID() + "_mood.jpg");
+
+            FirebaseDB.getInstance(context).getReference(event.getPhotoFilename())
+                    .getDownloadUrl()
+                    .addOnSuccessListener(uri -> {
+                        Glide.with(((Activity) context))
+                                .load(uri)
+                                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                                .into(holder.moodImage);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(((Activity) context), "Failed to load image", Toast.LENGTH_SHORT).show();
+                    });
+
+        }
+
         FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), userData -> {
             if (userData != null) {
                 String fullName = (String) userData.get("fullName");
