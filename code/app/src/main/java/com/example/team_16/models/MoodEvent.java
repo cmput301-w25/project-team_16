@@ -31,6 +31,7 @@ public class MoodEvent {
 
     /** Optional description of the social context (e.g., "With friends") */
     private String socialSituation;
+    private String photoFilename;
 
     /** Whether post is public or private */
     private String postType = "Public"; // Default to Public
@@ -133,6 +134,20 @@ public class MoodEvent {
         this.socialSituation = socialSituation;
     }
 
+    public String getPhotoFilename() {
+        return photoFilename;
+    }
+
+    public void setPhotoFilename(String photoFilename) {
+        this.photoFilename = photoFilename;
+    }
+
+    /**
+     * Validates whether this mood event meets the minimum requirements.
+     * A valid mood event must have an emotional state.
+     *
+     * @return true if this mood event is valid, false otherwise
+     */
     public String getPostType() {
         return postType;
     }

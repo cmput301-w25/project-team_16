@@ -11,6 +11,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +37,7 @@ public class FirebaseDB {
     // Firebase components
     private final FirebaseFirestore db;
     private final FirebaseAuth auth;
+    private final FirebaseStorage storage;
     private final Context context;
 
     // Collection names
@@ -58,6 +61,7 @@ public class FirebaseDB {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
+        this.storage = FirebaseStorage.getInstance();
     }
 
     /**
@@ -758,6 +762,10 @@ public class FirebaseDB {
                     // Return empty list on failure
                     callback.onCallback(new ArrayList<>());
                 });
+    }
+
+    public StorageReference getReference(String path) {
+        return storage.getReference().child(path);
     }
 
 

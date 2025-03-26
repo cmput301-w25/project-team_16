@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    tools:context=".ui.fragments.AddImage">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="180dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <Button
+                android:id="@+id/updateImageButton"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:backgroundTint="#ecd4d3"
+                android:text="Update"
+                android:textColor="#573d3e" />
+
+            <Button
+                android:id="@+id/removeImageButton"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="#ecd4d3"
+                android:text="Remove"
+                android:textColor="#573d3e" />
+
+            <Button
+                android:id="@+id/cancelImageButton"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="#FD5656"
+                android:text="Cancel"
+                android:textColor="#573d3e" />
+
+            <Button
+                android:id="@+id/confirmImageButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="#61a5fa"
+                android:text="Confirm"
+                android:textColor="#573d3e" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/noImageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No image added."
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="@+id/addMoodImage"
+            app:layout_constraintEnd_toEndOf="@+id/addMoodImage"
+            app:layout_constraintStart_toStartOf="@+id/addMoodImage"
+            app:layout_constraintTop_toTopOf="@+id/addMoodImage" />
+
+        <ImageView
+            android:id="@+id/addMoodImage"
+            android:layout_width="375dp"
+            android:layout_height="250dp"
+            android:layout_marginBottom="350dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

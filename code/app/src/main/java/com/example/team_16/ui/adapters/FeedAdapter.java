@@ -1,19 +1,29 @@
 package com.example.team_16.ui.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.MoodEvent;
+import com.example.team_16.models.UserProfile;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -90,12 +100,35 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         String date = event.getFormattedDate();
         Date actualDate = event.getTimestamp().toDate();
         holder.with_amount_view.setText(event.getSocialSituation());
+        if (event.getTrigger() == "" && event.getPhotoFilename() != null) {
+            holder.mood_description_view.setVisibility(View.GONE);
+            holder.mood_description_view2.setVisibility(View.GONE);
+        }
         holder.mood_description_view.setText(event.getTrigger());
         holder.mood_description_view.setTextColor(event.getEmotionalState().getTextColor());
         holder.time_view.setText(date);
 
         holder.first_name_last_name_view.setText(R.string.loading);
         holder.profile_username_view.setText("");
+
+        if (event.getPhotoFilename() != null) {
+            holder.mood_image_view.setVisibility(View.VISIBLE);
+
+            Log.e("log", "images/" +  event.getUserID() + "_mood.jpg");
+
+            FirebaseDB.getInstance(context).getReference(event.getPhotoFilename())
+                    .getDownloadUrl()
+                    .addOnSuccessListener(uri -> {
+                        Glide.with(((Activity) context))
+                                .load(uri)
+                                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                                .into(holder.mood_image_view);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(((Activity) context), "Failed to load image", Toast.LENGTH_SHORT).show();
+                    });
+
+        }
 
         FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), userData -> {
             if (userData != null) {
@@ -184,6 +217,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         TextView profile_username_view;
         TextView with_amount_view;
         TextView mood_description_view;
+        TextView mood_description_view2;
         ImageView mood_image_view;
         TextView time_view;
         ImageView gradient_top_view; // Added for the gradient top banner
@@ -199,6 +233,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             profile_username_view = itemView.findViewById(R.id.profile_username);
             with_amount_view = itemView.findViewById(R.id.with_amount);
             mood_description_view = itemView.findViewById(R.id.mood_description);
+            mood_description_view2 = itemView.findViewById(R.id.mood_description2);
             mood_image_view = itemView.findViewById(R.id.mood_image);
             time_view = itemView.findViewById(R.id.post_time);
             gradient_top_view = itemView.findViewById(R.id.gradient_top); // Initialize the gradient view
