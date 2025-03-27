@@ -764,18 +764,15 @@ public class FirebaseDB {
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error fetching comments", e);
-                    // Return empty list on failure
                     callback.onCallback(new ArrayList<>());
                 });
     }
     public void uploadProfileImage(Uri imageUri, String userId, FirebaseCallback<String> callback) {
-        // Example: path "profileImages/userId_timestamp.jpg"
         StorageReference storageRef = storage.getReference()
                 .child("profileImages/" + userId + "_" + System.currentTimeMillis());
 
         storageRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot ->
-                        // Once the file is uploaded, get the public download URL
                         storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
                             Log.d("FirebaseDB", "Image uploaded. Download URL: " + uri);
                             callback.onCallback(uri.toString());
