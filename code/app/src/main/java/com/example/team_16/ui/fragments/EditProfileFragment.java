@@ -16,6 +16,8 @@ import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.models.UserProfile;
 
+import java.util.Map;
+
 /**
  * Class that allows the user to edit there name / username
  * Updates are saved in the database for other users to see
@@ -53,12 +55,20 @@ public class EditProfileFragment extends Fragment {
         editUsername       = view.findViewById(R.id.editUsername);
         btnSave            = view.findViewById(R.id.btnSave);
 
-        // Display the current user name and username above the EditText fields
-        String currentName     = userProfile.getFullName()  != null ? userProfile.getFullName()  : "";
-        String currentUsername = userProfile.getUsername()  != null ? userProfile.getUsername() : "";
+        // Retrieve current profile info from bundle if available, otherwise use userProfile
+        Bundle args = getArguments();
+        String prefillFullName = (args != null && args.getString("fullName") != null)
+                ? args.getString("fullName") : userProfile.getFullName();
+        String prefillUsername = (args != null && args.getString("username") != null)
+                ? args.getString("username") : userProfile.getUsername();
 
-        currentNameView.setText("Current Name: " + currentName);
-        currentUsernameView.setText("Current Username: @" + currentUsername);
+        // Prefill the EditText fields with current values
+        editFullName.setText(prefillFullName);
+        editUsername.setText(prefillUsername);
+
+        // Also display the current user info above the fields
+        currentNameView.setText("Current Name: " + (userProfile.getFullName() != null ? userProfile.getFullName() : ""));
+        currentUsernameView.setText("Current Username: @" + (userProfile.getUsername() != null ? userProfile.getUsername() : ""));
 
         // Handle saving changes
         btnSave.setOnClickListener(v -> {
@@ -67,23 +77,53 @@ public class EditProfileFragment extends Fragment {
             String newFullName = editFullName.getText().toString().trim();
             String newUsername = editUsername.getText().toString().trim();
 
-            // If you want to allow optional updates (only update non-empty fields):
-            String finalFullName  = newFullName.isEmpty() ? null : newFullName;
-            String finalUsername  = newUsername.isEmpty() ? null : newUsername;
+            // Error check: Ensure neither field is empty
+            if (newFullName.isEmpty() || newUsername.isEmpty()) {
+                Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            // keep the same email (not editing email here), so just pass existing:
-            String existingEmail  = userProfile.getEmail();
+            // If the username has been changed, check if it's already taken
+            if (!newUsername.equals(userProfile.getUsername())) {
+                userProfile.searchUsersByUsername(newUsername, users -> {
+                    boolean usernameTaken = false;
+                    if (users != null) {
+                        // Loop through the returned users and check if any is not the current user
+                        for (Map<String, Object> user : users) {
+                            String id = (String) user.get("id");
+                            if (id != null && !id.equals(userProfile.getId())) {
+                                usernameTaken = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (usernameTaken) {
+                        Toast.makeText(getContext(), "Username already taken", Toast.LENGTH_SHORT).show();
+                    } else {
+                        updateUserProfile(newFullName, newUsername);
+                    }
+                });
+            } else {
+                // Username hasn't changed so no need to check; update directly.
+                updateUserProfile(newFullName, newUsername);
+            }
+        });
+    }
 
-            // Call the 3-parameter update method that includes the username
-            userProfile.updateProfile(finalFullName, existingEmail, finalUsername, success -> {
-                if (success) {
-                    Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
-                    // Go back to Profile fragment
-                    getParentFragmentManager().popBackStack();
-                } else {
-                    Toast.makeText(getContext(), "Update failed", Toast.LENGTH_SHORT).show();
-                }
-            });
+    /**
+     * Calls the UserProfile's updateProfile method with the new values.
+     */
+    private void updateUserProfile(String newFullName, String newUsername) {
+        // Use the existing email from the user profile
+        String email = userProfile.getEmail();
+        userProfile.updateProfile(newFullName, email, newUsername, success -> {
+            if (success) {
+                Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
+
+                getParentFragmentManager().popBackStack();
+            } else {
+                Toast.makeText(getContext(), "Update failed", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 }
