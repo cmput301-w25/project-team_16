@@ -4,10 +4,12 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.team_16.R;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +24,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     public interface OnFollowClickListener {
         void onFollowClick(String targetUserId);
         void onUnfollowClick(String targetUserId);
-
         // New - added to click on users
         void onUserClick(String targetUserId);
-
     }
 
     public SearchAdapter(OnFollowClickListener listener) {
@@ -56,17 +56,30 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         Map<String, Object> user = users.get(position);
         String username = (String) user.get("username");
         String userId = (String) user.get("id");
+        String profileImageUrl = (String) user.get("profileImageUrl");
 
+        // Set user name
         holder.personName.setText(username);
 
-        // New code to click on profile - Entire row clicked -> open user profile
+        // Load profile image using Glide; use a placeholder if needed.
+        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(profileImageUrl)
+                    .placeholder(R.drawable.image)
+                    .circleCrop()
+                    .into(holder.profileImage);
+        } else {
+            holder.profileImage.setImageResource(R.drawable.image);
+        }
+
+        // New code: Entire row click -> open user profile
         holder.itemView.setOnClickListener(v -> {
             if (followClickListener != null) {
                 followClickListener.onUserClick(userId);
             }
         });
-        // end of new code
 
+        // Setup follow button states
         if (followingIds.contains(userId)) {
             // UNFOLLOW state
             holder.followButton.setText("Unfollow");
@@ -106,11 +119,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     static class SearchViewHolder extends RecyclerView.ViewHolder {
         TextView personName;
         AppCompatButton followButton;
+        ImageView profileImage;
 
         public SearchViewHolder(@NonNull View itemView) {
             super(itemView);
             personName = itemView.findViewById(R.id.personName);
             followButton = itemView.findViewById(R.id.followButton);
+            profileImage = itemView.findViewById(R.id.profileImage);
         }
     }
 }

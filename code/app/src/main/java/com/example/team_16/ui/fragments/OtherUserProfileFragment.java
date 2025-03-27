@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
@@ -29,9 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Fragment to display another user's public profile info.
- */
 public class OtherUserProfileFragment extends Fragment {
 
     private static final String ARG_USER_ID = "argUserId";
@@ -52,7 +50,6 @@ public class OtherUserProfileFragment extends Fragment {
     private TextView totalMoodEntriesTxt;
     private TextView mostFrequentMoodTxt;
     private RecyclerView moodHistoryRecyclerView;
-
     private Button btnFollow;
 
     public static OtherUserProfileFragment newInstance(String userId) {
@@ -75,8 +72,6 @@ public class OtherUserProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-
-        // the updated layout that matches the profile page
         return inflater.inflate(R.layout.fragment_other_user_profile, container, false);
     }
 
@@ -85,7 +80,7 @@ public class OtherUserProfileFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Link up all UI elements by ID
+        // Link up UI elements by ID
         profileImage = view.findViewById(R.id.profileImage);
         userName = view.findViewById(R.id.userName);
         userHandle = view.findViewById(R.id.userHandle);
@@ -96,7 +91,7 @@ public class OtherUserProfileFragment extends Fragment {
         moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
         btnFollow = view.findViewById(R.id.btnFollow);
 
-        // Current user
+        // Get current user profile from the application
         currentUserProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
 
         // Load the target user from Firestore
@@ -104,46 +99,50 @@ public class OtherUserProfileFragment extends Fragment {
         UserProfile.loadFromFirebase(firebaseDB, targetUserId, profile -> {
             if (profile == null) {
                 Toast.makeText(requireContext(), "Could not load user.", Toast.LENGTH_SHORT).show();
-
-                // Return to previous screen
                 requireActivity().getSupportFragmentManager().popBackStack();
                 return;
             }
             targetUserProfile = profile;
 
-            // Display the target user's info
+            // Display the target user's info, including profile image
             displayUserProfile();
 
             // Update the Follow/Unfollow button after user profile is loaded
             refreshFollowButton();
-
         });
     }
 
     /**
      * Displays data for the target user, including:
      *  - Name / handle
+     *  - Profile image
      *  - Followers & following counts
      *  - Mood stats (total, most frequent)
      *  - Mood history list
      */
     private void displayUserProfile() {
-        // Basic name/handle
+        // Load and display the profile image using Glide
+        String imageUrl = targetUserProfile.getProfileImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(requireContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.image)
+                    .into(profileImage);
+        } else {
+            profileImage.setImageResource(R.drawable.image);
+        }
+
+        // Set basic name/handle info
         userName.setText(targetUserProfile.getFullName());
         userHandle.setText("@" + targetUserProfile.getUsername());
 
-        // Show follower/following count
+        // Update follower/following counts
         refreshFollowCounts();
 
-        // Display the user's mood events
-        List<MoodEvent> allEvents = targetUserProfile
-                .getPersonalMoodHistory()
-                .getAllEvents();
-
-        // Show total
+        // Display mood events and stats
+        List<MoodEvent> allEvents = targetUserProfile.getPersonalMoodHistory().getAllEvents();
         totalMoodEntriesTxt.setText("Total Mood Entries: " + allEvents.size());
 
-        // Show most frequent mood
         String mostFrequent = getMostFrequentMoodName(allEvents);
         if (mostFrequent != null) {
             mostFrequentMoodTxt.setText("Most Frequent Mood: " + mostFrequent);
@@ -151,14 +150,11 @@ public class OtherUserProfileFragment extends Fragment {
             mostFrequentMoodTxt.setText("Most Frequent Mood: None");
         }
 
-        // Populate RecyclerView
+        // Populate the mood history RecyclerView
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         MoodHistoryAdapter adapter = new MoodHistoryAdapter(getContext(), allEvents);
         moodHistoryRecyclerView.setAdapter(adapter);
-
-        // If you want to open a details fragment on item click:
         adapter.setOnItemClickListener(event -> {
-            // Show details for that mood
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
@@ -169,10 +165,9 @@ public class OtherUserProfileFragment extends Fragment {
     }
 
     /**
-     * Fetch the actual follower/following counts and update the two TextViews.
+     * Fetches and displays the follower and following counts.
      */
     private void refreshFollowCounts() {
-        // Get # of followers
         FirebaseDB.getInstance(requireContext())
                 .getFollowersOfUser(targetUserProfile.getId(), followers -> {
                     if (followers != null) {
@@ -182,7 +177,6 @@ public class OtherUserProfileFragment extends Fragment {
                     }
                 });
 
-        // Get # of following
         FirebaseDB.getInstance(requireContext())
                 .getFollowingList(targetUserProfile.getId(), following -> {
                     if (following != null) {
@@ -194,18 +188,15 @@ public class OtherUserProfileFragment extends Fragment {
     }
 
     /**
-     * Return the name of the most frequent mood in the list.
+     * Returns the name of the most frequent mood in the given list.
      */
     private String getMostFrequentMoodName(List<MoodEvent> events) {
         if (events.isEmpty()) return null;
         Map<String, Integer> moodCount = new HashMap<>();
-
         for (MoodEvent event : events) {
-            EmotionalState mood = event.getEmotionalState();
-            String moodName = mood.getName();
+            String moodName = event.getEmotionalState().getName();
             moodCount.put(moodName, moodCount.getOrDefault(moodName, 0) + 1);
         }
-
         String mostFrequent = null;
         int maxCount = 0;
         for (Map.Entry<String, Integer> entry : moodCount.entrySet()) {
@@ -218,43 +209,31 @@ public class OtherUserProfileFragment extends Fragment {
     }
 
     /**
-     * Determines whether the current user is following or pending,
-     * then sets the button text/background accordingly and sets click logic.
+     * Updates the follow/unfollow button state based on whether the current user
+     * is following or has a pending request for the target user.
      */
     private void refreshFollowButton() {
         if (currentUserProfile == null || targetUserProfile == null) return;
-
-        // Check if current user is following the target user
         currentUserProfile.isFollowing(targetUserProfile.getId(), isFollowing -> {
             if (isFollowing) {
-                // State: Unfollow
                 setButtonStateUnfollow();
             } else {
-                // If not following, check if pending
-                List<String> pending = currentUserProfile.getPendingFollow();
-                if (pending.contains(targetUserProfile.getId())) {
-                    // State: Pending
+                if (currentUserProfile.getPendingFollow().contains(targetUserProfile.getId())) {
                     setButtonStatePending();
                 } else {
-                    // State: Follow
                     setButtonStateFollow();
                 }
             }
         });
     }
 
-    /**
-     * follow state - send a follow request to a user
-     */
     private void setButtonStateFollow() {
         btnFollow.setText("Follow");
         btnFollow.setEnabled(true);
         btnFollow.setBackgroundResource(R.drawable.follow_button_bg);
         btnFollow.setTextColor(Color.parseColor("#4CAF50"));
-
         btnFollow.setOnClickListener(v -> {
             btnFollow.setEnabled(false);
-
             currentUserProfile.sendFollowRequest(targetUserProfile.getId(), success -> {
                 if (success) {
                     Toast.makeText(getContext(), "Follow request sent", Toast.LENGTH_SHORT).show();
@@ -267,9 +246,6 @@ public class OtherUserProfileFragment extends Fragment {
         });
     }
 
-    /**
-     * pending state
-     */
     private void setButtonStatePending() {
         btnFollow.setText("Pending");
         btnFollow.setEnabled(false);
@@ -277,18 +253,13 @@ public class OtherUserProfileFragment extends Fragment {
         btnFollow.setTextColor(Color.parseColor("#1E293F"));
     }
 
-    /**
-     * unfollow state
-     */
     private void setButtonStateUnfollow() {
         btnFollow.setText("Unfollow");
         btnFollow.setEnabled(true);
         btnFollow.setBackgroundResource(R.drawable.unfollow_button_bg);
         btnFollow.setTextColor(Color.RED);
-
         btnFollow.setOnClickListener(v -> {
             btnFollow.setEnabled(false);
-
             currentUserProfile.unfollowUser(targetUserProfile.getId(), success -> {
                 if (success) {
                     Toast.makeText(getContext(), "Unfollowed successfully", Toast.LENGTH_SHORT).show();

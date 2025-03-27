@@ -46,8 +46,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
     }
-
-    // new code added to click on profile
     /**
      * Interface for clicking on the post owner's profile (name or avatar).
      */
@@ -82,17 +80,14 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onBindViewHolder(@NonNull FeedViewHolder holder, int position) {
         MoodEvent event = moodEvents.get(position);
 
-        // Set emotional state text and emoji
         holder.mood_one_view.setText(event.getEmotionalState().getName());
         holder.emoji_one_view.setText(event.getEmotionalState().getEmoji());
         holder.mood_one_view.setTextColor(event.getEmotionalState().getTextColor());
 
-        // Set the mood-specific gradient to the gradient banner
         if (holder.gradient_top_view != null) {
             holder.gradient_top_view.setImageResource(event.getEmotionalState().getGradientResourceId());
         }
 
-        // Set the bottom content background with white + subtle gradient overlay
         if (holder.bottom_content_view != null) {
             holder.bottom_content_view.setBackgroundResource(event.getEmotionalState().getBottomGradientResourceId());
         }
@@ -100,7 +95,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         String date = event.getFormattedDate();
         Date actualDate = event.getTimestamp().toDate();
         holder.with_amount_view.setText(event.getSocialSituation());
-        if (event.getTrigger() == "" && event.getPhotoFilename() != null) {
+        if (event.getTrigger().equals("") && event.getPhotoFilename() != null) {
             holder.mood_description_view.setVisibility(View.GONE);
             holder.mood_description_view2.setVisibility(View.GONE);
         }
@@ -113,9 +108,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
         if (event.getPhotoFilename() != null) {
             holder.mood_image_view.setVisibility(View.VISIBLE);
-
-            Log.e("log", "images/" +  event.getUserID() + "_mood.jpg");
-
+            Log.e("log", "images/" + event.getUserID() + "_mood.jpg");
             FirebaseDB.getInstance(context).getReference(event.getPhotoFilename())
                     .getDownloadUrl()
                     .addOnSuccessListener(uri -> {
@@ -127,7 +120,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                     .addOnFailureListener(e -> {
                         Toast.makeText(((Activity) context), "Failed to load image", Toast.LENGTH_SHORT).show();
                     });
-
+        } else {
+            holder.mood_image_view.setVisibility(View.GONE);
         }
 
         FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), userData -> {
@@ -136,6 +130,17 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 String username = "@" + userData.get("username");
                 holder.first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
                 holder.profile_username_view.setText(username);
+
+                String profileImageUrl = (String) userData.get("profileImageUrl");
+                if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                    Glide.with(context)
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.image)
+                            .circleCrop()
+                            .into(holder.profile_picture_view);
+                } else {
+                    holder.profile_picture_view.setImageResource(R.drawable.image);
+                }
             } else {
                 holder.first_name_last_name_view.setText(R.string.unknown_user);
                 holder.profile_username_view.setText(R.string.unknown);
@@ -165,19 +170,15 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             }
         });
 
-        // new code
-        // Let user tap the name/avatar to see that user's profile
         View.OnClickListener profileTap = v -> {
             if (profileClickListener != null) {
                 profileClickListener.onProfileClick(event.getUserID());
             }
         };
 
-        // tapping the user’s name or user’s username or the profile avatar
         holder.first_name_last_name_view.setOnClickListener(profileTap);
         holder.profile_username_view.setOnClickListener(profileTap);
         holder.profile_picture_view.setOnClickListener(profileTap);
-        // end new code
     }
 
     @Override
@@ -190,21 +191,17 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             newData = new ArrayList<>();
         }
 
-        // Create a copy of the current list to avoid modification issues
         List<MoodEvent> oldData = new ArrayList<>();
         if (moodEvents != null) {
             oldData.addAll(moodEvents);
         }
 
-        // Calculate differences
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
                 new MoodEventDiffCallback(oldData, newData)
         );
 
-        // Update data reference
         this.moodEvents = new ArrayList<>(newData);
 
-        // Dispatch changes to RecyclerView
         diffResult.dispatchUpdatesTo(this);
     }
 
@@ -220,8 +217,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         TextView mood_description_view2;
         ImageView mood_image_view;
         TextView time_view;
-        ImageView gradient_top_view; // Added for the gradient top banner
-        ConstraintLayout bottom_content_view; // Bottom content container
+        ImageView gradient_top_view;
+        ConstraintLayout bottom_content_view;
 
         public FeedViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -236,8 +233,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             mood_description_view2 = itemView.findViewById(R.id.mood_description2);
             mood_image_view = itemView.findViewById(R.id.mood_image);
             time_view = itemView.findViewById(R.id.post_time);
-            gradient_top_view = itemView.findViewById(R.id.gradient_top); // Initialize the gradient view
-            bottom_content_view = itemView.findViewById(R.id.bottom_content); // Initialize the bottom content container
+            gradient_top_view = itemView.findViewById(R.id.gradient_top);
+            bottom_content_view = itemView.findViewById(R.id.bottom_content);
         }
     }
 
@@ -266,7 +263,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             MoodEvent oldEvent = oldList.get(oldItemPosition);
             MoodEvent newEvent = newList.get(newItemPosition);
 
-            // Assuming MoodEvent has an getId() method
             return oldEvent.getId().equals(newEvent.getId());
         }
 
@@ -275,7 +271,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             MoodEvent oldEvent = oldList.get(oldItemPosition);
             MoodEvent newEvent = newList.get(newItemPosition);
 
-            // Compare all relevant fields
             boolean sameEmotionalState = Objects.equals(
                     oldEvent.getEmotionalState(),
                     newEvent.getEmotionalState()

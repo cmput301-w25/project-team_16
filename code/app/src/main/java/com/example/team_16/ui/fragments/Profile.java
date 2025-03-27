@@ -24,7 +24,6 @@ import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
-import com.example.team_16.models.PersonalMoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
 import com.example.team_16.ui.adapters.MoodHistoryAdapter;
