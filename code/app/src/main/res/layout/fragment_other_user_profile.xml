@@ -28,26 +28,25 @@
             android:src="@drawable/image"
             app:shapeAppearanceOverlay="@style/roundedImageView_40" />
 
-        <!-- User Info Row (Name & Handle) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_marginTop="8dp">
 
-            <!-- User Info (Aligned Left) -->
+            <!-- User Info -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                android:orientation="vertical">
-
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginHorizontal="10dp">
                 <TextView
                     android:id="@+id/userName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/user_name"
+                    android:text="User Name"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -55,11 +54,21 @@
                     android:id="@+id/userHandle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/user_handle"
+                    android:text="User Handle"
                     android:textSize="14sp" />
             </LinearLayout>
 
-
+            <!-- Follow Button -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnFollow"
+                android:layout_width="100dp"
+                android:layout_height="38dp"
+                android:text="Follow"
+                android:background="@drawable/follow_button_bg"
+                android:textColor="@color/button_green"
+                android:padding="8dp"
+                android:elevation="4dp"
+                android:layout_marginHorizontal="10dp"/>
         </LinearLayout>
 
         <!-- Followers/Following Row -->

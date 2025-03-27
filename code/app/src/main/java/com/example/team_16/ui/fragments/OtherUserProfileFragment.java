@@ -1,6 +1,8 @@
 package com.example.team_16.ui.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.LayoutInflater;
@@ -51,6 +53,8 @@ public class OtherUserProfileFragment extends Fragment {
     private TextView mostFrequentMoodTxt;
     private RecyclerView moodHistoryRecyclerView;
 
+    private Button btnFollow;
+
     public static OtherUserProfileFragment newInstance(String userId) {
         OtherUserProfileFragment fragment = new OtherUserProfileFragment();
         Bundle args = new Bundle();
@@ -72,7 +76,7 @@ public class OtherUserProfileFragment extends Fragment {
                              ViewGroup container,
                              Bundle savedInstanceState) {
 
-        // the updated layout that matches the profile page minus the Edit Profile
+        // the updated layout that matches the profile page
         return inflater.inflate(R.layout.fragment_other_user_profile, container, false);
     }
 
@@ -90,11 +94,12 @@ public class OtherUserProfileFragment extends Fragment {
         totalMoodEntriesTxt = view.findViewById(R.id.totalMoodEntriesTxt);
         mostFrequentMoodTxt = view.findViewById(R.id.mostFrequentMoodTxt);
         moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
+        btnFollow = view.findViewById(R.id.btnFollow);
 
         // Current user
         currentUserProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
 
-        // 2) Load the target user from Firestore
+        // Load the target user from Firestore
         FirebaseDB firebaseDB = FirebaseDB.getInstance(requireContext());
         UserProfile.loadFromFirebase(firebaseDB, targetUserId, profile -> {
             if (profile == null) {
@@ -106,8 +111,11 @@ public class OtherUserProfileFragment extends Fragment {
             }
             targetUserProfile = profile;
 
-            // 3) Display the target user's info
+            // Display the target user's info
             displayUserProfile();
+
+            // Update the Follow/Unfollow button after user profile is loaded
+            refreshFollowButton();
 
         });
     }
@@ -209,10 +217,87 @@ public class OtherUserProfileFragment extends Fragment {
         return mostFrequent;
     }
 
-    // Might add a follow and un follow button if team wants
-    // Button would be on the teams profile
-    /*
+    /**
+     * Determines whether the current user is following or pending,
+     * then sets the button text/background accordingly and sets click logic.
      */
+    private void refreshFollowButton() {
+        if (currentUserProfile == null || targetUserProfile == null) return;
+
+        // Check if current user is following the target user
+        currentUserProfile.isFollowing(targetUserProfile.getId(), isFollowing -> {
+            if (isFollowing) {
+                // State: Unfollow
+                setButtonStateUnfollow();
+            } else {
+                // If not following, check if pending
+                List<String> pending = currentUserProfile.getPendingFollow();
+                if (pending.contains(targetUserProfile.getId())) {
+                    // State: Pending
+                    setButtonStatePending();
+                } else {
+                    // State: Follow
+                    setButtonStateFollow();
+                }
+            }
+        });
+    }
+
+    /**
+     * follow state - send a follow request to a user
+     */
+    private void setButtonStateFollow() {
+        btnFollow.setText("Follow");
+        btnFollow.setEnabled(true);
+        btnFollow.setBackgroundResource(R.drawable.follow_button_bg);
+        btnFollow.setTextColor(Color.parseColor("#4CAF50"));
+
+        btnFollow.setOnClickListener(v -> {
+            btnFollow.setEnabled(false);
+
+            currentUserProfile.sendFollowRequest(targetUserProfile.getId(), success -> {
+                if (success) {
+                    Toast.makeText(getContext(), "Follow request sent", Toast.LENGTH_SHORT).show();
+                    setButtonStatePending();
+                } else {
+                    Toast.makeText(getContext(), "Failed to send follow request", Toast.LENGTH_SHORT).show();
+                    btnFollow.setEnabled(true);
+                }
+            });
+        });
+    }
+
+    /**
+     * pending state
+     */
+    private void setButtonStatePending() {
+        btnFollow.setText("Pending");
+        btnFollow.setEnabled(false);
+        btnFollow.setBackgroundResource(R.drawable.pending_button_bg);
+        btnFollow.setTextColor(Color.parseColor("#1E293F"));
+    }
+
+    /**
+     * unfollow state
+     */
+    private void setButtonStateUnfollow() {
+        btnFollow.setText("Unfollow");
+        btnFollow.setEnabled(true);
+        btnFollow.setBackgroundResource(R.drawable.unfollow_button_bg);
+        btnFollow.setTextColor(Color.RED);
+
+        btnFollow.setOnClickListener(v -> {
+            btnFollow.setEnabled(false);
+
+            currentUserProfile.unfollowUser(targetUserProfile.getId(), success -> {
+                if (success) {
+                    Toast.makeText(getContext(), "Unfollowed successfully", Toast.LENGTH_SHORT).show();
+                    setButtonStateFollow();
+                } else {
+                    Toast.makeText(getContext(), "Failed to unfollow", Toast.LENGTH_SHORT).show();
+                    btnFollow.setEnabled(true);
+                }
+            });
+        });
+    }
 }
-
-
