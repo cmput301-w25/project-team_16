@@ -19,6 +19,7 @@ import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.UserProfile;
+import com.example.team_16.ui.fragments.AddImage;
 import com.example.team_16.ui.fragments.AddMood;
 import com.example.team_16.ui.fragments.Feed;
 import com.example.team_16.ui.fragments.FilterFragment;
@@ -288,6 +289,10 @@ public class HomeActivity extends AppCompatActivity {
             } else if (currentFragment instanceof FilterFragment) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Filter");
+            }
+            else if (currentFragment instanceof AddImage) {
+                makeToolbarUnscrollable();
+                setToolbarTitle("Image Preview");
             }
             // ... add other fragments as needed
         });
