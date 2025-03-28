@@ -2,6 +2,7 @@ package com.example.team_16.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -9,6 +10,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.team_16.BuildConfig;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
@@ -30,9 +32,17 @@ public class MainActivity extends AppCompatActivity {
     // FirebaseDB instance
     private FirebaseDB firebaseDB;
 
+    private static final String TAG = "API_KEY_CHECK";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Log the API key for debugging
+        if (BuildConfig.DEBUG) {
+            String apiKey = BuildConfig.MAPS_API_KEY;
+            Log.d(TAG, "API Key fetched from local.properties: " + apiKey);
+        }
 
         // Initialize Firebase
         firebaseDB = FirebaseDB.getInstance(this);

@@ -104,23 +104,6 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
         mMap.getUiSettings().setScrollGesturesEnabled(true); // Allow scrolling
         mMap.getUiSettings().setRotateGesturesEnabled(true); // Allow rotation
 
-        /*
-        // Move the camera to a default location (Edmonton)
-        LatLng defaultLocation = new LatLng(53.6316, -113.3239);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 10));
-
-        // Allow users to select a location by tapping on the map
-        mMap.setOnMapClickListener(latLng -> {
-            if (selectedMarker != null) {
-                selectedMarker.remove();
-            }
-            selectedLatLng = latLng;
-            selectedMarker = mMap.addMarker(new MarkerOptions().position(latLng).title("Selected Location"));
-            getAddressFromLatLng(latLng);
-        });
-    }
-    */
-
         try {
             fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
                 if (location != null) {

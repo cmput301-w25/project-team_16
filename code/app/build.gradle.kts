@@ -15,6 +15,7 @@ if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 
+val apiKey = project.findProperty("MAPS_API_KEY") ?: ""
 android {
     namespace = "com.example.team_16"
     compileSdk = 35
@@ -29,7 +30,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Inject API key from local.properties
-        buildConfigField("String", "MAPS_API_KEY", "\"${localProperties.getProperty("MAPS_API_KEY")}\"")
+        buildConfigField("String", "MAPS_API_KEY", "\"${apiKey}\"")
     }
 
     buildTypes {
