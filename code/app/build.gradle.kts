@@ -81,6 +81,9 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     // Maps SDK for Android
     implementation("com.google.android.gms:play-services-maps:18.1.0")
-}
 
+    // Glide Dependencies
+    implementation("com.github.bumptech.glide:glide:4.13.2")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.13.2")
+}
 

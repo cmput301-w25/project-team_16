@@ -10,6 +10,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -72,20 +75,30 @@ public class FollowRequestsFragment extends Fragment {
         btnPending = view.findViewById(R.id.btn_pending);
         searchBar = view.findViewById(R.id.search_bar);
 
-
-
         btnAccepted.setOnClickListener(v -> {
-            btnAccepted.setSelected(true);
-            btnPending.setSelected(false);
-            showAcceptedFollowers();
-            applySearchFilter(searchBar.getText().toString());
+            if (!btnAccepted.isSelected()) {
+                btnAccepted.setSelected(true);
+                btnPending.setSelected(false);
+
+                Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
+
+                btnAccepted.startAnimation(scaleUp);
+
+                showAcceptedFollowers();
+                applySearchFilter(searchBar.getText().toString());
+            }
         });
 
         btnPending.setOnClickListener(v -> {
-            btnPending.setSelected(true);
-            btnAccepted.setSelected(false);
-            showPendingRequests();
-            applySearchFilter(searchBar.getText().toString());
+            if (!btnPending.isSelected()) {
+                btnPending.setSelected(true);
+                btnAccepted.setSelected(false);
+
+                Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
+                btnPending.startAnimation(scaleUp);
+                showPendingRequests();
+                applySearchFilter(searchBar.getText().toString());
+            }
         });
 
         searchBar.addTextChangedListener(new TextWatcher() {

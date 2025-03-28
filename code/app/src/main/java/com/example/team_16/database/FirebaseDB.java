@@ -1,10 +1,12 @@
 package com.example.team_16.database;
 
+import com.example.team_16.models.Comment;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
@@ -12,10 +14,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +47,7 @@ public class FirebaseDB {
     // Firebase components
     private final FirebaseFirestore db;
     private final FirebaseAuth auth;
+    private final FirebaseStorage storage;
     private final Context context;
 
     // Collection names
@@ -49,6 +55,7 @@ public class FirebaseDB {
     private static final String MOODS_COLLECTION = "mood_events";
     private static final String FOLLOW_REQUESTS_COLLECTION = "follow_requests";
     private static final String FOLLOWING_COLLECTION = "following";
+    private static final String COMMENTS_SUBCOLLECTION = "comments";
 
     /**
      * Interface for callbacks
@@ -64,6 +71,7 @@ public class FirebaseDB {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
+        this.storage = FirebaseStorage.getInstance();
     }
 
     /**
@@ -228,7 +236,7 @@ public class FirebaseDB {
             FirebaseCallback<List<MoodEvent>> callback) {
 
         Query query = db.collection(MOODS_COLLECTION)
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("userID", userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING);
 
         // Apply date filter if startDate is provided
@@ -497,29 +505,30 @@ public class FirebaseDB {
      * Add user to following list
      */
     private void addToFollowing(String followerId, String followedId, FirebaseCallback<Boolean> callback) {
-        db.collection(FOLLOWING_COLLECTION).document(followerId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    List<String> following = (List<String>) documentSnapshot.get("following");
-                    if (following == null) {
-                        following = new ArrayList<>();
-                    }
+        DocumentReference followingRef = db.collection(FOLLOWING_COLLECTION).document(followerId);
 
-                    if (!following.contains(followedId)) {
-                        following.add(followedId);
-                    }
-
-                    db.collection(FOLLOWING_COLLECTION).document(followerId)
-                            .update("following", following)
-                            .addOnSuccessListener(aVoid -> callback.onCallback(true))
-                            .addOnFailureListener(e -> {
-                                Log.e("FirebaseDB", "Error updating following list", e);
-                                callback.onCallback(false);
-                            });
-                })
+        // Use arrayUnion to atomically add to the list
+        followingRef.update("following", FieldValue.arrayUnion(followedId))
+                .addOnSuccessListener(aVoid -> callback.onCallback(true))
                 .addOnFailureListener(e -> {
-                    Log.e("FirebaseDB", "Error retrieving following list", e);
-                    callback.onCallback(false);
+                    // Handle case where document doesn't exist yet
+                    if (e instanceof FirebaseFirestoreException &&
+                            ((FirebaseFirestoreException) e).getCode() == FirebaseFirestoreException.Code.NOT_FOUND) {
+
+                        // Create new document with initial list
+                        Map<String, Object> newFollowing = new HashMap<>();
+                        newFollowing.put("following", Collections.singletonList(followedId));
+
+                        followingRef.set(newFollowing)
+                                .addOnSuccessListener(aVoid2 -> callback.onCallback(true))
+                                .addOnFailureListener(e2 -> {
+                                    Log.e("FirebaseDB", "Error creating following document", e2);
+                                    callback.onCallback(false);
+                                });
+                    } else {
+                        Log.e("FirebaseDB", "Error updating following list", e);
+                        callback.onCallback(false);
+                    }
                 });
     }
 
@@ -713,6 +722,7 @@ public class FirebaseDB {
             String userId,
             String fullName,
             String email,
+            String username,       // NEW
             FirebaseCallback<Boolean> callback) {
 
         // Create a map of updates
@@ -725,6 +735,13 @@ public class FirebaseDB {
 
         if (email != null && !email.trim().isEmpty()) {
             updates.put("email", email);
+        }
+
+        // new: Add the username fields
+        // for updating the user profile info
+        if (username != null && !username.trim().isEmpty()) {
+            updates.put("username", username);
+            updates.put("usernameLower", username.toLowerCase());  // for searching
         }
 
         // Check if there are any updates to make
@@ -849,5 +866,59 @@ public class FirebaseDB {
                     callback.onCallback(new ArrayList<>());
                 });
     }
+
+    public void addCommentToMoodEvent(String moodEventId, Comment comment, FirebaseCallback<Comment> callback) {
+        // Create a reference to the subcollection "comments" under this mood event
+        DocumentReference newCommentRef = db.collection(MOODS_COLLECTION)
+                .document(moodEventId)
+                .collection(COMMENTS_SUBCOLLECTION)
+                .document();
+
+        // Set the ID in the Comment object, plus its timestamp if you like
+        comment.setId(newCommentRef.getId());
+        comment.setTimestamp(System.currentTimeMillis());
+
+        newCommentRef.set(comment)
+                .addOnSuccessListener(aVoid -> {
+                    // Return the updated comment (with ID/timestamp)
+                    callback.onCallback(comment);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error adding comment", e);
+                    callback.onCallback(null);
+                });
+    }
+
+    /**
+     * Fetch all comments for a given moodEventId, ordered by descending timestamp
+     */
+    public void fetchCommentsForMoodEvent(String moodEventId, FirebaseCallback<List<Comment>> callback) {
+        db.collection(MOODS_COLLECTION)
+                .document(moodEventId)
+                .collection(COMMENTS_SUBCOLLECTION)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Comment> comments = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        Comment comment = doc.toObject(Comment.class);
+                        // Make sure we have a valid Comment object
+                        if (comment != null) {
+                            comments.add(comment);
+                        }
+                    }
+                    callback.onCallback(comments);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error fetching comments", e);
+                    // Return empty list on failure
+                    callback.onCallback(new ArrayList<>());
+                });
+    }
+
+    public StorageReference getReference(String path) {
+        return storage.getReference().child(path);
+    }
+
 
 }

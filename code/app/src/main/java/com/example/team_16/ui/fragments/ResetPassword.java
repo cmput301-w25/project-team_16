@@ -1,10 +1,13 @@
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -18,6 +21,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
+import com.google.android.material.textfield.TextInputLayout;
 
 
 /**
@@ -27,6 +31,7 @@ import com.example.team_16.database.FirebaseDB;
 public class ResetPassword extends Fragment {
 
     // UI elements for reset functionality
+    private TextInputLayout emailLayout;
     private EditText emailEditText;
     private Button requestResetButton;
 
@@ -63,15 +68,23 @@ public class ResetPassword extends Fragment {
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         // UI elements in the layout
+        emailLayout = view.findViewById(R.id.emailLayout);
         emailEditText = view.findViewById(R.id.email);
         requestResetButton = view.findViewById(R.id.requestResetButton);
 
         // Handle the reset button click
         requestResetButton.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
+            Animation scaleDown = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_down);
+
+            requestResetButton.startAnimation(scaleDown);
+
             if (TextUtils.isEmpty(email)) {
+                // Set error with a red asterisk on the email field
+                emailLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Email required"));
                 Toast.makeText(requireContext(), "Enter an email!", Toast.LENGTH_SHORT).show();
             } else {
+                emailLayout.setError(null);
                 sendResetEmail(email);
             }
         });
@@ -92,6 +105,18 @@ public class ResetPassword extends Fragment {
                 Toast.makeText(requireContext(), "Failed to send reset link!", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * Clears the error messages
+     */
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Clear error message on the email field when the view is destroyed
+        if (emailEditText != null) {
+            emailEditText.setError(null);
+        }
     }
 }
 

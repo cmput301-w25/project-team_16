@@ -17,6 +17,29 @@
 
     <color name="customGrey">#808080</color>
     <color name="lightGrey">#D3D3D3</color>
+    <color name="custom_toolbar_color">#01796F</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#000000</color>
+    <color name="text_secondary">#666666</color>  <!-- Darkened from #888888 for better contrast -->
+    <color name="text_tertiary">#444444</color>   <!-- Darkened from #555555 for better contrast -->
+
+    <!-- Accent Colors -->
+    <color name="mood_text_color">#9E6F32</color>
+    <color name="accent_gold">#A9772B</color>
+    <color name="accent_coral">#C15837</color>
+
+    <!-- Theme Colors -->
+    <color name="primary">#3F51B5</color>
+    <color name="primary_dark">#303F9F</color>
+    <color name="primary_light">#C5CAE9</color>
+    <color name="accent">#FF4081</color>
+    <color name="time_period_button_color">#402c2e</color>
+    <color name="purple_500">#6200EE</color>
+
+    <color name="button_green">#4CAF50</color>
+
+
 
 
 </resources>

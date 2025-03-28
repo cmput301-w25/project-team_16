@@ -3,21 +3,26 @@
     <item
         android:id="@+id/nav_feed"
         android:icon="@drawable/home_24px"
+        android:orderInCategory="0"
         android:title="Feed" />
     <item
         android:id="@+id/nav_search"
         android:icon="@drawable/ic_search"
+        android:orderInCategory="1"
         android:title="Search" />
     <item
         android:id="@+id/nav_add"
         android:icon="@drawable/add_circle_24px"
+        android:orderInCategory="2"
         android:title="Add Mood" />
     <item
         android:id="@+id/nav_maps"
         android:icon="@drawable/explore_24px"
+        android:orderInCategory="3"
         android:title="maps" />
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/person_24px"
+        android:orderInCategory="4"
         android:title="Profile" />
 </menu>

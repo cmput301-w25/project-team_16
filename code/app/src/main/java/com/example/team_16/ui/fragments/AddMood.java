@@ -2,9 +2,12 @@ package com.example.team_16.ui.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +15,9 @@ import android.Manifest;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.os.Environment;
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -20,10 +26,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -31,6 +38,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
@@ -39,6 +49,9 @@ import com.example.team_16.models.EmotionalStateRegistry;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +60,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 
 /**
  * Fragment to add a mood event, using UserProfile to manage mood events.
@@ -66,8 +82,8 @@ public class AddMood extends Fragment {
     private TextView triggerCounter;
     private Button saveMoodButton, deleteMoodButton, takePhotoButton, choosePhotoButton, addLocationButton;
     private Button aloneButton, onePersonButton, twoPersonButton, crowdButton;
-    private Uri photoUri; // for temporary file Uri
-    private Uri selectedPhotoUri;
+    private Uri selectedPhotoUri = null;
+    private Uri cameraImageUri = null;
     private String selectedMood, socialSetting;
 
     // Stores the selected coordinates (null if no location selected)
@@ -78,15 +94,17 @@ public class AddMood extends Fragment {
 
     private static final int PICK_PHOTO_REQUEST = 1;
     private boolean isEditMode = false; //flag for adding or editing
+    private boolean isImageChanged = false;
+
+    private Button publicPostButton, privatePostButton;
+    private String selectedPostType = "Public";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Get the UserProfile from Application context
         userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
 
-        // Check if user profile is available
         if (userProfile == null) {
             Toast.makeText(requireContext(), "Failed to load user profile.", Toast.LENGTH_SHORT).show();
             requireActivity().finish();
@@ -101,11 +119,9 @@ public class AddMood extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_add_mood, container, false);
-        // HomeActivity will handle the toolbar title based on navigation selection
-        return view;
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_add_mood, container, false);
     }
 
     @Override
@@ -120,19 +136,21 @@ public class AddMood extends Fragment {
         choosePhotoButton = view.findViewById(R.id.choose_photo_button);
         addLocationButton = view.findViewById(R.id.add_location_button);
 
-        // Social Setting Buttons
+        publicPostButton = view.findViewById(R.id.public_post_button);
+        privatePostButton = view.findViewById(R.id.private_post_button);
+
         aloneButton = view.findViewById(R.id.alone_button);
         onePersonButton = view.findViewById(R.id.one_person_button);
         twoPersonButton = view.findViewById(R.id.two_person_button);
         crowdButton = view.findViewById(R.id.crowd_button);
 
-        // Setup event listeners
         setupMoodSelectionButtons(view);
         setupSocialSettingButtons(view);
         setupPhotoButtons();
         setupLocationButton();
         setupSaveButton();
         setupDeleteButton();
+        setupPostTypeButtons();
 
         // App permission handling
         checkAndRequestPermissions();
@@ -149,8 +167,7 @@ public class AddMood extends Fragment {
 
         triggerInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 updateTriggerCounter(triggerCounter, s.toString());
@@ -158,17 +175,13 @@ public class AddMood extends Fragment {
                 if (s.length() > 20) {
                     triggerInput.setText(s.subSequence(0, 20));
                     triggerInput.setSelection(20);  // Set cursor position at the end
-
-                    // Show error message
                     triggerInput.setError("Maximum 20 characters allowed.");
                 } else {
-                    // Clear the error message if the input is within the limit
                     triggerInput.setError(null);
                 }
             }
-
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) { }
         });
     }
 
@@ -218,7 +231,7 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Visual feedback for selected mood button
+     * Visual feedback for selected mood button.
      */
     private void highlightMoodButton(View view, int selectedButtonId) {
         int[] moodButtonIds = {
@@ -227,13 +240,10 @@ public class AddMood extends Fragment {
                 R.id.shame_button, R.id.surprise_button
         };
 
-        // Reset all buttons to default state
         for (int buttonId : moodButtonIds) {
             Button button = view.findViewById(buttonId);
             button.setAlpha(0.8f);
         }
-
-        // Highlight the selected button
         Button selectedButton = view.findViewById(selectedButtonId);
         selectedButton.setAlpha(1.0f);
     }
@@ -255,9 +265,11 @@ public class AddMood extends Fragment {
             Button button = view.findViewById(socialButtonIds[i]);
             button.setOnClickListener(v -> {
                 if (socialSetting != null && socialSetting.equals(socialNames[index])) {
+                    // If already selected, deselect
                     socialSetting = null;
                     button.setAlpha(0.8f);
                 } else {
+                    // Select new social setting
                     socialSetting = socialNames[index];
                     highlightSocialButton(button);
                 }
@@ -266,16 +278,14 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Visual feedback for selected social button
+     * Visual feedback for selected social button.
      */
     private void highlightSocialButton(Button selectedButton) {
-        // Reset all buttons to default state
         aloneButton.setAlpha(0.8f);
         onePersonButton.setAlpha(0.8f);
         twoPersonButton.setAlpha(0.8f);
         crowdButton.setAlpha(0.8f);
 
-        // Highlight the selected button
         selectedButton.setAlpha(1.0f);
     }
 
@@ -284,52 +294,26 @@ public class AddMood extends Fragment {
         selectedMood = moodEvent.getEmotionalState().getName();
         socialSetting = moodEvent.getSocialSituation();
 
-        highlightMoodButton(getView(), getMoodButtonId(selectedMood));
+        highlightMoodButton(requireView(), getMoodButtonId(selectedMood));
         highlightSocialButton(getSocialButton(socialSetting));
     }
 
     /**
-     * Updates the UI with remaining character and word count.
+     * Updates the UI with remaining character count.
      */
     private void updateTriggerCounter(TextView counterView, String text) {
-        int charRemaining = 20 - text.length();
-        int wordCount = text.trim().isEmpty() ? 0 : text.trim().split("\\s+").length;
-        int wordRemaining = 3 - wordCount;
-
-        // Ensure it doesn't show negative values
-        charRemaining = Math.max(charRemaining, 0);
-        wordRemaining = Math.max(wordRemaining, 0);
-
-        counterView.setText(charRemaining + " characters left | " + wordRemaining + " words left");
-    }
-    /**
-     * Validates the trigger input for character length and word count.
-     */
-    private void validateTriggerInput() {
-        String text = triggerInput.getText().toString().trim();
-        int charCount = text.length();
-        int wordCount = text.isEmpty() ? 0 : text.split("\\s+").length;
-
-        if (charCount > 20) {
-            triggerInput.setError("Maximum 20 characters allowed.");
-        } else if (wordCount > 3) {
-            triggerInput.setError("Maximum 3 words allowed.");
-        } else {
-            triggerInput.setError(null); // Clear error when valid
-        }
-
-        updateTriggerCounter(triggerCounter, text);
+        int charRemaining = Math.max(20 - text.length(), 0);
+        counterView.setText(charRemaining + " characters left");
     }
 
     /**
      * Resets the input field when the form is reset.
      */
     private void resetForm() {
-        triggerInput.setText("");  // Clear input field
-        triggerInput.setError(null); // Clear any validation errors
-        triggerCounter.setText("20 characters left | 3 words left");
+        triggerInput.setText("");
+        triggerInput.setError(null);
+        triggerCounter.setText("20 characters left");
     }
-
 
     private int getMoodButtonId(String moodName) {
         switch (moodName) {
@@ -356,52 +340,109 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Opens photo picker.
+     * Opens the photo picker.
      */
     private void setupPhotoButtons() {
         choosePhotoButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
-            startActivityForResult(intent, PICK_PHOTO_REQUEST);
-        });
 
-        boolean hasCameraPermission = hasPermission(Manifest.permission.CAMERA);
+            if (selectedPhotoUri == null) {
+                pickImageLauncher.launch(intent);
+            }
+            else {
+                Bundle args = new Bundle();
+                args.putParcelable("selectedUriOld", selectedPhotoUri);
+                args.putParcelable("selectedUri", null);
+                AddImage addImageFragment = AddImage.newInstance("Gallery");
+                addImageFragment.setArguments(args);
+
+                getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
+                    if (selectedPhotoUri != result2.getParcelable("uri")) {
+                        selectedPhotoUri = result2.getParcelable("uri");
+                        isImageChanged = Boolean.TRUE;
+                    }
+                });
+
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, addImageFragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
 
         takePhotoButton.setOnClickListener(v -> {
-            if (!hasCameraPermission) {
-                requestPermission(Manifest.permission.CAMERA, CAMERA_PERMISSION_REQUEST_CODE);
-            } else {
-                openCamera(); // Call function to take a photo
-            }
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + System.currentTimeMillis() + ".jpg");
+            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MoodApp");
+
+            cameraImageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+
+            takePhotoLauncher.launch(cameraImageUri);
+
         });
     }
 
-    private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    private final ActivityResultLauncher<Uri> takePhotoLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
 
-        if (cameraIntent.resolveActivity(requireContext().getPackageManager()) != null) {
-            File photoFile = createImageFile();
-            if (photoFile != null) {
-                selectedPhotoUri = FileProvider.getUriForFile(requireContext(),
-                        requireContext().getPackageName() + ".provider", photoFile);
-                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, selectedPhotoUri);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
+                if (success && cameraImageUri != null) {
+                    //cameraImageUri = selectedPhotoUri;
+                    //isImageChanged = Boolean.TRUE;
+
+                    Bundle args = new Bundle();
+                    args.putParcelable("selectedUriOld", selectedPhotoUri);
+                    args.putParcelable("selectedUri", cameraImageUri);
+                    AddImage addImageFragment = AddImage.newInstance("Camera");
+                    addImageFragment.setArguments(args);
+
+                    getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
+                        if (selectedPhotoUri != result2.getParcelable("uri")) {
+                            selectedPhotoUri = result2.getParcelable("uri");
+                            isImageChanged = Boolean.TRUE;
+                        }
+                    });
+
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, addImageFragment)
+                            .addToBackStack(null)
+                            .commit();
+
+                }
+
+            });
+
+    /**
+     * Handles photo selection.
+     */
+    private ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    // Get the selected image URI.
+                    Uri imageUri = result.getData().getData();
+                    Bundle args = new Bundle();
+                    args.putParcelable("selectedUriOld", selectedPhotoUri);
+                    args.putParcelable("selectedUri", imageUri);
+                    AddImage addImageFragment = AddImage.newInstance("Gallery");
+                    addImageFragment.setArguments(args);
+
+                    getParentFragmentManager().setFragmentResultListener("image_result", this, (requestKey, result2) -> {
+                        if (selectedPhotoUri != result2.getParcelable("uri")) {
+                            selectedPhotoUri = result2.getParcelable("uri");
+                            isImageChanged = Boolean.TRUE;
+                        }
+                    });
+
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, addImageFragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
             }
-        }
-    }
-
-    private File createImageFile() {
-        try {
-            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-            String imageFileName = "JPEG_" + timestamp + "_";
-            File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-            return File.createTempFile(imageFileName, ".jpg", storageDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
+    );
 
     private void setupLocationButton() {
         boolean hasLocationPermission = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -427,41 +468,19 @@ public class AddMood extends Fragment {
         });
     }
 
-
-    /**
-         * Handles photo selection.
-         */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            if (photoUri != null) {
-                Toast.makeText(requireContext(), "Photo captured!", Toast.LENGTH_SHORT).show();
-                // Save the photo URI to use it later
-                selectedPhotoUri = photoUri;
-            }
-        } else if (requestCode == PICK_PHOTO_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            selectedPhotoUri = data.getData();
-            Toast.makeText(requireContext(), "Photo selected from gallery!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     /**
      * Saves the mood event using UserProfile.
      */
     private void setupSaveButton() {
         saveMoodButton.setOnClickListener(v -> {
-            if (!validateInputs()) return; // Ensure required fields are selected
+            if (!validateInputs()) return;
 
-            // Retrieve EmotionalState
             EmotionalState emotionalState = EmotionalStateRegistry.getByName(selectedMood);
             if (emotionalState == null) {
                 Toast.makeText(requireContext(), "Invalid mood selected!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Get trigger text (optional)
             String triggerText = triggerInput.getText().toString().trim();
 
             //get location data (optional)
@@ -471,18 +490,18 @@ public class AddMood extends Fragment {
             String placeName = (selectedPlaceName != null) ? selectedPlaceName : null;
 
             if (isEditMode) {
-                // Update existing MoodEvent
                 moodEvent.setEmotionalState(emotionalState);
                 moodEvent.setTrigger(triggerText);
                 moodEvent.setSocialSituation(socialSetting);
+                moodEvent.setPostType(selectedPostType);
                 moodEvent.setLatitude(latitude);
                 moodEvent.setLongitude(longitude);
                 moodEvent.setPlaceName(placeName);
 
-                if (selectedPhotoUri != null) {
-                    // Handle photo upload and set URI in moodEvent (if needed)
-                    // moodEvent.setPhotoUri(selectedPhotoUri.toString());
-                    // TODO: Upload photo to Firebase Storage and update event
+                if (selectedPhotoUri != null && isImageChanged) {
+                    deleteImageFromFirebase(moodEvent.getPhotoFilename());
+                    String filename = uploadImageToFirebase();
+                    moodEvent.setPhotoFilename(filename);
                 }
 
                 userProfile.editMoodEvent(moodEvent.getId(), moodEvent, success -> {
@@ -502,11 +521,12 @@ public class AddMood extends Fragment {
                                                         latitude,
                                                         longitude,
                                                         placeName);
+                newMoodEvent.setPostType(selectedPostType); // Set post type
 
                 if (selectedPhotoUri != null) {
                     // Handle photo upload and set URI in newMoodEvent (if needed)
-                    // newMoodEvent.setPhotoUri(selectedPhotoUri.toString());
-                    // TODO: Upload photo to Firebase Storage
+                    String filename = uploadImageToFirebase();
+                    newMoodEvent.setPhotoFilename(filename);
                 }
 
                 userProfile.addMoodEvent(newMoodEvent, success -> {
@@ -521,20 +541,82 @@ public class AddMood extends Fragment {
         });
     }
 
-    private void updateUIForExistingMood() {
-        if (moodEvent == null) return;
+    private String uploadImageToFirebase() {
+        try {
+            InputStream inputStream = requireContext().getContentResolver().openInputStream(selectedPhotoUri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
 
-        // Highlight selected mood
-        highlightMoodButton(getView(), getMoodButtonId(moodEvent.getEmotionalState().getName()));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
 
-        // Highlight selected social setting
-        highlightSocialButton(getSocialButton(moodEvent.getSocialSituation()));
+            byte[] imageData = baos.toByteArray();
 
-        // Show the updated trigger text
-        triggerInput.setText(moodEvent.getTrigger());
+            // 🔧 keep compressing if > 65536 bytes
+            int quality = 90;
+            while (imageData.length > 65536 && quality > 10) {
+                baos.reset();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
+                imageData = baos.toByteArray();
+                quality -= 10;
+            }
+
+            //FirebaseStorage storage = FirebaseStorage.getInstance();
+            String filename = "images/" + userProfile.getId() + System.currentTimeMillis() + "_mood.jpg";
+            StorageReference storageRef = FirebaseDB.getInstance(requireContext()).getReference(filename);
+            //StorageReference storageRef = storage.getReference()
+                    //.child(filename);
+
+            UploadTask uploadTask = storageRef.putBytes(imageData);
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+            }).addOnFailureListener(e -> {
+            });
+
+            return filename;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void deleteImageFromFirebase(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            Log.e("FirebaseStorage", "Filename is null or empty.");
+            return;
+        }
+
+        StorageReference storageRef = FirebaseDB.getInstance(requireContext()).getReference(filename);
+        //FirebaseStorage storage = FirebaseStorage.getInstance();
+        //StorageReference storageRef = storage.getReference().child(filename);
+
+        storageRef.delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FirebaseStorage", "File deleted successfully: " + filename);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseStorage", "Error deleting file: " + filename, e);
+                });
     }
 
 
+    private void updateUIForExistingMood() {
+        if (moodEvent == null) return;
+
+        highlightMoodButton(getView(), getMoodButtonId(moodEvent.getEmotionalState().getName()));
+        highlightSocialButton(getSocialButton(moodEvent.getSocialSituation()));
+        triggerInput.setText(moodEvent.getTrigger());
+
+        if ("Private".equalsIgnoreCase(moodEvent.getPostType())) {
+            selectedPostType = "Private";
+            highlightPostTypeButton(privatePostButton);
+            publicPostButton.setAlpha(0.8f);
+        } else {
+            selectedPostType = "Public";
+            highlightPostTypeButton(publicPostButton);
+            privatePostButton.setAlpha(0.8f);
+        }
+
+    }
 
     private void setupDeleteButton() {
         deleteMoodButton.setOnClickListener(v -> {
@@ -542,24 +624,20 @@ public class AddMood extends Fragment {
                 Toast.makeText(requireContext(), "No mood event selected to delete.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             new AlertDialog.Builder(requireContext())
                     .setTitle("Delete Mood")
                     .setMessage("Are you sure you want to delete this mood event?")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            userProfile.deleteMoodEvent(moodEvent.getId(), success -> {
-                                if (success) {
-                                    Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
-                                    if (getFragmentManager() != null) {
-                                        getFragmentManager().popBackStack();
-                                    }
-                                } else {
-                                    Toast.makeText(requireContext(), "Failed to delete mood event.", Toast.LENGTH_SHORT).show();
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        userProfile.deleteMoodEvent(moodEvent.getId(), success -> {
+                            if (success) {
+                                Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
+                                if (getFragmentManager() != null) {
+                                    getFragmentManager().popBackStack();
                                 }
-                            });
-                        }
+                            } else {
+                                Toast.makeText(requireContext(), "Failed to delete mood event.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     })
                     .setNegativeButton("No", null)
                     .show();
@@ -626,5 +704,35 @@ public class AddMood extends Fragment {
                 }
             }
         }
+    }
+
+    /**
+     * Sets up the post type selection buttons.
+     */
+    private void setupPostTypeButtons() {
+        highlightPostTypeButton(publicPostButton);
+        privatePostButton.setAlpha(0.8f);
+
+        publicPostButton.setOnClickListener(v -> {
+            if (!"Public".equals(selectedPostType)) {
+                selectedPostType = "Public";
+                highlightPostTypeButton(publicPostButton);
+                privatePostButton.setAlpha(0.8f);
+            }
+        });
+
+        privatePostButton.setOnClickListener(v -> {
+            if (!"Private".equals(selectedPostType)) {
+                selectedPostType = "Private";
+                highlightPostTypeButton(privatePostButton);
+                publicPostButton.setAlpha(0.8f);
+            }
+        });
+    }
+
+    private void highlightPostTypeButton(Button selectedButton) {
+        publicPostButton.setAlpha(0.8f);
+        privatePostButton.setAlpha(0.8f);
+        selectedButton.setAlpha(1.0f);
     }
 }

@@ -26,7 +26,7 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
 
     private EditText searchBar;
     private RecyclerView peopleRecyclerView;
-    private TextView emptyStateTextView;
+    private TextView noSearchMessage;
     private SearchAdapter adapter;
     private UserProfile currentUser;
 
@@ -45,7 +45,7 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
 
         searchBar = view.findViewById(R.id.search_bar);
         peopleRecyclerView = view.findViewById(R.id.peopleRecyclerView);
-        emptyStateTextView = view.findViewById(R.id.emptyStateTextView);
+        noSearchMessage = view.findViewById(R.id.noSearchMessage);
 
         peopleRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new SearchAdapter(this);
@@ -67,6 +67,10 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
                 performSearch(s.toString());
             }
         });
+
+        // Show the message initially
+        noSearchMessage.setVisibility(View.VISIBLE);
+        peopleRecyclerView.setVisibility(View.GONE);
     }
 
     private void updateAdapterLists() {
@@ -79,16 +83,21 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
     private void performSearch(String query) {
         if (query.isEmpty()) {
             adapter.setUsers(new ArrayList<>());
-            emptyStateTextView.setVisibility(View.GONE);
+            noSearchMessage.setVisibility(View.VISIBLE);
+            peopleRecyclerView.setVisibility(View.GONE);
             return;
         }
 
+        noSearchMessage.setVisibility(View.GONE);
+        peopleRecyclerView.setVisibility(View.VISIBLE);
+
         currentUser.searchUsersByUsername(query, users -> {
             if (users.isEmpty()) {
-                emptyStateTextView.setVisibility(View.VISIBLE);
+                noSearchMessage.setText("❌\nNo users found");
+                noSearchMessage.setVisibility(View.VISIBLE);
                 peopleRecyclerView.setVisibility(View.GONE);
             } else {
-                emptyStateTextView.setVisibility(View.GONE);
+                noSearchMessage.setVisibility(View.GONE);
                 peopleRecyclerView.setVisibility(View.VISIBLE);
                 filterAndDisplayUsers(users);
             }
@@ -108,6 +117,23 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
         adapter.setUsers(filteredUsers);
     }
 
+    // New Feature to click on users profile
+    @Override
+    public void onUserClick(String targetUserId) {
+        // Navigate to a new fragment that shows the clicked user's profile
+        goToUserProfile(targetUserId);
+    }
+
+    private void goToUserProfile(String targetUserId) {
+        OtherUserProfileFragment fragment = OtherUserProfileFragment.newInstance(targetUserId);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+    // end new code
+
     @Override
     public void onFollowClick(String targetUserId) {
         currentUser.sendFollowRequest(targetUserId, success -> {
@@ -119,6 +145,7 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
             }
         });
     }
+
     @Override
     public void onUnfollowClick(String targetUserId) {
         currentUser.unfollowUser(targetUserId, success -> {

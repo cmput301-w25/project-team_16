@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/gradient_background">
@@ -10,6 +11,7 @@
         android:id="@+id/signUpToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_marginTop="20dp"
         android:background="@android:color/transparent"
         android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
@@ -23,7 +25,7 @@
         android:orientation="vertical"
         android:padding="20dp"
         android:gravity="top|center_horizontal"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="70dp">
 
         <TextView
             android:id="@+id/signUpHeader"
@@ -35,59 +37,98 @@
             android:gravity="center"
             android:layout_marginBottom="30dp" />
 
-        <EditText
-            android:id="@+id/name"
+        <!-- Full Name Field -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nameLayout"
             android:layout_width="300dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/edit_text_background"
-            android:padding="12dp"
-            android:textSize="20sp"
-            android:hint="Full Name"
-            android:textColorHint="@color/black"
-            android:textColor="@android:color/black"
-            android:gravity="center_vertical" />
+            app:hintEnabled="false"
+            app:errorEnabled="true"
+            app:errorTextAppearance="@style/CustomErrorTextAppearance">
 
-        <EditText
-            android:id="@+id/username"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/edit_text_background"
+                android:gravity="center_vertical"
+                android:hint="Full Name"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@color/black"
+                android:textSize="20sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Username Field -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/usernameLayout"
             android:layout_width="300dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/edit_text_background"
-            android:padding="12dp"
-            android:textSize="20sp"
-            android:hint="Username"
-            android:textColorHint="@color/black"
-            android:textColor="@android:color/black"
-            android:gravity="center_vertical" />
+            app:hintEnabled="false"
+            app:errorEnabled="true"
+            app:errorTextAppearance="@style/CustomErrorTextAppearance">
 
-        <EditText
-            android:id="@+id/email"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/edit_text_background"
+                android:gravity="center_vertical"
+                android:hint="Username"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@color/black"
+                android:textSize="20sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Email Field -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/emailLayout"
             android:layout_width="300dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/edit_text_background"
-            android:padding="12dp"
-            android:textSize="20sp"
-            android:hint="Email"
-            android:inputType="textEmailAddress"
-            android:textColorHint="@color/black"
-            android:textColor="@android:color/black"
-            android:gravity="center_vertical" />
+            app:hintEnabled="false"
+            app:errorEnabled="true"
+            app:errorTextAppearance="@style/CustomErrorTextAppearance">
 
-        <EditText
-            android:id="@+id/password"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/email"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/edit_text_background"
+                android:gravity="center_vertical"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@color/black"
+                android:textSize="20sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Password Field -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/passwordLayout"
             android:layout_width="300dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="@drawable/edit_text_background"
-            android:padding="12dp"
-            android:textSize="20sp"
-            android:hint="Password"
+            app:hintEnabled="false"
+            app:errorEnabled="true"
+            app:errorTextAppearance="@style/CustomErrorTextAppearance">
 
-            android:textColorHint="@color/black"
-            android:textColor="@android:color/black"
-            android:gravity="center_vertical" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@drawable/edit_text_background"
+                android:gravity="center_vertical"
+                android:hint="Password"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@color/black"
+                android:textSize="20sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/signUpButton"
@@ -101,6 +142,5 @@
             android:textColor="@android:color/white"/>
     </LinearLayout>
 </RelativeLayout>
-
 
 

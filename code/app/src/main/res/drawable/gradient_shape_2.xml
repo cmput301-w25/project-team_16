@@ -8,11 +8,16 @@
                 android:viewportWidth="24"
                 android:viewportHeight="24"
                 android:angle="0"
-                android:startColor="#f5fea3"
+                android:startColor="#60CCBC"
                 android:centerColor="#f5cea3"
                 android:endColor="#f5aea3"
                 android:type="linear"/>
-            <corners android:radius="32dp"/>
+            <corners
+                android:topLeftRadius="20dp"
+                android:topRightRadius="20dp"
+                android:bottomLeftRadius="0dp"
+                android:bottomRightRadius="0dp"/>
+
         </shape>
 
     </item>

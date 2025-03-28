@@ -4,16 +4,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="2dp"
-    app:cardBackgroundColor="#FFFFFF"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="15dp">
+    android:layout_margin="4dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:background="@drawable/item_bg"
+        android:padding="11dp">
 
         <ImageView
             android:id="@+id/image_profile"
@@ -32,7 +32,7 @@
                 android:id="@+id/text_username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#1C170D"
+                android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -40,7 +40,7 @@
                 android:id="@+id/text_user_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#A1824A"
+                android:textColor="#000000"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -54,10 +54,10 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/button_remove"
             android:layout_width="100dp"
-            android:layout_height="38dp"
-            android:background="@drawable/button_remove"
+            android:layout_height="40dp"
+            android:background="@drawable/unfollow_button_bg"
             android:text="@string/remove"
-            android:textColor="#FFFFFF"
+            android:textColor="#FF0000"
             app:backgroundTint="@null" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>
