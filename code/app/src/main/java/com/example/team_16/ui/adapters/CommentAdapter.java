@@ -14,7 +14,6 @@ import com.example.team_16.models.Comment;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.bumptech.glide.Glide;
 
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -24,8 +23,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     private List<Comment> comments;
 
-    // new code
-    // Called when the user taps on a commenter's profile pass the commenter’s userId
     public interface OnCommentUserClickListener {
         void onUserClick(String userId);
     }
@@ -33,11 +30,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     private OnCommentUserClickListener userClickListener;
 
 
-     // Setter for the user-click listener
     public void setOnCommentUserClickListener(OnCommentUserClickListener listener) {
         this.userClickListener = listener;
     }
-    // new code end
 
     public CommentAdapter(List<Comment> comments) {
         this.comments = comments;
@@ -81,19 +76,15 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 Glide.with(itemView.getContext())
                         .load(imageUrl)
-                        .placeholder(android.R.drawable.sym_def_app_icon)
+                        .placeholder(R.drawable.image)
                         .into(userImage);
             } else {
-                userImage.setImageResource(android.R.drawable.sym_def_app_icon);
+                userImage.setImageResource(R.drawable.image);
             }
-
-            userImage.setImageResource(android.R.drawable.sym_def_app_icon);
 
             userName.setText(comment.getUserName());
             commentText.setText(comment.getText());
 
-            // new code
-            // Let user tap on the user's image or name to see their profile
             View.OnClickListener profileClickListener = v -> {
                 if (userClickListener != null) {
                     userClickListener.onUserClick(comment.getUserId());
@@ -101,10 +92,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             };
             userImage.setOnClickListener(profileClickListener);
             userName.setOnClickListener(profileClickListener);
-            // end new code
 
 
-            // Compute "time ago" from comment.getTimestamp() (stored as a long)
             long timestampMillis = comment.getTimestamp();
             String timeAgoStr = "Just now";
 

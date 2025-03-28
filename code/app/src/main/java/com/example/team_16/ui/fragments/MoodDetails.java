@@ -297,7 +297,7 @@ public class MoodDetails extends Fragment {
         }
 
         if (currentUser.getProfileImageUrl() != null) {
-            Glide.with(this)
+            Glide.with(requireView())
                     .load(currentUser.getProfileImageUrl())
                     .placeholder(R.drawable.image)
                     .apply(RequestOptions.bitmapTransform(new RoundedCorners(40)))
