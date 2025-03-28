@@ -25,7 +25,9 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Feed extends Fragment implements FilterableFragment, FilterFragment.FilterListener {
 
@@ -195,9 +197,29 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
     }
     private void loadData() {
         MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
-        List<MoodEvent> events = followingMoodHistory.getAllEvents();
-        Collections.reverse(events);
-        fullMoodEvents = new ArrayList<>(events);
+        List<MoodEvent> allEvents = followingMoodHistory.getAllEvents();
+
+        allEvents.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+
+        Map<String, List<MoodEvent>> groupedByUser = new LinkedHashMap<>();
+        for (MoodEvent event : allEvents) {
+            String userId = event.getUserID();
+            if (!groupedByUser.containsKey(userId)) {
+                groupedByUser.put(userId, new ArrayList<>());
+            }
+            if (groupedByUser.get(userId).size() < 3) {
+                groupedByUser.get(userId).add(event);
+            }
+        }
+
+        List<MoodEvent> limitedEvents = new ArrayList<>();
+        for (List<MoodEvent> userEvents : groupedByUser.values()) {
+            limitedEvents.addAll(userEvents);
+        }
+
+        limitedEvents.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+
+        fullMoodEvents = new ArrayList<>(limitedEvents);
         moodEvents = new ArrayList<>(fullMoodEvents);
 
         if (currentCriteria != null) {
@@ -209,6 +231,8 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
             }
         }
     }
+
+
     @Override
     public void onResume() {
         super.onResume();

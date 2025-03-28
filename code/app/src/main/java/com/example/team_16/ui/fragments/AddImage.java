@@ -10,6 +10,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
@@ -79,77 +81,88 @@ public class AddImage extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        if (getActivity() != null) {
+            getActivity().setTitle("Image Preview");
+        }
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add_image, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Set toolbar title
+        if (getActivity() != null) {
+            getActivity().setTitle("Image Preview");
+        }
 
         imageView = requireView().findViewById(R.id.addMoodImage);
         textView = requireView().findViewById(R.id.noImageText);
         textView.setVisibility(View.GONE);
 
         Button updateButton = view.findViewById(R.id.updateImageButton);
-        Button removeButton = view.findViewById(R.id.removeImageButton);
-        Button cancelButton = view.findViewById(R.id.cancelImageButton);
         Button confirmButton = view.findViewById(R.id.confirmImageButton);
 
         if (imageUri != null) {
-            Glide.with(this)
-                    .load(imageUri)
-                    .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                    .into(imageView);
+            loadImage(imageUri);
+        } else if (oldImageUri != null) {
+            loadImage(oldImageUri);
         }
-        else {
-            Glide.with(this)
-                    .load(oldImageUri)
-                    .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
-                    .into(imageView);
-        }
+
+        updateButton.setOnClickListener(v -> handleImageUpdate());
+        confirmButton.setOnClickListener(v -> confirmSelection());
 
         updateButton.setOnClickListener(v -> {
-            if (Objects.equals(type, "Camera")) {
-
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + System.currentTimeMillis() + ".jpg");
-                contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-                contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MoodApp");
-
-                imageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-
-                takePhotoLauncher.launch(imageUri);
-
-            }
-            else {
-
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                intent.setType("image/*");
-                pickImageLauncher.launch(intent);
-
-            }
-
-        });
-
-        removeButton.setOnClickListener(v -> {
-            imageUri = null;
-            textView.setVisibility(View.VISIBLE);
-            imageView.setVisibility(View.INVISIBLE);
-        });
-
-        cancelButton.setOnClickListener(v -> {
-            result.putParcelable("uri", oldImageUri);
-            getParentFragmentManager().setFragmentResult("image_result", result);
-            getParentFragmentManager().popBackStack();
+            Animation fadeAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.fade_in);
+            updateButton.startAnimation(fadeAnimation);
+            handleImageUpdate();
         });
 
         confirmButton.setOnClickListener(v -> {
-            result.putParcelable("uri", imageUri);
-            getParentFragmentManager().setFragmentResult("image_result", result);
-            getParentFragmentManager().popBackStack();
+            Animation fadeAnimation = AnimationUtils.loadAnimation(requireContext(), R.anim.fade_in);
+            confirmButton.startAnimation(fadeAnimation);
+            confirmSelection();
         });
 
     }
+    private void handleImageUpdate() {
+        if (Objects.equals(type, "Camera")) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + System.currentTimeMillis() + ".jpg");
+            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MoodApp");
+
+            imageUri = requireContext().getContentResolver().insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    contentValues
+            );
+
+            if (imageUri != null) {
+                takePhotoLauncher.launch(imageUri);
+            }
+        } else {
+            Intent intent = new Intent(Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            pickImageLauncher.launch(intent);
+        }
+    }
+    private void confirmSelection() {
+        result.putParcelable("uri", imageUri != null ? imageUri : oldImageUri);
+        getParentFragmentManager().setFragmentResult("image_result", result);
+        getParentFragmentManager().popBackStack();
+    }
+    private void loadImage(Uri uri) {
+        imageView.setVisibility(View.VISIBLE);
+        textView.setVisibility(View.GONE);
+        Glide.with(this)
+                .load(uri)
+                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                .into(imageView);
+    }
+
 
     private ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
