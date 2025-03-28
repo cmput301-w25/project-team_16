@@ -13,6 +13,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+
+    # Create local.properties file for Maps secrets plugin
+    - name: Create local.properties with MAPS_API_KEY
+      run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> code/local.properties
+    
     - name: set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -23,11 +28,7 @@ jobs:
     # Check directory structure
     - name: List directory structure
       run: ls -la && ls -la code && ls -la code/app || echo "app dir doesn't exist"
-
-    # Create local.properties file for Maps secrets plugin
-    - name: Create local.properties with MAPS_API_KEY
-      run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> code/local.properties
-    
+  
     # Decode and create google-services.json from secret with proper directory creation
     - name: Decode google-services.json
       env:
@@ -45,6 +46,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Create local.properties file for Maps secrets plugin
+      - name: Create local.properties with MAPS_API_KEY
+        run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> code/local.properties
       
       # Decode and create google-services.json from secret with proper directory creation
       - name: Decode google-services.json
