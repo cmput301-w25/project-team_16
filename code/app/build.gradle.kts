@@ -9,14 +9,32 @@ plugins {
 
 val localProps = Properties()
 val localPropsFile = File(rootDir, "local.properties")
-if (localPropsFile.exists()) {
-    localPropsFile.inputStream().use { stream ->
-        localProps.load(stream)
+
+val propsApiKey = if (localPropsFile.exists()) {
+    try {
+        localPropsFile.inputStream().use { stream ->
+            localProps.load(stream)
+        }
+        localProps.getProperty("MAPS_API_KEY", "")
+    } catch (e: Exception) {
+        println("⚠️ Failed to load local.properties: ${e.message}")
+        ""
     }
+} else {
+    ""
 }
+
 val envApiKey = System.getenv("MAPS_API_KEY")
-val propsApiKey = localProps.getProperty("MAPS_API_KEY", "")
 val apiKey = envApiKey ?: propsApiKey
+
+// Optional log
+if (!envApiKey.isNullOrEmpty()) {
+    println("✅ MAPS_API_KEY loaded from env")
+} else if (propsApiKey.isNotEmpty()) {
+    println("✅ MAPS_API_KEY loaded from local.properties")
+} else {
+    println("❌ MAPS_API_KEY not found!")
+}
 
 android {
     namespace = "com.example.team_16"
