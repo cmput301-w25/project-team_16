@@ -54,6 +54,8 @@
     <string name="maps_content_description">Maps showing mood data</string>
 
 
+
+
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
@@ -136,5 +138,6 @@
     <string name="nearby_events_within_5km">Nearby Events within 5km</string>
     <string name="reset">Reset</string>
     <string name="apply">Apply</string>
+    <string name="title_activity_maps">MapsActivity</string>
 
 </resources>

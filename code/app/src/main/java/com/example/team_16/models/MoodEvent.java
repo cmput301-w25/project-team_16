@@ -36,6 +36,14 @@ public class MoodEvent {
     /** Whether post is public or private */
     private String postType = "Public"; // Default to Public
 
+    /** Optional location information for this mood event */
+    private Double latitude = null;
+    private Double longitude = null;
+    private String placeName = "";
+
+    /** Optional photo for this mood event */
+    private String photoUrl;
+
     /**
      * Default constructor required for Firestore deserialization.
      */
@@ -62,12 +70,19 @@ public class MoodEvent {
      * @param emotionalState The emotional state being recorded (required)
      * @param trigger What triggered this emotion (optional)
      * @param socialSituation The social context of this mood event (optional)
+     * @param latitude The latitude of the selected location (optional)
+     * @param longitude The longitude of the selected location (optional)
+     * @param placeName The name of the selected location (optional)
      */
-    public MoodEvent(String userID, EmotionalState emotionalState, String trigger, String socialSituation) {
+    public MoodEvent(String userID, EmotionalState emotionalState, String trigger, String socialSituation,
+                     Double latitude, Double longitude, String placeName) {
         this.timestamp = Timestamp.now();
         this.emotionalState = emotionalState;
         this.trigger = trigger;
         this.socialSituation = socialSituation;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.placeName = placeName;
         this.userID = userID;
         this.postType = "Public";
     }
@@ -75,9 +90,20 @@ public class MoodEvent {
     /**
      * Complete constructor with all fields including ID and timestamp.
      * Primarily used for testing or when reconstructing from database.
+     *
+     * @param id The unique identifier for this mood event
+     * @param timestamp When this mood event occurred
+     * @param emotionalState The emotional state being recorded
+     * @param trigger What triggered this emotion
+     * @param userID The ID of the user who created this mood event
+     * @param socialSituation The social context of this mood event
+     * @param latitude The latitude of the selected location (optional)
+     * @param longitude The longitude of the selected location (optional)
+     * @param placeName The name of the selected location (optional)
      */
     public MoodEvent(String id, Timestamp timestamp, EmotionalState emotionalState, String trigger,
-                     String userID, String socialSituation) {
+                     String userID, String socialSituation,
+                     Double latitude, Double longitude, String placeName) {
         this.id = id;
         this.timestamp = timestamp;
         this.emotionalState = emotionalState;
@@ -85,6 +111,9 @@ public class MoodEvent {
         this.userID = userID;
         this.socialSituation = socialSituation;
         this.postType = "Public";
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.placeName = placeName;
     }
 
     public String getId() {
@@ -143,6 +172,72 @@ public class MoodEvent {
     }
 
     /**
+     * Gets the latitude of the selected location.
+     *
+     * @return The latitude as a double.
+     */
+    public Double getLatitude() { return latitude; }
+
+    /**
+     * Sets the latitude for the mood event's location.
+     *
+     * @param latitude The latitude coordinate.
+     */
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    /**
+     * Gets the longitude of the selected location.
+     *
+     * @return The longitude as a double.
+     */
+    public Double getLongitude() { return longitude; }
+
+    /**
+     * Sets the longitude for the mood event's location.
+     *
+     * @param longitude The longitude coordinate.
+     */
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    /**
+     * Gets the place name of the selected location.
+     *
+     * @return The place name as a String.
+     */
+    public String getPlaceName() { return placeName; }
+
+    /**
+     * Sets the place name for the mood event's location.
+     *
+     * @param photoUrl The url of the photo chosen.
+     */
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
+
+    /**
+     * Gets the place name of the selected location.
+     *
+     * @return The photo url as a String.
+     */
+    public String getPhotoUrl() { return photoUrl; }
+
+    /**
+     * Sets the place name for the mood event's location.
+     *
+     * @param placeName The name of the selected place.
+     */
+    public void setPlaceName(String placeName) { this.placeName = placeName; }
+
+    /**
+     * Determines if the mood event has location data.
+     *
+     * @return true if location is set, false otherwise.
+     */
+    @Exclude
+    public boolean hasLocation() {
+        return latitude != null && longitude != null;
+    }
+
+    /**
      * Validates whether this mood event meets the minimum requirements.
      * A valid mood event must have an emotional state.
      *
@@ -195,7 +290,7 @@ public class MoodEvent {
 
     @Exclude
     public MoodEvent copy() {
-        MoodEvent copyEvent = new MoodEvent(id, timestamp, emotionalState, trigger, userID, socialSituation);
+        MoodEvent copyEvent = new MoodEvent(id, timestamp, emotionalState, trigger, userID, socialSituation, latitude, longitude, placeName);
         copyEvent.setPostType(postType);
         return copyEvent;
     }
