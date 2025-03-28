@@ -7,15 +7,14 @@ plugins {
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 }
 
-// Load API key from local.properties
-val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-
-if (localPropertiesFile.exists()) {
-    localProperties.load(FileInputStream(localPropertiesFile))
+// Load API key from environment variable or fallback to local.properties (for local dev)
+val localProps = Properties()
+val localPropsFile = rootProject.file("local.properties")
+if (localPropsFile.exists()) {
+    localProps.load(FileInputStream(localPropsFile))
 }
+val apiKey = System.getenv("MAPS_API_KEY") ?: localProps.getProperty("MAPS_API_KEY", "")
 
-val apiKey = project.findProperty("MAPS_API_KEY") ?: ""
 android {
     namespace = "com.example.team_16"
     compileSdk = 35
@@ -29,7 +28,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Inject API key from local.properties
+        // Inject API key into BuildConfig
         buildConfigField("String", "MAPS_API_KEY", "\"${apiKey}\"")
     }
 
