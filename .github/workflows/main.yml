@@ -23,6 +23,10 @@ jobs:
     # Check directory structure
     - name: List directory structure
       run: ls -la && ls -la code && ls -la code/app || echo "app dir doesn't exist"
+
+    # Create local.properties file for Maps secrets plugin
+    - name: Create local.properties with MAPS_API_KEY
+      run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> code/local.properties
     
     # Decode and create google-services.json from secret with proper directory creation
     - name: Decode google-services.json
@@ -61,7 +65,11 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-        
+
+      # Create local.properties file for Maps secrets plugin
+      - name: Create local.properties with MAPS_API_KEY
+        run: echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" >> code/local.properties
+
       # Decode and create google-services.json from secret with proper directory creation
       - name: Decode google-services.json
         env:
