@@ -12,6 +12,7 @@
     <!-- Camera Permission -->
     <uses-permission android:name="android.permission.CAMERA"/>
 
+
     <!-- Read media files (Android 13+) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
 
