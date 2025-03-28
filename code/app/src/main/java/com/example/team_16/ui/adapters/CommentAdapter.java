@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.team_16.R;
 import com.example.team_16.models.Comment;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.bumptech.glide.Glide;
+
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -75,7 +77,16 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         }
 
         public void bind(Comment comment, OnCommentUserClickListener userClickListener) {
-            // Basic placeholder logic
+            String imageUrl = comment.getProfileImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(imageUrl)
+                        .placeholder(android.R.drawable.sym_def_app_icon)
+                        .into(userImage);
+            } else {
+                userImage.setImageResource(android.R.drawable.sym_def_app_icon);
+            }
+
             userImage.setImageResource(android.R.drawable.sym_def_app_icon);
 
             userName.setText(comment.getUserName());

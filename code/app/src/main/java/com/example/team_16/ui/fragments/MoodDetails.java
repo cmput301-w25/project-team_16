@@ -206,6 +206,7 @@ public class MoodDetails extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private void displayMoodDetails() {
+
         // Set emotional state text and emoji
         mood_one_view.setText(moodEvent.getEmotionalState().getName());
         emoji_one_view.setText(moodEvent.getEmotionalState().getEmoji());
@@ -318,7 +319,16 @@ public class MoodDetails extends Fragment {
 
     private void setupCommentInput() {
         // Display user’s current profile pic (placeholder for now):
-        commentProfilePictureView.setImageResource(android.R.drawable.sym_def_app_icon);
+        UserProfile currentUser = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
+        if (currentUser != null && currentUser.getProfileImageUrl() != null) {
+            Glide.with(this)
+                    .load(currentUser.getProfileImageUrl())
+                    .placeholder(R.drawable.image)
+                    .apply(RequestOptions.bitmapTransform(new RoundedCorners(40)))
+                    .into(commentProfilePictureView);
+        } else {
+            commentProfilePictureView.setImageResource(R.drawable.image);
+        }
 
         // When user clicks "Send"
         sendCommentButton.setOnClickListener(v -> {
@@ -330,21 +340,19 @@ public class MoodDetails extends Fragment {
     }
 
     private void addNewComment(String commentText) {
-        // Example: You might get the current user from your global app or a local function
         UserProfile userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
         if (userProfile == null) {
             Toast.makeText(requireContext(), "User not logged in.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Create Comment object
         Comment newComment = new Comment(
                 userProfile.getId(),
-                userProfile.getFullName(), // or userProfile.getUsername()
+                userProfile.getFullName(),
                 commentText
         );
+        newComment.setProfileImageUrl(userProfile.getProfileImageUrl());
 
-        // Push to Firestore
         FirebaseDB.getInstance(requireContext())
                 .addCommentToMoodEvent(moodEvent.getId(), newComment, savedComment -> {
                     if (savedComment == null) {
@@ -352,7 +360,6 @@ public class MoodDetails extends Fragment {
                     } else {
                         Toast.makeText(requireContext(), "Comment posted!", Toast.LENGTH_SHORT).show();
                         commentInputView.setText("");
-                        // Reload comments or insert locally
                         loadComments();
                     }
                 });
@@ -365,22 +372,17 @@ public class MoodDetails extends Fragment {
         if (newComments == null) {
             newComments = new ArrayList<>();
         }
-        // Copy old list
         List<Comment> oldComments = new ArrayList<>(commentsList);
 
-        // Calculate differences
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
                 new CommentDiffCallback(oldComments, newComments)
         );
 
-        // Update our data
         commentsList.clear();
         commentsList.addAll(newComments);
 
-        // Dispatch changes to adapter
         diffResult.dispatchUpdatesTo(commentAdapter);
 
-        // Update header and no-comments text
         if (commentsList.isEmpty()) {
             commentsHeaderView.setText("Comments (0)");
             commentsRecyclerView.setVisibility(View.GONE);

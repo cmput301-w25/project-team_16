@@ -872,30 +872,32 @@ public class FirebaseDB {
     }
 
     public void addCommentToMoodEvent(String moodEventId, Comment comment, FirebaseCallback<Comment> callback) {
-        // Create a reference to the subcollection "comments" under this mood event
         DocumentReference newCommentRef = db.collection(MOODS_COLLECTION)
                 .document(moodEventId)
                 .collection(COMMENTS_SUBCOLLECTION)
                 .document();
 
-        // Set the ID in the Comment object, plus its timestamp if you like
+        // Ensure all fields are set before saving
         comment.setId(newCommentRef.getId());
         comment.setTimestamp(System.currentTimeMillis());
 
-        newCommentRef.set(comment)
-                .addOnSuccessListener(aVoid -> {
-                    // Return the updated comment (with ID/timestamp)
-                    callback.onCallback(comment);
-                })
+        // Create a map with ALL fields including profileImageUrl
+        Map<String, Object> commentData = new HashMap<>();
+        commentData.put("id", comment.getId());
+        commentData.put("userId", comment.getUserId());
+        commentData.put("userName", comment.getUserName());
+        commentData.put("text", comment.getText());
+        commentData.put("timestamp", comment.getTimestamp());
+        commentData.put("profileImageUrl", comment.getProfileImageUrl());  // Add this
+
+        newCommentRef.set(commentData)  // Changed from set(comment) to set(commentData)
+                .addOnSuccessListener(aVoid -> callback.onCallback(comment))
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error adding comment", e);
                     callback.onCallback(null);
                 });
     }
 
-    /**
-     * Fetch all comments for a given moodEventId, ordered by descending timestamp
-     */
     public void fetchCommentsForMoodEvent(String moodEventId, FirebaseCallback<List<Comment>> callback) {
         db.collection(MOODS_COLLECTION)
                 .document(moodEventId)
@@ -905,11 +907,17 @@ public class FirebaseDB {
                 .addOnSuccessListener(querySnapshot -> {
                     List<Comment> comments = new ArrayList<>();
                     for (DocumentSnapshot doc : querySnapshot) {
-                        Comment comment = doc.toObject(Comment.class);
-                        // Make sure we have a valid Comment object
-                        if (comment != null) {
-                            comments.add(comment);
-                        }
+                        // Manually map all fields including profileImageUrl
+                        Comment comment = new Comment(
+                                doc.getString("userId"),
+                                doc.getString("userName"),
+                                doc.getString("text")
+                        );
+                        comment.setId(doc.getString("id"));
+                        comment.setTimestamp(doc.getLong("timestamp"));
+                        comment.setProfileImageUrl(doc.getString("profileImageUrl"));  // Add this
+
+                        comments.add(comment);
                     }
                     callback.onCallback(comments);
                 })

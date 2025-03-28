@@ -1,24 +1,22 @@
 package com.example.team_16.models;
 
 public class Comment {
-    private String id;         // Firestore doc ID
-    private String userId;     // UID of the user who made the comment
-    private String userName;   // Display name or username
-    private String text;       // The comment text
-    private long timestamp;    // Time of creation (System.currentTimeMillis())
+    private String id;
+    private String userId;
+    private String userName;
+    private String text;
+    private long timestamp;
+    private String profileImageUrl;
 
-    // Required empty constructor for Firebase
     public Comment() {}
 
-    // Convenience constructor
     public Comment(String userId, String userName, String text) {
         this.userId = userId;
         this.userName = userName;
         this.text = text;
-        this.timestamp = System.currentTimeMillis(); // or set via addCommentToMoodEvent
+        this.timestamp = System.currentTimeMillis();
     }
 
-    // Getters / Setters
     public String getId() {
         return id;
     }
@@ -46,7 +44,12 @@ public class Comment {
     public void setText(String text) {
         this.text = text;
     }
-
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
     public long getTimestamp() {
         return timestamp;
     }
