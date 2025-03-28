@@ -29,17 +29,20 @@
         <!-- Profile Avatar Image -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/avatarImageView"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@drawable/image"
             android:layout_gravity="center_horizontal"
             android:clickable="true"
             android:focusable="true"
+            android:scaleType="centerCrop"
             app:shapeAppearanceOverlay="@style/roundedImageView_40"
             android:contentDescription="Avatar"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"/>
 
         <!-- Display current name -->
+
         <TextView
             android:id="@+id/currentName"
             android:layout_width="match_parent"
@@ -58,24 +61,59 @@
             android:layout_marginTop="4dp"/>
 
         <!-- EditText for entering a new full name -->
-        <EditText
-            android:id="@+id/editFullName"
+        <LinearLayout
+            android:id="@+id/searchBarContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="New Name"
+            android:layout_height="50dp"
             android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:textSize="16sp" />
+            android:gravity="center_vertical"
+            android:background="@drawable/item_bg"
+            android:elevation="4dp"
+            android:orientation="horizontal">
 
-        <!-- EditText for entering a new username -->
-        <EditText
-            android:id="@+id/editUsername"
+            <EditText
+                android:id="@+id/editFullName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="New Name"
+                android:padding="8dp"
+                android:textSize="16sp"
+                android:layout_weight="1"
+                android:textColor="#000000"
+                android:textColorHint="#A1824A"
+                android:singleLine="true"
+                android:background="@null"
+                android:paddingVertical="0dp"
+                android:gravity="center_vertical"/>
+        </LinearLayout>
+
+        <!-- EditText for entering a new full name -->
+        <LinearLayout
+            android:id="@+id/searchBarContainer1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="New Username"
+            android:layout_height="50dp"
             android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:textSize="16sp" />
+            android:gravity="center_vertical"
+            android:background="@drawable/item_bg"
+            android:elevation="4dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/editUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="New Username"
+                android:padding="8dp"
+                android:textSize="16sp"
+                android:layout_weight="1"
+                android:textColor="#000000"
+                android:textColorHint="#A1824A"
+                android:singleLine="true"
+                android:background="@null"
+                android:paddingVertical="0dp"
+                android:gravity="center_vertical"/>
+        </LinearLayout>
+
 
         <!-- Save Changes Button -->
         <Button
