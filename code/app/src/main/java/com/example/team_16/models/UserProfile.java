@@ -16,6 +16,7 @@ UserProfile {
     private String username;
     private String fullName;
     private String email;
+    private String profileImageUrl;
 
     // Firebase database interface
     private final FirebaseDB firebaseDB;
@@ -38,14 +39,23 @@ UserProfile {
     private List<String> userFollowing = new ArrayList<>();
 
     public UserProfile(FirebaseDB firebaseDB, String id, String username,
-                       String fullName, String email) {
+                       String fullName, String email, String profileImageUrl) {
         this.firebaseDB = firebaseDB;
         this.id = id;
         this.username = username;
         this.fullName = fullName;
         this.email = email;
+        this.profileImageUrl = profileImageUrl;
         this.personalMoodHistory = new PersonalMoodHistory(id, firebaseDB);
         this.followingMoodHistory = new MoodHistory(id, MoodHistory.MODE_FOLLOWING, firebaseDB);
+    }
+    // Another constructor if profileImageUrl don't exist  at creation
+    public UserProfile(FirebaseDB firebaseDB,
+                       String id,
+                       String username,
+                       String fullName,
+                       String email) {
+        this(firebaseDB, id, username, fullName, email, null);
     }
 
     /**
@@ -55,15 +65,18 @@ UserProfile {
      * @param userId User ID to load
      * @param callback Callback to receive the created UserProfile
      */
-    public static void loadFromFirebase(FirebaseDB firebaseDB, String userId,
+    public static void loadFromFirebase(FirebaseDB firebaseDB,
+                                        String userId,
                                         FirebaseDB.FirebaseCallback<UserProfile> callback) {
         firebaseDB.fetchUserById(userId, userData -> {
             if (userData != null) {
                 String username = (String) userData.get("username");
                 String fullName = (String) userData.get("fullName");
                 String email = (String) userData.get("email");
+                String profileImageUrl = (String) userData.get("profileImageUrl");
 
-                UserProfile profile = new UserProfile(firebaseDB, userId, username, fullName, email);
+                UserProfile profile = new UserProfile(firebaseDB, userId, username,
+                        fullName, email, profileImageUrl);
                 profile.refreshFollowData(() -> callback.onCallback(profile));
             } else {
                 callback.onCallback(null);
@@ -72,7 +85,6 @@ UserProfile {
     }
 
     // Follow-related Methods
-    // Follow-related Methods
     public void refreshFollowData(Runnable completion) {
         firebaseDB.getSentFollowRequests(this.id, requests -> {
             pendingFollow.clear();
@@ -80,7 +92,6 @@ UserProfile {
                 String toUserId = (String) request.get("toUserId");
                 pendingFollow.add(toUserId);
             }
-
             firebaseDB.getFollowingList(this.id, followingList -> {
                 userFollowing.clear();
                 if (followingList != null) {
@@ -304,28 +315,23 @@ UserProfile {
      * @param callback Callback to handle update result
      */
     // Derek: I edited teh update profile , the new version is below this one
-    public void updateProfile(String fullName, String email, FirebaseDB.FirebaseCallback<Boolean> callback) {
-        firebaseDB.updateUserProfile(this.id, fullName, email, null, success -> {  // pass null for username
-            if (success) {
-                this.fullName = fullName;
-                this.email = email;
-            }
-            if (callback != null) {
-                callback.onCallback(success);
-            }
-        });
-    }
 
     /**
      * Update user profile (fullName, email, username)
      */
     // have not implemented email yet
-    public void updateProfile(String fullName, String email, String username, FirebaseDB.FirebaseCallback<Boolean> callback) {
-        firebaseDB.updateUserProfile(this.id, fullName, email, username, success -> {
+    public void updateProfile(String fullName,
+                              String email,
+                              String username,
+                              String profileImageUrl,
+                              FirebaseDB.FirebaseCallback<Boolean> callback) {
+        firebaseDB.updateUserProfile(this.id, fullName, email, username, profileImageUrl, success -> {
             if (success) {
+
                 this.fullName = fullName;
                 this.email = email;
                 this.username = username;
+                this.profileImageUrl = profileImageUrl;
             }
             if (callback != null) {
                 callback.onCallback(success);
@@ -333,6 +339,13 @@ UserProfile {
         });
     }
 
+    // Overload if you only want to update name/email/username but not the image
+    public void updateProfile(String fullName,
+                              String email,
+                              String username,
+                              FirebaseDB.FirebaseCallback<Boolean> callback) {
+        updateProfile(fullName, email, username, this.profileImageUrl, callback);
+    }
     /**
      * Send a password reset email
      *
@@ -353,9 +366,11 @@ UserProfile {
     }
 
     // new code: Setter for username to support updating the username in EditProfileFragment
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsername(String username) { this.username = username; }
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
+
 
     public String getFullName() {
         return fullName;
@@ -364,6 +379,7 @@ UserProfile {
     public String getEmail() {
         return email;
     }
+    public String getProfileImageUrl() { return profileImageUrl; }
 
     /**
      * Get the FirebaseDB instance associated with this user profile
@@ -381,6 +397,7 @@ UserProfile {
         firebaseDB.logout();
     }
 
+
     /**
      * String representation of the user
      *
@@ -392,6 +409,7 @@ UserProfile {
                 "id='" + id + '\'' +
                 ", username='" + username + '\'' +
                 ", fullName='" + fullName + '\'' +
+                ", profileImageUrl='" + profileImageUrl + '\'' +
                 '}';
     }
 }

@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.util.Log;
 
 /**
@@ -606,7 +607,8 @@ public class FirebaseDB {
             String userId,
             String fullName,
             String email,
-            String username,       // NEW
+            String username,
+            String profileImageUrl,
             FirebaseCallback<Boolean> callback) {
 
         // Create a map of updates
@@ -619,6 +621,9 @@ public class FirebaseDB {
 
         if (email != null && !email.trim().isEmpty()) {
             updates.put("email", email);
+        }
+        if (profileImageUrl != null) {
+            updates.put("profileImageUrl", profileImageUrl);
         }
 
         // new: Add the username fields
@@ -759,8 +764,23 @@ public class FirebaseDB {
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error fetching comments", e);
-                    // Return empty list on failure
                     callback.onCallback(new ArrayList<>());
+                });
+    }
+    public void uploadProfileImage(Uri imageUri, String userId, FirebaseCallback<String> callback) {
+        StorageReference storageRef = storage.getReference()
+                .child("profileImages/" + userId + "_" + System.currentTimeMillis());
+
+        storageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            Log.d("FirebaseDB", "Image uploaded. Download URL: " + uri);
+                            callback.onCallback(uri.toString());
+                        })
+                )
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Image upload failed", e);
+                    callback.onCallback(null);
                 });
     }
 

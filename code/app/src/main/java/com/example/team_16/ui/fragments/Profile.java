@@ -18,15 +18,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.MoodEvent;
-import com.example.team_16.models.PersonalMoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
 import com.example.team_16.ui.adapters.MoodHistoryAdapter;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +53,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     private MoodHistoryAdapter adapter;
 
     private LinearLayout emptyState;
+    private ShapeableImageView profileImageView;
 
     public Profile() {
         // Required empty public constructor
@@ -111,6 +113,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     }
 
     private void initializeViews(View view) {
+        profileImageView = view.findViewById(R.id.profileImage);
         username = view.findViewById(R.id.userName);
         userHandle = view.findViewById(R.id.userHandle);
         followingStats = view.findViewById(R.id.followingStats);
@@ -156,6 +159,13 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         String recentMood = getMostRecentMood();
         if (recentMood != null) {
             mostFrequentMoodTxt.setText("Most Recent Mood: " + recentMood);
+        }
+        String imageUrl = userProfile.getProfileImageUrl();
+        if (!TextUtils.isEmpty(imageUrl)) {
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.image)
+                    .into(profileImageView);
         }
     }
 

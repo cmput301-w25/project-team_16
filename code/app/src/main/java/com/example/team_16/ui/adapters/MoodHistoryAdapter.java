@@ -3,7 +3,6 @@ package com.example.team_16.ui.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,9 +30,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Adapter responsible for displaying and updating the recyclerView of mood events in mood history.
- */
 public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
 
     private final Context context;
@@ -48,7 +44,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         this.onItemClickListener = listener;
     }
 
-    // Constructor
     public MoodHistoryAdapter(Context context, List<MoodEvent> moodEvents) {
         this.context = context;
         this.moodEvents = moodEvents != null ? moodEvents : new ArrayList<>();
@@ -65,7 +60,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     public void onBindViewHolder(@NonNull MoodHistoryAdapter.ViewHolder holder, int position) {
         MoodEvent event = moodEvents.get(position);
 
-        // Top Banner: Set emotional state text, emoji, and gradient
         holder.moodView.setText(event.getEmotionalState().getName());
         holder.emojiView.setText(event.getEmotionalState().getEmoji());
         holder.moodView.setTextColor(event.getEmotionalState().getTextColor());
@@ -73,17 +67,14 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             holder.gradientTop.setImageResource(event.getEmotionalState().getGradientResourceId());
         }
 
-        // Bottom Content: Set background and display social info
         if (holder.bottomContent != null) {
             holder.bottomContent.setBackgroundResource(event.getEmotionalState().getBottomGradientResourceId());
         }
         holder.withAmountView.setText(event.getSocialSituation());
         holder.moodDescription.setText(event.getTrigger());
         holder.moodDescription.setTextColor(event.getEmotionalState().getTextColor());
-        // Optionally, if you want to set a second mood description:
         holder.moodDescription2.setText("");
 
-        // Calculate and display "time ago" in the top banner
         Date actualDate = event.getTimestamp().toDate();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
@@ -102,15 +93,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             holder.timeView.setText("Time not supported");
         }
 
-        // Set profile details with placeholders and fetch actual user info
-        holder.fullNameView.setText(R.string.loading);
-        holder.profileUsername.setText("");
-
         if (event.getPhotoFilename() != null) {
             holder.moodImage.setVisibility(View.VISIBLE);
-
-            Log.e("log", "images/" +  event.getUserID() + "_mood.jpg");
-
             FirebaseDB.getInstance(context).getReference(event.getPhotoFilename())
                     .getDownloadUrl()
                     .addOnSuccessListener(uri -> {
@@ -122,22 +106,32 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
                     .addOnFailureListener(e -> {
                         Toast.makeText(((Activity) context), "Failed to load image", Toast.LENGTH_SHORT).show();
                     });
-
+        } else {
+            holder.moodImage.setVisibility(View.GONE);
         }
 
+        holder.fullNameView.setText(R.string.loading);
+        holder.profileUsername.setText("");
         FirebaseDB.getInstance(context).fetchUserById(event.getUserID(), userData -> {
             if (userData != null) {
                 String fullName = (String) userData.get("fullName");
                 String username = "@" + userData.get("username");
                 holder.fullNameView.setText(fullName != null ? fullName : "Unknown");
                 holder.profileUsername.setText(username);
+
+                String profileImageUrl = (String) userData.get("profileImageUrl");
+                if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                    Glide.with(context)
+                            .load(profileImageUrl)
+                            .placeholder(R.drawable.image)
+                            .into(holder.profilePicture);
+                }
             } else {
                 holder.fullNameView.setText(R.string.unknown_user);
                 holder.profileUsername.setText(R.string.unknown);
             }
         });
 
-        // Item click listener
         holder.itemView.setOnClickListener(v -> {
             if (onItemClickListener != null) {
                 onItemClickListener.onItemClick(event);
@@ -150,7 +144,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         return moodEvents == null ? 0 : moodEvents.size();
     }
 
-    // Updated updateData method using DiffUtil for efficient updates
     public void updateData(List<MoodEvent> newData) {
         if (newData == null) {
             newData = new ArrayList<>();
@@ -161,12 +154,9 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         diffResult.dispatchUpdatesTo(this);
     }
 
-    // ViewHolder is now a non-static inner class to access adapter instance fields.
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        // Top banner views
         TextView moodView, timeView, fullNameView, profileUsername, withAmountView, moodDescription, moodDescription2, emojiView;
         ImageView gradientTop;
-        // Bottom content container and image
         ConstraintLayout bottomContent;
         ImageView profilePicture, moodImage;
 
@@ -199,7 +189,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         }
     }
 
-    // DiffUtil callback similar to FeedAdapter's implementation
     private static class MoodEventDiffCallback extends DiffUtil.Callback {
         private final List<MoodEvent> oldList;
         private final List<MoodEvent> newList;
@@ -236,5 +225,4 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
                     && Objects.equals(oldEvent.getTimestamp(), newEvent.getTimestamp());
         }
     }
-
 }

@@ -7,15 +7,17 @@
     android:background="@drawable/gradient_background"
     tools:context=".ui.fragments.AddImage">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="180dp"
+            android:layout_marginEnd="20dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -24,42 +26,13 @@
 
             <Button
                 android:id="@+id/updateImageButton"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
+
+                android:layout_width="373dp"
+                android:layout_height="47dp"
                 android:backgroundTint="#ecd4d3"
                 android:text="Update"
                 android:textColor="#573d3e" />
 
-            <Button
-                android:id="@+id/removeImageButton"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="#ecd4d3"
-                android:text="Remove"
-                android:textColor="#573d3e" />
-
-            <Button
-                android:id="@+id/cancelImageButton"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="#FD5656"
-                android:text="Cancel"
-                android:textColor="#573d3e" />
-
-            <Button
-                android:id="@+id/confirmImageButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="#61a5fa"
-                android:text="Confirm"
-                android:textColor="#573d3e" />
         </LinearLayout>
 
         <TextView
@@ -75,14 +48,40 @@
 
         <ImageView
             android:id="@+id/addMoodImage"
-            android:layout_width="375dp"
+            android:layout_width="0dp"
             android:layout_height="250dp"
-            android:layout_marginBottom="350dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.543"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="300dp" />
+
+        <Button
+            android:id="@+id/confirmImageButton"
+            android:layout_width="373dp"
+            android:layout_height="47dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="#61a5fa"
+            android:text="Confirm"
+            android:textColor="#573d3e"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:src="@tools:sample/backgrounds/scenic" />
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+            app:layout_constraintVertical_bias="0.146" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

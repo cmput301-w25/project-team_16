@@ -70,6 +70,7 @@ public class MoodDetails extends Fragment {
     private RecyclerView commentsRecyclerView;
     private TextView commentsHeaderView;
     private TextView noCommentsView;
+    private ShapeableImageView profile_picture_view;
     private EditText commentInputView;
     private ImageButton sendCommentButton;
     private ShapeableImageView commentProfilePictureView;
@@ -143,7 +144,7 @@ public class MoodDetails extends Fragment {
         mood_one_view = moodDetailsContainer.findViewById(R.id.mood_one);
         emoji_one_view = moodDetailsContainer.findViewById(R.id.emoji_one);
         time_ago_view = moodDetailsContainer.findViewById(R.id.time_ago);
-        ShapeableImageView profile_picture_view = moodDetailsContainer.findViewById(R.id.profile_picture);
+        profile_picture_view  = moodDetailsContainer.findViewById(R.id.profile_picture);
         first_name_last_name_view = moodDetailsContainer.findViewById(R.id.first_name_last_name);
         profile_username_view = moodDetailsContainer.findViewById(R.id.profile_username);
         with_amount_view = moodDetailsContainer.findViewById(R.id.with_amount);
@@ -229,8 +230,8 @@ public class MoodDetails extends Fragment {
 
         if (moodEvent.getPhotoFilename() != null) {
             mood_image_view.setVisibility(View.VISIBLE);
-
-            FirebaseDB.getInstance(requireContext()).getReference(moodEvent.getPhotoFilename())
+            FirebaseDB.getInstance(requireContext())
+                    .getReference(moodEvent.getPhotoFilename())
                     .getDownloadUrl()
                     .addOnSuccessListener(uri -> {
                         Glide.with(requireContext())
@@ -239,19 +240,31 @@ public class MoodDetails extends Fragment {
                                 .into(mood_image_view);
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(getContext(), "Failed to load image ", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Failed to load image", Toast.LENGTH_SHORT).show();
                     });
-
         }
 
         // Fetch user data using callback
         FirebaseDB.getInstance(requireContext())
                 .fetchUserById(moodEvent.getUserID(), userData -> {
                     if (userData != null) {
+                        // name & handle
                         String fullName = (String) userData.get("fullName");
-                        String username = "@" + userData.get("username");
-                        first_name_last_name_view.setText(fullName != null ? fullName : "Unknown");
-                        profile_username_view.setText(username);
+                        String userName = (String) userData.get("username");
+
+                        first_name_last_name_view.setText(
+                                fullName != null ? fullName : "Unknown");
+                        profile_username_view.setText("@" + (userName != null ? userName : "unknown"));
+
+                        // load profile image
+                        String imageUrl = (String) userData.get("profileImageUrl");
+                        if (imageUrl != null && !imageUrl.isEmpty()) {
+                            Glide.with(this)
+                                    .load(imageUrl)
+                                    .placeholder(R.drawable.image)
+                                    .apply(RequestOptions.bitmapTransform(new RoundedCorners(40)))
+                                    .into(profile_picture_view);
+                        }
                     } else {
                         first_name_last_name_view.setText(R.string.unknown_user);
                         profile_username_view.setText(R.string.unknown);
