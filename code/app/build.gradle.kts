@@ -7,13 +7,16 @@ plugins {
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 }
 
-// Load API key from environment variable or fallback to local.properties (for local dev)
 val localProps = Properties()
-val localPropsFile = rootProject.file("local.properties")
+val localPropsFile = File(rootDir, "local.properties")
 if (localPropsFile.exists()) {
-    localProps.load(FileInputStream(localPropsFile))
+    localPropsFile.inputStream().use { stream ->
+        localProps.load(stream)
+    }
 }
-val apiKey = System.getenv("MAPS_API_KEY") ?: localProps.getProperty("MAPS_API_KEY", "")
+val envApiKey = System.getenv("MAPS_API_KEY")
+val propsApiKey = localProps.getProperty("MAPS_API_KEY", "")
+val apiKey = envApiKey ?: propsApiKey
 
 android {
     namespace = "com.example.team_16"
@@ -30,6 +33,9 @@ android {
 
         // Inject API key into BuildConfig
         buildConfigField("String", "MAPS_API_KEY", "\"${apiKey}\"")
+
+        // fix for Manifest placeholders
+        manifestPlaceholders["MAPS_API_KEY"] = apiKey
     }
 
     buildTypes {
