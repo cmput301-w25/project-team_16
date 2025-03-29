@@ -21,7 +21,8 @@ public class MoodEvent implements Serializable {
 
     /** Timestamp of when the mood event occurred, automatically set by Firestore */
     @ServerTimestamp
-    private Timestamp timestamp;
+    private transient Timestamp timestamp;
+    private long timestampMillis;
 
     /** Optional description of what triggered this emotional state */
     private String trigger;
@@ -60,7 +61,7 @@ public class MoodEvent implements Serializable {
      * @param emotionalState The emotional state being recorded (required)
      */
     public MoodEvent(String userID, EmotionalState emotionalState) {
-        this.timestamp = Timestamp.now();
+        setTimestamp(Timestamp.now());
         this.emotionalState = emotionalState;
         this.userID = userID;
         this.postType = "Public";
@@ -127,10 +128,14 @@ public class MoodEvent implements Serializable {
     }
 
     public Timestamp getTimestamp() {
+        if (timestamp == null && timestampMillis > 0) {
+            timestamp = new Timestamp(new Date(timestampMillis));
+        }
         return timestamp;
     }
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
+        this.timestampMillis = timestamp != null ? timestamp.toDate().getTime() : 0;
     }
 
     @Exclude

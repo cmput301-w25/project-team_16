@@ -243,8 +243,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp">
+            android:layout_marginTop="8dp">
 
             <Button
                 android:id="@+id/take_photo_button"
@@ -264,6 +263,16 @@
                 android:text="@string/choose_photo_text"
                 android:textColor="#573d3e" />
         </LinearLayout>
+        <Button
+            android:id="@+id/remove_image_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            android:backgroundTint="#ff6666"
+            android:text="Remove Image"
+            android:textColor="@android:color/white" />
+
 
         <!-- Add Location -->
         <Button
