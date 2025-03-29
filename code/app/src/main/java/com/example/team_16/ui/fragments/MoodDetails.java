@@ -264,13 +264,28 @@ public class MoodDetails extends Fragment {
     }
 
     private void setupCommentsRecyclerView() {
-        commentAdapter = new CommentAdapter(commentsList);
+        UserProfile user = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
+        String currentUserId = user != null ? user.getId() : null;
+
+        commentAdapter = new CommentAdapter(commentsList, currentUserId);
         commentsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         commentsRecyclerView.setAdapter(commentAdapter);
+
+        commentAdapter.setOnDeleteClickListener(commentId -> {
+            FirebaseDB.getInstance(requireContext())
+                    .deleteCommentFromMoodEvent(moodEvent.getId(), commentId, success -> {
+                        if (success) {
+                            loadComments();
+                        } else {
+                            Toast.makeText(requireContext(), "Delete failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
+
+        // Rest of your existing code
         commentsHeaderView.setText("Comments (0)");
         commentsRecyclerView.setVisibility(View.GONE);
         noCommentsView.setVisibility(View.VISIBLE);
-        noCommentsView.setText("No comments yet. Be the first to comment!");
     }
 
     private void loadComments() {

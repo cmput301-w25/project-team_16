@@ -897,6 +897,18 @@ public class FirebaseDB {
                     callback.onCallback(null);
                 });
     }
+    public void deleteCommentFromMoodEvent(String moodEventId, String commentId, FirebaseCallback<Boolean> callback) {
+        db.collection(MOODS_COLLECTION)
+                .document(moodEventId)
+                .collection(COMMENTS_SUBCOLLECTION)
+                .document(commentId)
+                .delete()
+                .addOnSuccessListener(unused -> callback.onCallback(true))
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseDB", "Error deleting comment", e);
+                    callback.onCallback(false);
+                });
+    }
 
     public void fetchCommentsForMoodEvent(String moodEventId, FirebaseCallback<List<Comment>> callback) {
         db.collection(MOODS_COLLECTION)
@@ -907,23 +919,22 @@ public class FirebaseDB {
                 .addOnSuccessListener(querySnapshot -> {
                     List<Comment> comments = new ArrayList<>();
                     for (DocumentSnapshot doc : querySnapshot) {
-                        // Manually map all fields including profileImageUrl
                         Comment comment = new Comment(
                                 doc.getString("userId"),
                                 doc.getString("userName"),
                                 doc.getString("text")
                         );
-                        comment.setId(doc.getString("id"));
+                        // Use document ID instead of stored field
+                        comment.setId(doc.getId());
                         comment.setTimestamp(doc.getLong("timestamp"));
-                        comment.setProfileImageUrl(doc.getString("profileImageUrl"));  // Add this
-
+                        comment.setProfileImageUrl(doc.getString("profileImageUrl"));
                         comments.add(comment);
                     }
                     callback.onCallback(comments);
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error fetching comments", e);
-                    callback.onCallback(new ArrayList<>());
+                    callback.onCallback(Collections.emptyList());
                 });
     }
     public void uploadProfileImage(Uri imageUri, String userId, FirebaseCallback<String> callback) {
