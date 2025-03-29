@@ -44,6 +44,7 @@ public class MoodEvent implements Serializable {
     private Double latitude = null;
     private Double longitude = null;
     private String placeName;
+    private boolean isPrivate;
 
     /** Optional photo for this mood event */
     private String photoUrl;
@@ -311,6 +312,15 @@ public class MoodEvent implements Serializable {
         }
         Date date = timestamp.toDate();
         return java.text.DateFormat.getDateTimeInstance().format(date);
+    }
+
+    public boolean isPrivate() {
+        return "Private".equalsIgnoreCase(postType);
+    }
+
+
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
     }
 
     @Override
