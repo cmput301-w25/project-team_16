@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+
 public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.ViewHolder> {
 
     private final Context context;
@@ -52,7 +53,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     @NonNull
     @Override
     public MoodHistoryAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.mood_history_recyclerview, parent, false);
+        View view = LayoutInflater.from(context)
+                .inflate(R.layout.mood_history_recyclerview, parent, false);
         return new ViewHolder(view);
     }
 
@@ -63,13 +65,17 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         holder.moodView.setText(event.getEmotionalState().getName());
         holder.emojiView.setText(event.getEmotionalState().getEmoji());
         holder.moodView.setTextColor(event.getEmotionalState().getTextColor());
+
         if (holder.gradientTop != null) {
             holder.gradientTop.setImageResource(event.getEmotionalState().getGradientResourceId());
         }
 
         if (holder.bottomContent != null) {
-            holder.bottomContent.setBackgroundResource(event.getEmotionalState().getBottomGradientResourceId());
+            holder.bottomContent.setBackgroundResource(
+                    event.getEmotionalState().getBottomGradientResourceId()
+            );
         }
+
         holder.withAmountView.setText(event.getSocialSituation());
         holder.moodDescription.setText(event.getTrigger());
         holder.moodDescription.setTextColor(event.getEmotionalState().getTextColor());
@@ -78,7 +84,9 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         Date actualDate = event.getTimestamp().toDate();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LocalDateTime currentDateTime = LocalDateTime.now();
-            LocalDateTime eventDateTime = LocalDateTime.ofInstant(actualDate.toInstant(), ZoneId.systemDefault());
+            LocalDateTime eventDateTime = LocalDateTime.ofInstant(
+                    actualDate.toInstant(), ZoneId.systemDefault()
+            );
             Duration duration = Duration.between(eventDateTime, currentDateTime);
             int hourDifference = (int) Math.abs(duration.toHours());
             String timeAgo;
@@ -103,9 +111,9 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
                                 .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
                                 .into(holder.moodImage);
                     })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(((Activity) context), "Failed to load image", Toast.LENGTH_SHORT).show();
-                    });
+                    .addOnFailureListener(e ->
+                            Toast.makeText(context, "Failed to load image", Toast.LENGTH_SHORT).show()
+                    );
         } else {
             holder.moodImage.setVisibility(View.GONE);
         }
@@ -149,16 +157,18 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             newData = new ArrayList<>();
         }
         List<MoodEvent> oldData = new ArrayList<>(moodEvents);
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MoodEventDiffCallback(oldData, newData));
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+                new MoodEventDiffCallback(oldData, newData)
+        );
         this.moodEvents = new ArrayList<>(newData);
         diffResult.dispatchUpdatesTo(this);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView moodView, timeView, fullNameView, profileUsername, withAmountView, moodDescription, moodDescription2, emojiView;
-        ImageView gradientTop;
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        TextView moodView, timeView, fullNameView, profileUsername;
+        TextView withAmountView, moodDescription, moodDescription2, emojiView;
+        ImageView gradientTop, moodImage, profilePicture;
         ConstraintLayout bottomContent;
-        ImageView profilePicture, moodImage;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -174,18 +184,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             moodImage = itemView.findViewById(R.id.moodImage);
             gradientTop = itemView.findViewById(R.id.gradient_top);
             bottomContent = itemView.findViewById(R.id.bottom_content);
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (onItemClickListener != null) {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    MoodEvent event = moodEvents.get(position);
-                    onItemClickListener.onItemClick(event);
-                }
-            }
         }
     }
 
@@ -197,32 +195,36 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             this.oldList = oldList != null ? oldList : new ArrayList<>();
             this.newList = newList != null ? newList : new ArrayList<>();
         }
-
         @Override
         public int getOldListSize() {
             return oldList.size();
         }
-
         @Override
         public int getNewListSize() {
             return newList.size();
         }
-
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
             MoodEvent oldEvent = oldList.get(oldItemPosition);
             MoodEvent newEvent = newList.get(newItemPosition);
             return oldEvent.getId().equals(newEvent.getId());
         }
-
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             MoodEvent oldEvent = oldList.get(oldItemPosition);
             MoodEvent newEvent = newList.get(newItemPosition);
-            return Objects.equals(oldEvent.getEmotionalState(), newEvent.getEmotionalState())
-                    && Objects.equals(oldEvent.getTrigger(), newEvent.getTrigger())
-                    && Objects.equals(oldEvent.getSocialSituation(), newEvent.getSocialSituation())
-                    && Objects.equals(oldEvent.getTimestamp(), newEvent.getTimestamp());
+
+            boolean sameEmotionalState = Objects.equals(
+                    oldEvent.getEmotionalState(), newEvent.getEmotionalState());
+            boolean sameTrigger = Objects.equals(
+                    oldEvent.getTrigger(), newEvent.getTrigger());
+            boolean sameSocialSituation = Objects.equals(
+                    oldEvent.getSocialSituation(), newEvent.getSocialSituation());
+            boolean sameTimestamp = Objects.equals(
+                    oldEvent.getTimestamp(), newEvent.getTimestamp());
+
+            return sameEmotionalState && sameTrigger &&
+                    sameSocialSituation && sameTimestamp;
         }
     }
 }
