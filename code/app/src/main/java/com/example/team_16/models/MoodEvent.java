@@ -43,7 +43,7 @@ public class MoodEvent implements Serializable {
     /** Optional location information for this mood event */
     private Double latitude = null;
     private Double longitude = null;
-    private String placeName = "";
+    private String placeName;
 
     /** Optional photo for this mood event */
     private String photoUrl;
@@ -242,7 +242,8 @@ public class MoodEvent implements Serializable {
      */
     @Exclude
     public boolean hasLocation() {
-        return latitude != null && longitude != null;
+        return latitude != null && longitude != null &&
+                !Double.isNaN(latitude) && !Double.isNaN(longitude);
     }
 
     /**

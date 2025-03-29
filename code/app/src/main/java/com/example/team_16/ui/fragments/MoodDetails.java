@@ -57,6 +57,7 @@ public class MoodDetails extends Fragment {
     private TextView mood_description_view;
     private TextView mood_description_view2;
     private TextView post_time_view;
+    private TextView post_location_view;
 
     private ShapeableImageView mood_image_view;
     private ImageView gradient_top_view;
@@ -138,6 +139,7 @@ public class MoodDetails extends Fragment {
         TextView mood_description2_view = moodDetailsContainer.findViewById(R.id.mood_description2);
         mood_image_view = moodDetailsContainer.findViewById(R.id.mood_image);
         post_time_view = moodDetailsContainer.findViewById(R.id.post_time);
+        post_location_view = moodDetailsContainer.findViewById(R.id.post_location);
 
         gradient_top_view = moodDetailsContainer.findViewById(R.id.gradient_top);
         bottom_content_view = moodDetailsContainer.findViewById(R.id.bottom_content);
@@ -210,6 +212,13 @@ public class MoodDetails extends Fragment {
                     .addOnFailureListener(e -> {
                         Toast.makeText(getContext(), "Failed to load image", Toast.LENGTH_SHORT).show();
                     });
+        }
+
+        if (moodEvent.getPlaceName() != null && !moodEvent.getPlaceName().isEmpty()) {
+            post_location_view.setVisibility(View.VISIBLE);
+            post_location_view.setText("- " + moodEvent.getPlaceName());
+        } else {
+            post_location_view.setVisibility(View.GONE);
         }
 
         FirebaseDB.getInstance(requireContext())

@@ -227,7 +227,7 @@ public class AddMood extends Fragment {
                 if (selectedMood != null && selectedMood.equals(moodNames[index])) {
                     // Deselect if clicking the same button
                     selectedMood = null;
-                    button.setAlpha(0.8f);
+                    button.setAlpha(0.5f);
                 } else {
                     // Select this mood
                     selectedMood = moodNames[index];
@@ -249,7 +249,7 @@ public class AddMood extends Fragment {
 
         for (int buttonId : moodButtonIds) {
             Button button = view.findViewById(buttonId);
-            button.setAlpha(0.8f);
+            button.setAlpha(0.5f);
         }
         Button selectedButton = view.findViewById(selectedButtonId);
         selectedButton.setAlpha(1.0f);
@@ -275,7 +275,7 @@ public class AddMood extends Fragment {
                 if (socialSetting != null && socialSetting.equals(socialNames[index])) {
                     // Deselect
                     socialSetting = null;
-                    button.setAlpha(0.8f);
+                    button.setAlpha(0.5f);
                 } else {
                     // Select new social setting
                     socialSetting = socialNames[index];
@@ -286,12 +286,14 @@ public class AddMood extends Fragment {
     }
 
     private void highlightSocialButton(Button selectedButton) {
-        aloneButton.setAlpha(0.8f);
-        onePersonButton.setAlpha(0.8f);
-        twoPersonButton.setAlpha(0.8f);
-        crowdButton.setAlpha(0.8f);
+        aloneButton.setAlpha(0.5f);
+        onePersonButton.setAlpha(0.5f);
+        twoPersonButton.setAlpha(0.5f);
+        crowdButton.setAlpha(0.5f);
 
         selectedButton.setAlpha(1.0f);
+
+
     }
 
     /**
@@ -300,13 +302,13 @@ public class AddMood extends Fragment {
     private void setupPostTypeButtons() {
         // Default highlight = Public
         highlightPostTypeButton(publicPostButton);
-        privatePostButton.setAlpha(0.8f);
+        privatePostButton.setAlpha(0.5f);
 
         publicPostButton.setOnClickListener(v -> {
             if (!"Public".equals(selectedPostType)) {
                 selectedPostType = "Public";
                 highlightPostTypeButton(publicPostButton);
-                privatePostButton.setAlpha(0.8f);
+                privatePostButton.setAlpha(0.5f);
             }
         });
 
@@ -314,14 +316,14 @@ public class AddMood extends Fragment {
             if (!"Private".equals(selectedPostType)) {
                 selectedPostType = "Private";
                 highlightPostTypeButton(privatePostButton);
-                publicPostButton.setAlpha(0.8f);
+                publicPostButton.setAlpha(0.5f);
             }
         });
     }
 
     private void highlightPostTypeButton(Button selectedButton) {
-        publicPostButton.setAlpha(0.8f);
-        privatePostButton.setAlpha(0.8f);
+        publicPostButton.setAlpha(0.5f);
+        privatePostButton.setAlpha(0.5f);
         selectedButton.setAlpha(1.0f);
     }
 
@@ -427,21 +429,35 @@ public class AddMood extends Fragment {
      * Add Location button logic.
      */
     private void setupLocationButton() {
-        enableButton(addLocationButton, hasPermission(Manifest.permission.ACCESS_FINE_LOCATION));
         addLocationButton.setOnClickListener(v -> {
-            if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                requestPermission(Manifest.permission.ACCESS_FINE_LOCATION, LOCATION_PERMISSION_REQUEST_CODE);
+            if (addLocationButton.getText().toString().equalsIgnoreCase("Remove Location")) {
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Remove Location")
+                        .setMessage("Are you sure you want to remove the location?")
+                        .setPositiveButton("Remove", (dialog, which) -> {
+                            selectedLatLng = null;
+                            selectedPlaceName = null;
+                            addLocationButton.setText("Add Location");
+                            Toast.makeText(requireContext(), "Location removed", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
             } else {
-                // Open location picker dialog
-                AddLocationDialog locationDialog = new AddLocationDialog((latLng, placeName) -> {
-                    selectedLatLng = latLng;
-                    selectedPlaceName = placeName;
-                    Toast.makeText(requireContext(),
-                            "Location selected: " + (placeName != null ? placeName :
-                                    (latLng.latitude + ", " + latLng.longitude)),
-                            Toast.LENGTH_SHORT).show();
-                });
-                locationDialog.show(getParentFragmentManager(), "AddLocationDialog");
+                if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    requestPermission(Manifest.permission.ACCESS_FINE_LOCATION,
+                            LOCATION_PERMISSION_REQUEST_CODE);
+                } else {
+                    AddLocationDialog locationDialog = new AddLocationDialog((latLng, placeName) -> {
+                        selectedLatLng = latLng;
+                        selectedPlaceName = placeName;
+                        addLocationButton.setText("Remove Location");
+                        Toast.makeText(requireContext(),
+                                "Location selected: " + (placeName != null ? placeName :
+                                        latLng.latitude + ", " + latLng.longitude),
+                                Toast.LENGTH_SHORT).show();
+                    });
+                    locationDialog.show(getParentFragmentManager(), "AddLocationDialog");
+                }
             }
         });
     }
@@ -465,6 +481,14 @@ public class AddMood extends Fragment {
             Double latitude = (selectedLatLng != null) ? selectedLatLng.latitude : null;
             Double longitude = (selectedLatLng != null) ? selectedLatLng.longitude : null;
             String placeName = selectedPlaceName;
+
+//            remove location on clear
+            if (addLocationButton.getText().toString().equalsIgnoreCase("Add Location")) {
+                latitude = null;
+                longitude = null;
+                placeName = null;
+            }
+
 
             if (isEditMode) {
                 // Editing existing
@@ -617,11 +641,19 @@ public class AddMood extends Fragment {
         if ("Private".equalsIgnoreCase(moodEvent.getPostType())) {
             selectedPostType = "Private";
             highlightPostTypeButton(privatePostButton);
-            publicPostButton.setAlpha(0.8f);
+            publicPostButton.setAlpha(0.5f);
         } else {
             selectedPostType = "Public";
             highlightPostTypeButton(publicPostButton);
-            privatePostButton.setAlpha(0.8f);
+            privatePostButton.setAlpha(0.5f);
+        }
+        // This ne is for  Location- harman
+        if (moodEvent.hasLocation()) {
+            selectedLatLng = new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude());
+            selectedPlaceName = moodEvent.getPlaceName();
+            addLocationButton.setText("Remove Location");
+        } else {
+            addLocationButton.setText("Add Location");
         }
 
         // If there's an existing photo
@@ -717,6 +749,8 @@ public class AddMood extends Fragment {
         ActivityCompat.requestPermissions(requireActivity(),
                 new String[]{permission}, requestCode);
     }
+
+
 
     /**
      * Checks all needed permissions at once (location, camera, gallery).
