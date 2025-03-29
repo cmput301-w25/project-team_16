@@ -132,6 +132,48 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         adapter = new MoodHistoryAdapter(getContext(), moodEvents);
         moodHistoryRecyclerView.setAdapter(adapter);
 
+        adapter.setOnMoodEventInteractionListener(new MoodHistoryAdapter.OnMoodEventInteractionListener() {
+            @Override
+            public void onEditClick(MoodEvent event) {
+                // Navigate to AddMood in edit mode, passing the existing MoodEvent
+                AddMood addMoodFragment = new AddMood();
+                Bundle args = new Bundle();
+                args.putSerializable("moodEvent", event); // pass the entire event for editing
+                addMoodFragment.setArguments(args);
+
+                if (requireActivity() instanceof HomeActivity) {
+                    ((HomeActivity) requireActivity())
+                            .navigateToFragment(addMoodFragment, "Edit Mood Event");
+                }
+            }
+
+            @Override
+            public void onDeleteClick(MoodEvent event) {
+                // Prompt user for confirmation
+                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Delete Mood")
+                        .setMessage("Are you sure you want to delete this mood event?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            // Actually delete via the user profile
+                            userProfile.deleteMoodEvent(event.getId(), success -> {
+                                if (success) {
+                                    Toast.makeText(requireContext(),
+                                            "Mood event deleted successfully!",
+                                            Toast.LENGTH_SHORT).show();
+                                    // Refresh our local data
+                                    loadData();
+                                } else {
+                                    Toast.makeText(requireContext(),
+                                            "Failed to delete mood event.",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            }
+        });
+
         adapter.setOnItemClickListener(event -> {
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
             if (requireActivity() instanceof HomeActivity) {

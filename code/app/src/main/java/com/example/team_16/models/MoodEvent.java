@@ -5,6 +5,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.ServerTimestamp;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -12,7 +13,9 @@ import java.util.Date;
  * Each mood event captures the user's emotional state at a specific point in time,
  * along with optional contextual information such as triggers and social situation.
  */
-public class MoodEvent {
+public class MoodEvent implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     /** Unique identifier for the mood event */
     private String id;
 

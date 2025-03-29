@@ -41,6 +41,20 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         void onItemClick(MoodEvent event);
     }
 
+    // new code to edit and delete a mood event
+    public interface OnMoodEventInteractionListener {
+        void onEditClick(MoodEvent event);
+        void onDeleteClick(MoodEvent event);
+    }
+
+    private OnMoodEventInteractionListener interactionListener;
+
+    public void setOnMoodEventInteractionListener(OnMoodEventInteractionListener listener) {
+        this.interactionListener = listener;
+    }
+
+    // new code end
+
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
@@ -145,6 +159,21 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
                 onItemClickListener.onItemClick(event);
             }
         });
+
+        // new code
+        holder.editIcon.setOnClickListener(v -> {
+            if (interactionListener != null) {
+                interactionListener.onEditClick(event);
+            }
+        });
+
+        holder.deleteIcon.setOnClickListener(v -> {
+            if (interactionListener != null) {
+                interactionListener.onDeleteClick(event);
+            }
+        });
+
+        // end new code
     }
 
     @Override
@@ -170,6 +199,8 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         ImageView gradientTop, moodImage, profilePicture;
         ConstraintLayout bottomContent;
 
+        ImageView editIcon, deleteIcon;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             moodView = itemView.findViewById(R.id.moodView);
@@ -184,6 +215,9 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             moodImage = itemView.findViewById(R.id.moodImage);
             gradientTop = itemView.findViewById(R.id.gradient_top);
             bottomContent = itemView.findViewById(R.id.bottom_content);
+
+            editIcon = itemView.findViewById(R.id.editIcon);
+            deleteIcon = itemView.findViewById(R.id.deleteIcon);
         }
     }
 
