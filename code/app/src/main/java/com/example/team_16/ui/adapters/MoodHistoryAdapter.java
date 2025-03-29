@@ -36,9 +36,14 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
     private final Context context;
     private List<MoodEvent> moodEvents;
     private OnItemClickListener onItemClickListener;
+    private String currentUserId;
 
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
+    }
+
+    public void setCurrentUserId(String userId) {
+        this.currentUserId = userId;
     }
 
     // new code to edit and delete a mood event
@@ -88,6 +93,13 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             holder.bottomContent.setBackgroundResource(
                     event.getEmotionalState().getBottomGradientResourceId()
             );
+        }
+        if (currentUserId != null && currentUserId.equals(event.getUserID())) {
+            holder.editIcon.setVisibility(View.VISIBLE);
+            holder.deleteIcon.setVisibility(View.VISIBLE);
+        } else {
+            holder.editIcon.setVisibility(View.GONE);
+            holder.deleteIcon.setVisibility(View.GONE);
         }
 
         holder.withAmountView.setText(event.getSocialSituation());

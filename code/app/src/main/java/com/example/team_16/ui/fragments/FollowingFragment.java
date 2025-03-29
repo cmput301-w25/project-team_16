@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,20 +33,28 @@ public class FollowingFragment extends Fragment {
     private FollowingAdapter adapter;
     private FirebaseDB firebaseDB;
     private String currentUserId;
-    private List<FollowingAdapter.FollowingItem> originalData = new ArrayList<>();
+    private final List<FollowingAdapter.FollowingItem> originalData = new ArrayList<>();
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_following, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         firebaseDB = FirebaseDB.getInstance(requireContext());
         currentUserId = firebaseDB.getCurrentUserId();
+
+        if (currentUserId == null) {
+            showToast("User not logged in");
+            requireActivity().finish();
+            return;
+        }
 
         initializeViews(view);
         setupRecyclerView();
@@ -61,10 +70,8 @@ public class FollowingFragment extends Fragment {
 
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new FollowingAdapter(new FollowingAdapter.OnRemoveListener() {
-            @Override
-            public void onRemove(String userId, int position) {
-                firebaseDB.unfollowUser(currentUserId, userId, success -> {
+        adapter = new FollowingAdapter(
+                (userId, position) -> firebaseDB.unfollowUser(currentUserId, userId, success -> {
                     if (success) {
                         adapter.removeItem(position);
                         checkEmptyState();
@@ -72,10 +79,28 @@ public class FollowingFragment extends Fragment {
                     } else {
                         showToast("Failed to unfollow");
                     }
-                });
-            }
-        });
+                }),
+                this::openUserProfile
+        );
         recyclerView.setAdapter(adapter);
+    }
+
+    private void openUserProfile(String userId) {
+        Fragment profileFragment = OtherUserProfileFragment.newInstance(userId);
+
+        FragmentTransaction transaction =
+                requireActivity().getSupportFragmentManager().beginTransaction();
+
+        transaction.setCustomAnimations(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+        );
+
+        transaction.replace(R.id.fragment_container, profileFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private void loadFollowingList() {
@@ -91,9 +116,18 @@ public class FollowingFragment extends Fragment {
 
             for (String userId : followingIds) {
                 firebaseDB.fetchUserById(userId, userData -> {
-                    String username = userData != null ?
-                            (String) userData.get("username") : "Unknown User";
-                    items.add(new FollowingAdapter.FollowingItem(userId, username));
+                    String username = userData != null
+                            ? (String) userData.get("username")
+                            : "Unknown User";
+                    String profileImageUrl = userData != null
+                            ? (String) userData.get("profileImageUrl")
+                            : null;
+
+                    items.add(new FollowingAdapter.FollowingItem(
+                            userId,
+                            username,
+                            profileImageUrl
+                    ));
 
                     doneCount[0]++;
                     if (doneCount[0] == total) {
@@ -108,8 +142,10 @@ public class FollowingFragment extends Fragment {
 
     private void setupSearchBar() {
         searchBar.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void afterTextChanged(Editable s) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -121,7 +157,8 @@ public class FollowingFragment extends Fragment {
     private void applySearchFilter(String query) {
         List<FollowingAdapter.FollowingItem> filtered = new ArrayList<>();
         for (FollowingAdapter.FollowingItem item : originalData) {
-            if (item.username.toLowerCase().contains(query.toLowerCase())) {
+            if (item.username != null &&
+                    item.username.toLowerCase().contains(query.toLowerCase())) {
                 filtered.add(item);
             }
         }

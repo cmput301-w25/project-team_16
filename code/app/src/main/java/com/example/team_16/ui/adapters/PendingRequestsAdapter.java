@@ -1,5 +1,6 @@
 package com.example.team_16.ui.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.team_16.R;
 
 import java.util.ArrayList;
@@ -21,51 +23,77 @@ import java.util.List;
 public class PendingRequestsAdapter
         extends RecyclerView.Adapter<PendingRequestsAdapter.ViewHolder> {
 
-    /**
-     * Model for a single pending request
-     */
+
     public static class PendingRequest {
         public String requestId;
         public String fromUserId;
         public String fromUsername;
+        public String fromUserImageUrl;
 
-        public PendingRequest(String requestId, String fromUserId, String fromUsername) {
+        public PendingRequest(String requestId, String fromUserId,
+                              String fromUsername, String fromUserImageUrl) {
             this.requestId = requestId;
             this.fromUserId = fromUserId;
             this.fromUsername = fromUsername;
+            this.fromUserImageUrl = fromUserImageUrl;
         }
     }
 
-    /**
-     * Interface for handling user actions on each item.
-     */
+    @FunctionalInterface
+    public interface OnAcceptListener {
+        void onAcceptClicked(PendingRequest request, int position);
+    }
+
+    @FunctionalInterface
+    public interface OnRejectListener {
+        void onRejectClicked(PendingRequest request, int position);
+    }
+
     public interface OnActionListener {
         void onAcceptClicked(PendingRequest request, int position);
         void onRejectClicked(PendingRequest request, int position);
     }
 
-    private final List<PendingRequest> dataList = new ArrayList<>();
-    private final OnActionListener actionListener;
 
-    public PendingRequestsAdapter(OnActionListener actionListener) {
-        this.actionListener = actionListener;
+    @FunctionalInterface
+    public interface OnItemClickListener {
+        void onItemClick(String userId);
     }
 
-    /**
-     * Overwrite the entire data set
-     */
+    private final List<PendingRequest> dataList = new ArrayList<>();
+    private final OnActionListener actionListener;
+    private final OnItemClickListener itemClickListener;
+
+    public PendingRequestsAdapter(
+            OnAcceptListener acceptListener,
+            OnRejectListener rejectListener,
+            OnItemClickListener itemClickListener
+    ) {
+        this.itemClickListener = itemClickListener;
+
+        this.actionListener = new OnActionListener() {
+            @Override
+            public void onAcceptClicked(PendingRequest request, int position) {
+                acceptListener.onAcceptClicked(request, position);
+            }
+            @Override
+            public void onRejectClicked(PendingRequest request, int position) {
+                rejectListener.onRejectClicked(request, position);
+            }
+        };
+    }
+
     public void setData(List<PendingRequest> newData) {
         dataList.clear();
         dataList.addAll(newData);
         notifyDataSetChanged();
     }
 
-    /**
-     * Remove one item from the list
-     */
     public void removeItem(int position) {
-        dataList.remove(position);
-        notifyItemRemoved(position);
+        if (position >= 0 && position < dataList.size()) {
+            dataList.remove(position);
+            notifyItemRemoved(position);
+        }
     }
 
     @Override
@@ -82,16 +110,31 @@ public class PendingRequestsAdapter
         holder.textUsername.setText(item.fromUsername);
         holder.textUserId.setText("@" + item.fromUsername);
 
-        holder.buttonAccept.setOnClickListener(v -> {
-            if (actionListener != null) {
-                actionListener.onAcceptClicked(item, position);
+        if (holder.imageProfile != null) {
+            Glide.with(holder.itemView.getContext())
+                    .load(item.fromUserImageUrl)
+                    .placeholder(R.drawable.image)
+                    .fallback(R.drawable.image)
+                    .circleCrop()
+                    .into(holder.imageProfile);
+        } else {
+            Log.e("PendingRequestsAdapter",
+                    "imageProfile is null for position: " + position);
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(item.fromUserId);
             }
         });
-        holder.buttonReject.setOnClickListener(v -> {
-            if (actionListener != null) {
-                actionListener.onRejectClicked(item, position);
-            }
-        });
+
+        holder.buttonAccept.setOnClickListener(v ->
+                actionListener.onAcceptClicked(item, holder.getAdapterPosition())
+        );
+
+        holder.buttonReject.setOnClickListener(v ->
+                actionListener.onRejectClicked(item, holder.getAdapterPosition())
+        );
     }
 
     @Override
@@ -108,7 +151,7 @@ public class PendingRequestsAdapter
         public ViewHolder(View itemView) {
             super(itemView);
             cardView      = (CardView) itemView;
-            imageProfile  = itemView.findViewById(R.id.image_profile);
+            imageProfile  = itemView.findViewById(R.id.profile_image);
             textUsername  = itemView.findViewById(R.id.text_username);
             textUserId    = itemView.findViewById(R.id.text_user_id);
             textMood      = itemView.findViewById(R.id.text_mood);

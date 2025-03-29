@@ -121,7 +121,7 @@ public class OtherUserProfileFragment extends Fragment {
      *  - Mood history list
      */
     private void displayUserProfile() {
-        // Load and display the profile image using Glide
+        // Load profile image
         String imageUrl = targetUserProfile.getProfileImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(requireContext())
@@ -132,28 +132,38 @@ public class OtherUserProfileFragment extends Fragment {
             profileImage.setImageResource(R.drawable.image);
         }
 
-        // Set basic name/handle info
         userName.setText(targetUserProfile.getFullName());
         userHandle.setText("@" + targetUserProfile.getUsername());
-
-        // Update follower/following counts
         refreshFollowCounts();
 
-        // Display mood events and stats
+        // Get and filter mood events
         List<MoodEvent> allEvents = targetUserProfile.getPersonalMoodHistory().getAllEvents();
-        totalMoodEntriesTxt.setText("Total Mood Entries: " + allEvents.size());
 
-        String mostFrequent = getMostFrequentMoodName(allEvents);
-        if (mostFrequent != null) {
-            mostFrequentMoodTxt.setText("Most Frequent Mood: " + mostFrequent);
-        } else {
-            mostFrequentMoodTxt.setText("Most Frequent Mood: None");
+        // Filtering private posts of another user's profile
+        if (!targetUserProfile.getId().equals(currentUserProfile.getId())) {
+            List<MoodEvent> publicEvents = new ArrayList<>();
+            for (MoodEvent event : allEvents) {
+                if (!"Private".equals(event.getPostType())) {
+                    publicEvents.add(event);
+                }
+            }
+            allEvents = publicEvents;
         }
 
-        // Populate the mood history RecyclerView
+        totalMoodEntriesTxt.setText("Total Mood Entries: " + allEvents.size());
+
+        // Get most frequent mood emoji
+        String mostFrequentEmoji = getMostFrequentMoodEmoji(allEvents);
+        mostFrequentMoodTxt.setText(mostFrequentEmoji != null ?
+                "Most Frequent Mood: " + mostFrequentEmoji :
+                "Most Frequent Mood: None");
+
+        // Setup RecyclerView
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         MoodHistoryAdapter adapter = new MoodHistoryAdapter(getContext(), allEvents);
+        adapter.setCurrentUserId(currentUserProfile.getId());
         moodHistoryRecyclerView.setAdapter(adapter);
+
         adapter.setOnItemClickListener(event -> {
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
             requireActivity().getSupportFragmentManager()
@@ -163,6 +173,25 @@ public class OtherUserProfileFragment extends Fragment {
                     .commit();
         });
     }
+    private String getMostFrequentMoodEmoji(List<MoodEvent> events) {
+        if (events.isEmpty()) return null;
+        Map<String, Integer> moodCount = new HashMap<>();
+        for (MoodEvent event : events) {
+            String emoji = event.getEmotionalState().getEmoji();
+            moodCount.put(emoji, moodCount.getOrDefault(emoji, 0) + 1);
+        }
+
+        String mostFrequent = null;
+        int maxCount = 0;
+        for (Map.Entry<String, Integer> entry : moodCount.entrySet()) {
+            if (entry.getValue() > maxCount) {
+                mostFrequent = entry.getKey();
+                maxCount = entry.getValue();
+            }
+        }
+        return mostFrequent;
+    }
+
 
     /**
      * Fetches and displays the follower and following counts.

@@ -130,6 +130,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         moodHistoryRecyclerView.setNestedScrollingEnabled(true);
 
         adapter = new MoodHistoryAdapter(getContext(), moodEvents);
+        adapter.setCurrentUserId(userProfile.getId());
         moodHistoryRecyclerView.setAdapter(adapter);
 
         adapter.setOnMoodEventInteractionListener(new MoodHistoryAdapter.OnMoodEventInteractionListener() {
