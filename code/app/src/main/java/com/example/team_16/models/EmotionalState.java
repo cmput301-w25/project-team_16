@@ -3,12 +3,14 @@ import android.graphics.Color;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Represents an emotional state with a display name, associated gradient, and text color.
  */
-public class EmotionalState {
+public class EmotionalState implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String name;  // Display name
 
     /**
