@@ -5,10 +5,14 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -39,6 +43,7 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
     private LatLng selectedLatLng;
     private String selectedPlaceName;
     private Button saveButton, cancelButton;
+    private EditText searchEditText;
     private FusedLocationProviderClient fusedLocationClient;
 
 
@@ -61,6 +66,17 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
         // Initialize buttons
         saveButton = view.findViewById(R.id.save_location_button);
         cancelButton = view.findViewById(R.id.cancel_location_button);
+        searchEditText = view.findViewById(R.id.search_bar);
+
+        searchEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                    (event != null && event.getAction() == KeyEvent.ACTION_DOWN &&
+                            event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                handleLocationSearch();
+                return true;
+            }
+            return false;
+        });
 
         // Initialize location provider
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -93,6 +109,7 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
 
         return view;
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -150,6 +167,48 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
         } catch (IOException e) {
             e.printStackTrace();
             selectedPlaceName = "Unknown Location";
+        }
+    }
+    private void handleLocationSearch() {
+        String locationQuery = searchEditText.getText().toString().trim();
+        if (locationQuery.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter a location", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(searchEditText.getWindowToken(), 0);
+
+        searchLocation(locationQuery);
+    }
+    private void searchLocation(String query) {
+        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocationName(query, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+                // Update map and marker
+                if (mMap != null) {
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
+
+                    if (selectedMarker != null) {
+                        selectedMarker.remove();
+                    }
+                    selectedMarker = mMap.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .title("Searched Location"));
+                    selectedLatLng = latLng;
+
+                    // Update place name
+                    getAddressFromLatLng(latLng);
+                }
+            } else {
+                Toast.makeText(getContext(), "Location not found", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Error searching location", Toast.LENGTH_SHORT).show();
         }
     }
 }
