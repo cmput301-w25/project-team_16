@@ -6,18 +6,17 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,17 +43,19 @@ public class FollowRequestsFragment extends Fragment {
     private FirebaseDB firebaseDB;
     private String currentUserId;
 
-    private List<PendingRequestsAdapter.PendingRequest> originalPendingData = new ArrayList<>();
-    private List<AcceptedFollowersAdapter.AcceptedFollower> originalAcceptedData = new ArrayList<>();
+    private final List<PendingRequestsAdapter.PendingRequest> originalPendingData = new ArrayList<>();
+    private final List<AcceptedFollowersAdapter.AcceptedFollower> originalAcceptedData = new ArrayList<>();
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_follow_requests, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         firebaseDB = FirebaseDB.getInstance(requireContext());
@@ -62,6 +63,7 @@ public class FollowRequestsFragment extends Fragment {
 
         initViews(view);
         setupRecyclerView();
+
 
         btnAccepted.setSelected(true);
         btnPending.setSelected(false);
@@ -80,8 +82,9 @@ public class FollowRequestsFragment extends Fragment {
                 btnAccepted.setSelected(true);
                 btnPending.setSelected(false);
 
-                Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
-
+                Animation scaleUp = AnimationUtils.loadAnimation(
+                        requireContext(), R.anim.scale_up
+                );
                 btnAccepted.startAnimation(scaleUp);
 
                 showAcceptedFollowers();
@@ -94,16 +97,21 @@ public class FollowRequestsFragment extends Fragment {
                 btnPending.setSelected(true);
                 btnAccepted.setSelected(false);
 
-                Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
+                Animation scaleUp = AnimationUtils.loadAnimation(
+                        requireContext(), R.anim.scale_up
+                );
                 btnPending.startAnimation(scaleUp);
+
                 showPendingRequests();
                 applySearchFilter(searchBar.getText().toString());
             }
         });
 
         searchBar.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void afterTextChanged(Editable s) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -115,42 +123,56 @@ public class FollowRequestsFragment extends Fragment {
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        pendingAdapter = new PendingRequestsAdapter(new PendingRequestsAdapter.OnActionListener() {
-            @Override
-            public void onAcceptClicked(PendingRequestsAdapter.PendingRequest request, int position) {
-                firebaseDB.respondToFollowRequest(request.requestId, true, success -> {
+        pendingAdapter = new PendingRequestsAdapter(
+                (request, position) -> firebaseDB.respondToFollowRequest(request.requestId, true, success -> {
                     if (success) {
                         pendingAdapter.removeItem(position);
                         checkEmptyState();
                     } else {
                         showToast("Failed to accept request");
                     }
-                });
-            }
-
-            @Override
-            public void onRejectClicked(PendingRequestsAdapter.PendingRequest request, int position) {
-                firebaseDB.respondToFollowRequest(request.requestId, false, success -> {
+                }),
+                (request, position) -> firebaseDB.respondToFollowRequest(request.requestId, false, success -> {
                     if (success) {
                         pendingAdapter.removeItem(position);
                         checkEmptyState();
                     } else {
                         showToast("Failed to reject request");
                     }
-                });
-            }
-        });
+                }),
+                this::openUserProfile
+        );
 
-        acceptedAdapter = new AcceptedFollowersAdapter((follower, position) -> {
-            firebaseDB.unfollowUser(follower.userId, currentUserId, success -> {
-                if (success) {
-                    acceptedAdapter.removeItem(position);
-                    checkEmptyState();
-                } else {
-                    showToast("Failed to remove follower");
-                }
-            });
-        });
+        acceptedAdapter = new AcceptedFollowersAdapter(
+                (follower, position) -> firebaseDB.unfollowUser(follower.userId, currentUserId, success -> {
+                    if (success) {
+                        acceptedAdapter.removeItem(position);
+                        checkEmptyState();
+                    } else {
+                        showToast("Failed to remove follower");
+                    }
+                }),
+                this::openUserProfile
+        );
+
+        recyclerView.setAdapter(acceptedAdapter);
+    }
+
+    private void openUserProfile(String userId) {
+        Fragment profileFragment = OtherUserProfileFragment.newInstance(userId);
+        FragmentTransaction transaction =
+                requireActivity().getSupportFragmentManager().beginTransaction();
+
+        transaction.setCustomAnimations(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+        );
+
+        transaction.replace(R.id.fragment_container, profileFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private void showPendingRequests() {
@@ -169,36 +191,44 @@ public class FollowRequestsFragment extends Fragment {
                 String fromUserId = (String) doc.get("fromUserId");
 
                 if (requestId == null || fromUserId == null) {
-                    incrementCount(total, doneCount, requestList);
+                    doneCount[0]++;
+                    if (doneCount[0] == total) {
+                        originalPendingData.clear();
+                        originalPendingData.addAll(requestList);
+                        applySearchFilter(searchBar.getText().toString());
+                    }
                     continue;
                 }
 
                 firebaseDB.fetchUserById(fromUserId, userData -> {
-                    String fromUsername = userData != null ?
-                            (String) userData.get("username") : "Unknown User";
+                    String fromUsername = userData != null
+                            ? (String) userData.get("username")
+                            : "Unknown User";
+                    String fromUserImageUrl = userData != null
+                            ? (String) userData.get("profileImageUrl")
+                            : null;
 
                     requestList.add(new PendingRequestsAdapter.PendingRequest(
-                            requestId, fromUserId, fromUsername
+                            requestId,
+                            fromUserId,
+                            fromUsername,
+                            fromUserImageUrl
                     ));
 
-                    incrementCount(total, doneCount, requestList);
+                    doneCount[0]++;
+                    if (doneCount[0] == total) {
+                        originalPendingData.clear();
+                        originalPendingData.addAll(requestList);
+                        applySearchFilter(searchBar.getText().toString());
+                    }
                 });
             }
         });
     }
 
-    private void incrementCount(int total, int[] doneCount, List<?> list) {
-        doneCount[0]++;
-        if (doneCount[0] == total) {
-            originalPendingData.clear();
-            originalPendingData.addAll((List<PendingRequestsAdapter.PendingRequest>) list);
-            applySearchFilter(searchBar.getText().toString());
-        }
-    }
-
-    private void updatePendingUI(List<?> items) {
+    private void updatePendingUI(List<PendingRequestsAdapter.PendingRequest> items) {
         requireActivity().runOnUiThread(() -> {
-            pendingAdapter.setData((List<PendingRequestsAdapter.PendingRequest>) items);
+            pendingAdapter.setData(items);
             recyclerView.setAdapter(pendingAdapter);
             checkEmptyState();
         });
@@ -217,11 +247,17 @@ public class FollowRequestsFragment extends Fragment {
 
             for (String followerId : followerIds) {
                 firebaseDB.fetchUserById(followerId, userData -> {
-                    String username = userData != null ?
-                            (String) userData.get("username") : "Unknown User";
+                    String username = userData != null
+                            ? (String) userData.get("username")
+                            : "Unknown User";
+                    String profileUrl = userData != null
+                            ? (String) userData.get("profileImageUrl")
+                            : null;
 
                     followerList.add(new AcceptedFollowersAdapter.AcceptedFollower(
-                            followerId, username
+                            followerId,
+                            username,
+                            profileUrl
                     ));
 
                     doneCount[0]++;
@@ -245,39 +281,33 @@ public class FollowRequestsFragment extends Fragment {
 
     private void applySearchFilter(String query) {
         if (btnPending.isSelected()) {
-            filterPendingRequests(query);
+            List<PendingRequestsAdapter.PendingRequest> filtered = new ArrayList<>();
+            for (PendingRequestsAdapter.PendingRequest request : originalPendingData) {
+                if (request.fromUsername != null &&
+                        request.fromUsername.toLowerCase().contains(query.toLowerCase())) {
+                    filtered.add(request);
+                }
+            }
+            pendingAdapter.setData(filtered);
+            recyclerView.setAdapter(pendingAdapter);
         } else {
-            filterAcceptedFollowers(query);
+            List<AcceptedFollowersAdapter.AcceptedFollower> filtered = new ArrayList<>();
+            for (AcceptedFollowersAdapter.AcceptedFollower follower : originalAcceptedData) {
+                if (follower.username != null &&
+                        follower.username.toLowerCase().contains(query.toLowerCase())) {
+                    filtered.add(follower);
+                }
+            }
+            acceptedAdapter.setData(filtered);
+            recyclerView.setAdapter(acceptedAdapter);
         }
         checkEmptyState();
     }
 
-    private void filterPendingRequests(String query) {
-        List<PendingRequestsAdapter.PendingRequest> filtered = new ArrayList<>();
-        for (PendingRequestsAdapter.PendingRequest request : originalPendingData) {
-            if (request.fromUsername.toLowerCase().contains(query.toLowerCase())) {
-                filtered.add(request);
-            }
-        }
-        pendingAdapter.setData(filtered);
-        recyclerView.setAdapter(pendingAdapter);
-    }
-
-    private void filterAcceptedFollowers(String query) {
-        List<AcceptedFollowersAdapter.AcceptedFollower> filtered = new ArrayList<>();
-        for (AcceptedFollowersAdapter.AcceptedFollower follower : originalAcceptedData) {
-            if (follower.username.toLowerCase().contains(query.toLowerCase())) {
-                filtered.add(follower);
-            }
-        }
-        acceptedAdapter.setData(filtered);
-        recyclerView.setAdapter(acceptedAdapter);
-    }
-
     private void checkEmptyState() {
         requireActivity().runOnUiThread(() -> {
-            RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
-            boolean isEmpty = adapter == null || adapter.getItemCount() == 0;
+            RecyclerView.Adapter<?> currentAdapter = recyclerView.getAdapter();
+            boolean isEmpty = currentAdapter == null || currentAdapter.getItemCount() == 0;
 
             textNoFollowRequests.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
             recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
@@ -289,10 +319,11 @@ public class FollowRequestsFragment extends Fragment {
                 Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         );
     }
+
     @Override
     public void onResume() {
         super.onResume();
-        // Ensure title is correct even after rotation
         ((HomeActivity) requireActivity()).setToolbarTitle("Followers");
     }
 }
+

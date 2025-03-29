@@ -1,5 +1,6 @@
 package com.example.team_16.ui.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,31 +11,32 @@ import android.widget.TextView;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-
+import com.bumptech.glide.Glide;
 import com.example.team_16.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Adapter to display accepted followers (people who follow me),
- * with a single "Remove" button to make them unfollow me.
- */
 public class AcceptedFollowersAdapter
         extends RecyclerView.Adapter<AcceptedFollowersAdapter.ViewHolder> {
 
-    /**
-     * Model for each follower in the "accepted" list
-     */
     public static class AcceptedFollower {
         public String userId;
         public String username;
+        public String profileImageUrl;
 
-        public AcceptedFollower(String userId, String username) {
+        public AcceptedFollower(String userId, String username, String profileImageUrl) {
             this.userId = userId;
             this.username = username;
+            this.profileImageUrl = profileImageUrl;
         }
     }
+
+
+    public interface OnItemClickListener {
+        void onItemClick(String userId);
+    }
+
 
     public interface OnRemoveListener {
         void onRemoveClicked(AcceptedFollower follower, int position);
@@ -42,9 +44,11 @@ public class AcceptedFollowersAdapter
 
     private final List<AcceptedFollower> dataList = new ArrayList<>();
     private final OnRemoveListener removeListener;
+    private final OnItemClickListener itemClickListener;
 
-    public AcceptedFollowersAdapter(OnRemoveListener removeListener) {
+    public AcceptedFollowersAdapter(OnRemoveListener removeListener, OnItemClickListener itemClickListener) {
         this.removeListener = removeListener;
+        this.itemClickListener = itemClickListener;
     }
 
     public void setData(List<AcceptedFollower> newData) {
@@ -54,8 +58,10 @@ public class AcceptedFollowersAdapter
     }
 
     public void removeItem(int position) {
-        dataList.remove(position);
-        notifyItemRemoved(position);
+        if (position >= 0 && position < dataList.size()) {
+            dataList.remove(position);
+            notifyItemRemoved(position);
+        }
     }
 
     @Override
@@ -71,6 +77,23 @@ public class AcceptedFollowersAdapter
 
         holder.textUsername.setText(item.username);
         holder.textUserId.setText("@" + item.username);
+
+        if (holder.imageProfile != null) {
+            Glide.with(holder.itemView.getContext())
+                    .load(item.profileImageUrl)
+                    .placeholder(R.drawable.image)
+                    .fallback(R.drawable.image)
+                    .circleCrop()
+                    .into(holder.imageProfile);
+        } else {
+            Log.e("AcceptedFollowersAdapter", "imageProfile is null at position: " + position);
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(item.userId);
+            }
+        });
 
         holder.buttonRemove.setOnClickListener(v -> {
             if (removeListener != null) {
@@ -93,7 +116,7 @@ public class AcceptedFollowersAdapter
         public ViewHolder(View itemView) {
             super(itemView);
             cardView      = (CardView) itemView;
-            imageProfile  = itemView.findViewById(R.id.image_profile);
+            imageProfile  = itemView.findViewById(R.id.profile_image);
             textUsername  = itemView.findViewById(R.id.text_username);
             textUserId    = itemView.findViewById(R.id.text_user_id);
             textMood      = itemView.findViewById(R.id.text_mood);
