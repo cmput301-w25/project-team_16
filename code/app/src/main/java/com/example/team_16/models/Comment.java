@@ -8,7 +8,6 @@ public class Comment {
     private long timestamp;
     private String profileImageUrl;
 
-
     public Comment() {}
 
     public Comment(String userId, String userName, String text) {

@@ -924,7 +924,6 @@ public class FirebaseDB {
                                 doc.getString("userName"),
                                 doc.getString("text")
                         );
-                        // Use document ID instead of stored field
                         comment.setId(doc.getId());
                         comment.setTimestamp(doc.getLong("timestamp"));
                         comment.setProfileImageUrl(doc.getString("profileImageUrl"));

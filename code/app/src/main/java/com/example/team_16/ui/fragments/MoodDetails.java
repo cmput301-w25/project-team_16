@@ -282,7 +282,6 @@ public class MoodDetails extends Fragment {
                     });
         });
 
-        // Rest of your existing code
         commentsHeaderView.setText("Comments (0)");
         commentsRecyclerView.setVisibility(View.GONE);
         noCommentsView.setVisibility(View.VISIBLE);
