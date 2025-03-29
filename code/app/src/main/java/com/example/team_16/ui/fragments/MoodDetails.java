@@ -124,7 +124,7 @@ public class MoodDetails extends Fragment {
             Toast.makeText(requireContext(), "Could not load mood details", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        
         View moodDetailsContainer = view.findViewById(R.id.mood_details_container);
 
         mood_one_view = moodDetailsContainer.findViewById(R.id.mood_one);
