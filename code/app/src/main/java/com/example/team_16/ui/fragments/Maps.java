@@ -392,7 +392,7 @@ public class Maps extends Fragment
 
     private void resetFilters() {
         filteredMoodEvents = new ArrayList<>(fullMoodEvents);
-        firstLoad = false;
+        firstLoad = true;
         centerOnUserLocation(true);
     }
 
