@@ -158,6 +158,7 @@ public class MoodEvent implements Serializable {
         this.emotionalState = emotionalState;
     }
 
+
     public String getUserID() {
         return userID;
     }
