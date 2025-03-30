@@ -214,6 +214,30 @@ public class MoodEvent implements Serializable {
      *
      * @return The place name as a String.
      */
+
+
+    // Existing setter that accepts two doubles
+    public void setLocation(Double latitude, Double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    // Overloaded setter that accepts a double array
+    public void setLocation(double[] location) {
+        if (location != null && location.length == 2) {
+            setLocation(location[0], location[1]);
+        }
+    }
+
+    // In MoodEvent.java
+    public double[] getLocation() {
+        // Check if latitude or longitude is null and handle it properly
+        if (latitude == null || longitude == null) {
+            return null; // Or return a default value like new double[]{0.0, 0.0}
+        }
+        return new double[]{latitude.doubleValue(), longitude.doubleValue()};
+    }
+
     public String getPlaceName() { return placeName; }
 
     /**

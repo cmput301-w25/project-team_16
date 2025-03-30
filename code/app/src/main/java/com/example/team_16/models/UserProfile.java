@@ -11,12 +11,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Represents a user in the mood tracking application
  */
-public class
-UserProfile {
+public class UserProfile {
+    private static final String TAG = "UserProfile";
+
     // Core user information
     private String id;
     private String username;
@@ -200,6 +202,7 @@ UserProfile {
 
     /**
      * Add a mood event to personal mood history
+     * Now ensures all events have a valid ID even when offline
      *
      * @param event Mood event to add
      * @param callback Callback to handle result
@@ -207,6 +210,15 @@ UserProfile {
     public void addMoodEvent(MoodEvent event, FirebaseDB.FirebaseCallback<Boolean> callback) {
         // Ensure the event is associated with this user
         event.setUserID(this.id);
+
+        // Ensure the event has an ID even if offline
+        if (event.getId() == null || event.getId().isEmpty()) {
+            // Generate a temporary local ID with "local_" prefix to identify offline-created events
+            String tempId = "local_" + UUID.randomUUID().toString();
+            event.setId(tempId);
+            Log.d(TAG, "Generated temporary ID for offline mood event: " + tempId);
+        }
+
         personalMoodHistory.addEvent(event, callback);
     }
 
@@ -221,13 +233,26 @@ UserProfile {
 
     /**
      * Edit an existing mood event in personal mood history
+     * Now handles both online and offline events properly
      *
      * @param eventId ID of the event to edit
      * @param updates Updated mood event details
      * @param callback Callback to handle result
      */
     public void editMoodEvent(String eventId, MoodEvent updates, FirebaseDB.FirebaseCallback<Boolean> callback) {
+        if (eventId == null || eventId.isEmpty()) {
+            Log.e(TAG, "Attempted to edit event with null or empty ID");
+            if (callback != null) {
+                callback.onCallback(false);
+            }
+            return;
+        }
+
         updates.setUserID(this.id);
+
+        // Preserve ID when updating - crucial for offline events
+        updates.setId(eventId);
+
         personalMoodHistory.editEvent(eventId, updates, callback);
     }
 
@@ -243,11 +268,20 @@ UserProfile {
 
     /**
      * Delete a mood event from personal mood history
+     * Handles both online and offline events
      *
      * @param eventId ID of the event to delete
      * @param callback Callback to handle result
      */
     public void deleteMoodEvent(String eventId, FirebaseDB.FirebaseCallback<Boolean> callback) {
+        if (eventId == null || eventId.isEmpty()) {
+            Log.e(TAG, "Attempted to delete event with null or empty ID");
+            if (callback != null) {
+                callback.onCallback(false);
+            }
+            return;
+        }
+
         personalMoodHistory.deleteEvent(eventId, callback);
     }
 
@@ -320,12 +354,6 @@ UserProfile {
      * @param email New email address
      * @param callback Callback to handle update result
      */
-    // Derek: I edited teh update profile , the new version is below this one
-
-    /**
-     * Update user profile (fullName, email, username)
-     */
-    // have not implemented email yet
     public void updateProfile(String fullName,
                               String email,
                               String username,

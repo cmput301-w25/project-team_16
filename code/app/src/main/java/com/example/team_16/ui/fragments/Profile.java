@@ -136,6 +136,13 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         adapter.setOnMoodEventInteractionListener(new MoodHistoryAdapter.OnMoodEventInteractionListener() {
             @Override
             public void onEditClick(MoodEvent event) {
+                // Check if offline first
+                if (!FirebaseDB.getInstance(requireContext()).isOnline()) {
+                    Toast.makeText(requireContext(),
+                            "You're offline. Changes will be synced when you reconnect.",
+                            Toast.LENGTH_SHORT).show();
+                }
+
                 // Navigate to AddMood in edit mode, passing the existing MoodEvent
                 AddMood addMoodFragment = new AddMood();
                 Bundle args = new Bundle();
@@ -150,16 +157,24 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
             @Override
             public void onDeleteClick(MoodEvent event) {
+                boolean isOffline = !FirebaseDB.getInstance(requireContext()).isOnline();
+                String confirmMessage = isOffline ?
+                        "You're offline. This will be deleted when you reconnect. Continue?" :
+                        "Are you sure you want to delete this mood event?";
+
                 // Prompt user for confirmation
                 new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                         .setTitle("Delete Mood")
-                        .setMessage("Are you sure you want to delete this mood event?")
+                        .setMessage(confirmMessage)
                         .setPositiveButton("Yes", (dialog, which) -> {
                             // Actually delete via the user profile
                             userProfile.deleteMoodEvent(event.getId(), success -> {
                                 if (success) {
+                                    String message = isOffline ?
+                                            "Mood event queued for deletion." :
+                                            "Mood event deleted successfully!";
                                     Toast.makeText(requireContext(),
-                                            "Mood event deleted successfully!",
+                                            message,
                                             Toast.LENGTH_SHORT).show();
                                     // Refresh our local data
                                     loadData();
@@ -357,5 +372,15 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         }
         refreshCounts();
         loadData();
+        checkPendingChanges();
+    }
+
+    private void checkPendingChanges() {
+        if (userProfile != null && userProfile.getPersonalMoodHistory().hasPendingChanges()) {
+            // Show a banner or notification that changes are pending sync
+            Toast.makeText(requireContext(),
+                    "You have pending changes that will sync when you're back online",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 }
