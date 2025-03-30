@@ -1,5 +1,7 @@
 package com.example.team_16.ui.fragments;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,7 +17,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
+import android.os.Looper;
 
 import com.bumptech.glide.Glide;
 import com.example.team_16.MoodTrackerApp;
@@ -23,6 +31,8 @@ import com.example.team_16.R;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -41,18 +51,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class Maps extends Fragment
         implements FilterableFragment, FilterFragment.FilterListener, OnMapReadyCallback {
 
     private UserProfile userProfile;
 
-    private List<MoodEvent> fullMoodEvents;
+    private List<MoodEvent> personalEvents;
+    private List<MoodEvent> followingEvents;
 
+    private List<MoodEvent> fullMoodEvents;
     private List<MoodEvent> filteredMoodEvents;
 
     private Map<Marker, MoodEvent> markerEventMap = new HashMap<>();
-
     private GoogleMap googleMap;
 
     private TextView noEventSelectedText;
@@ -67,12 +77,19 @@ public class Maps extends Fragment
     private Map<String, String> userNameCache = new HashMap<>();
     private Map<String, String> userImageCache = new HashMap<>();
 
+    private double currentUserLat = Double.NaN;
+    private double currentUserLng = Double.NaN;
+    private static final int REQUEST_LOCATION_PERMISSION = 1001;
+
+    private boolean firstLoad = true;
+
+    private FusedLocationProviderClient fusedLocationClient;
+
     private interface OnUserDataFetched {
         void onFetched(String username, String imageUrl);
     }
 
-    public Maps() {
-    }
+    public Maps() {}
 
     public static Maps newInstance() {
         return new Maps();
@@ -89,9 +106,8 @@ public class Maps extends Fragment
             return;
         }
 
-        List<MoodEvent> personalEvents   = userProfile.getPersonalMoodHistory().getAllEvents();
-
-        List<MoodEvent> followingEvents  = userProfile.getFollowingMoodHistory().getAllEvents();
+        personalEvents  = userProfile.getPersonalMoodHistory().getAllEvents();
+        followingEvents = userProfile.getFollowingMoodHistory().getAllEvents();
 
         List<MoodEvent> combined = new ArrayList<>();
         combined.addAll(personalEvents);
@@ -121,23 +137,24 @@ public class Maps extends Fragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        noEventSelectedText = view.findViewById(R.id.no_event_selected_text);
-        eventDetailsLayout  = view.findViewById(R.id.event_details_layout);
-        eventUserProfileImage = view.findViewById(R.id.event_user_profile_image);
-        eventUsername = view.findViewById(R.id.event_username);
-        eventEmoji    = view.findViewById(R.id.event_emoji);
-        eventLocation = view.findViewById(R.id.event_location);
-        eventTrigger  = view.findViewById(R.id.event_trigger_text);
-        eventPhoto    = view.findViewById(R.id.event_photo);
+        noEventSelectedText  = view.findViewById(R.id.no_event_selected_text);
+        eventDetailsLayout   = view.findViewById(R.id.event_details_layout);
+        eventUserProfileImage= view.findViewById(R.id.event_user_profile_image);
+        eventUsername        = view.findViewById(R.id.event_username);
+        eventEmoji           = view.findViewById(R.id.event_emoji);
+        eventLocation        = view.findViewById(R.id.event_location);
+        eventTrigger         = view.findViewById(R.id.event_trigger_text);
+        eventPhoto           = view.findViewById(R.id.event_photo);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
-        getChildFragmentManager().beginTransaction()
+        getChildFragmentManager()
+                .beginTransaction()
                 .replace(R.id.map_container, mapFragment)
                 .commit();
-
         mapFragment.getMapAsync(this);
     }
-
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -157,17 +174,117 @@ public class Maps extends Fragment
             return true;
         });
 
-        updateMapWithEvents(filteredMoodEvents);
+        centerOnUserLocation(true);
     }
 
+    private void centerOnUserLocation(final boolean showEventsAfterLocating) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED) {
 
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                    },
+                    REQUEST_LOCATION_PERMISSION
+            );
+
+            if (showEventsAfterLocating) {
+                updateMapWithEvents(filteredMoodEvents);
+            }
+            return;
+        }
+
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(10000); // 10 seconds
+        locationRequest.setFastestInterval(5000); // 5 seconds
+
+        LocationCallback locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    Toast.makeText(requireContext(), "Could not get location", Toast.LENGTH_SHORT).show();
+                    if (showEventsAfterLocating) {
+                        updateMapWithEvents(filteredMoodEvents);
+                    }
+                    return;
+                }
+
+                android.location.Location location = locationResult.getLastLocation();
+                currentUserLat = location.getLatitude();
+                currentUserLng = location.getLongitude();
+
+                LatLng userPos = new LatLng(currentUserLat, currentUserLng);
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userPos, 14f));
+
+                googleMap.addMarker(new MarkerOptions()
+                        .position(userPos)
+                        .title("My Location")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+
+                if (showEventsAfterLocating) {
+                    updateMapWithEvents(filteredMoodEvents);
+                }
+
+                fusedLocationClient.removeLocationUpdates(this);
+            }
+        };
+
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback, Looper.getMainLooper());
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        currentUserLat = location.getLatitude();
+                        currentUserLng = location.getLongitude();
+
+                        LatLng userPos = new LatLng(currentUserLat, currentUserLng);
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userPos, 14f));
+
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(userPos)
+                                .title("My Location")
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    }
+
+                    if (showEventsAfterLocating) {
+                        updateMapWithEvents(filteredMoodEvents);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Location error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    if (showEventsAfterLocating) {
+                        updateMapWithEvents(filteredMoodEvents);
+                    }
+                });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] perms, @NonNull int[] results) {
+        super.onRequestPermissionsResult(requestCode, perms, results);
+
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
+                centerOnUserLocation(true); // Show events after location found
+            } else {
+                Toast.makeText(requireContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
+                updateMapWithEvents(filteredMoodEvents); // Still show events even without permission
+            }
+        }
+    }
     @Override
     public void onFilterClicked() {
         FilterFragment filterFragment = new FilterFragment();
-        Bundle args = new Bundle();
-        args.putBoolean("show_only_nearby_event_type", true);
-        filterFragment.setArguments(args);
-
         filterFragment.setFilterListener(this);
         ((HomeActivity) requireActivity()).navigateToFragment(filterFragment, "Filter");
     }
@@ -183,13 +300,51 @@ public class Maps extends Fragment
         resetFilters();
     }
 
-
     private void applyFilter(FilterFragment.FilterCriteria criteria) {
-        List<MoodEvent> filtered = new ArrayList<>();
+        List<MoodEvent> newFiltered = new ArrayList<>();
         Date now = new Date();
 
+        boolean wantPersonal  = criteria.eventTypes.contains("My Own Mood History");
+        boolean wantFollowing = criteria.eventTypes.contains("Events from People I Follow");
+        boolean wantNearby    = criteria.eventTypes.contains("Nearby Events within 5km");
+
+        if (wantNearby && (Double.isNaN(currentUserLat) || Double.isNaN(currentUserLng))) {
+            Toast.makeText(requireContext(),
+                    "Getting your location for nearby events...",
+                    Toast.LENGTH_SHORT).show();
+            centerOnUserLocation(false);
+        }
+
+        boolean noneSelected = (!wantPersonal && !wantFollowing && !wantNearby);
+        if (noneSelected) {
+            wantPersonal = true;
+            wantFollowing = true;
+        }
+
         for (MoodEvent event : fullMoodEvents) {
-            boolean matches = true;
+            boolean matches = false;
+
+            if ((isPersonalEvent(event) && wantPersonal) ||
+                    (isFollowingEvent(event) && wantFollowing)) {
+                matches = true;
+            }
+
+            if (!event.hasLocation()) {
+                matches = false;
+                continue;
+            }
+
+            if (wantNearby && !Double.isNaN(currentUserLat) && !Double.isNaN(currentUserLng)) {
+                double distKm = distanceInKm(
+                        currentUserLat, currentUserLng,
+                        event.getLatitude(), event.getLongitude()
+                );
+                if (distKm <= 5.0) {
+                    matches = true;
+                }
+            }
+
+            if (!matches) continue;
 
             if (!criteria.timePeriod.equals("All Time")) {
                 if (event.getTimestamp() == null) {
@@ -209,37 +364,44 @@ public class Maps extends Fragment
                 }
             }
 
-            if (matches && criteria.emotionalState != null) {
+            // emotion
+            if (matches && criteria.emotionalState != null && !criteria.emotionalState.isEmpty()) {
                 if (event.getEmotionalState() == null
                         || !criteria.emotionalState.equalsIgnoreCase(event.getEmotionalState().getName())) {
                     matches = false;
                 }
             }
 
-            if (matches && !criteria.triggerReason.isEmpty()) {
-                if (event.getTrigger() == null ||
-                        !event.getTrigger().toLowerCase().contains(criteria.triggerReason.toLowerCase())) {
+            // trigger
+            if (matches && criteria.triggerReason != null && !criteria.triggerReason.isEmpty()) {
+                String eTrig = (event.getTrigger() != null) ? event.getTrigger().toLowerCase() : "";
+                if (!eTrig.contains(criteria.triggerReason.toLowerCase())) {
                     matches = false;
                 }
             }
 
-            if (matches && !event.hasLocation()) {
-                matches = false;
-            }
-
             if (matches) {
-                filtered.add(event);
+                newFiltered.add(event);
             }
         }
 
-        filteredMoodEvents = filtered;
+        filteredMoodEvents = newFiltered;
+        firstLoad = false;
         updateMapWithEvents(filteredMoodEvents);
     }
 
-
     private void resetFilters() {
         filteredMoodEvents = new ArrayList<>(fullMoodEvents);
-        updateMapWithEvents(filteredMoodEvents);
+        firstLoad = true;
+        centerOnUserLocation(true);
+    }
+
+    private boolean isPersonalEvent(MoodEvent event) {
+        return personalEvents.contains(event);
+    }
+
+    private boolean isFollowingEvent(MoodEvent event) {
+        return followingEvents.contains(event);
     }
 
     private void updateMapWithEvents(List<MoodEvent> events) {
@@ -247,6 +409,14 @@ public class Maps extends Fragment
 
         googleMap.clear();
         markerEventMap.clear();
+
+        if (!Double.isNaN(currentUserLat) && !Double.isNaN(currentUserLng)) {
+            LatLng userPos = new LatLng(currentUserLat, currentUserLng);
+            googleMap.addMarker(new MarkerOptions()
+                    .position(userPos)
+                    .title("My Location")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        }
 
         if (events.isEmpty() || !hasLocationEvents(events)) {
             Toast.makeText(requireContext(), "No mood events with location found", Toast.LENGTH_SHORT).show();
@@ -256,6 +426,11 @@ public class Maps extends Fragment
 
         LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
         boolean hasBounds = false;
+
+        if (!Double.isNaN(currentUserLat) && !Double.isNaN(currentUserLng)) {
+            boundsBuilder.include(new LatLng(currentUserLat, currentUserLng));
+            hasBounds = true;
+        }
 
         for (MoodEvent event : events) {
             if (!event.hasLocation()) continue;
@@ -279,7 +454,7 @@ public class Maps extends Fragment
             }
         }
 
-        if (hasBounds) {
+        if (!firstLoad && hasBounds) {
             try {
                 int padding = getResources().getDimensionPixelSize(R.dimen.map_padding);
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), padding));
@@ -294,8 +469,6 @@ public class Maps extends Fragment
 
         showNoEventSelected();
     }
-
-
     private boolean hasLocationEvents(List<MoodEvent> events) {
         for (MoodEvent e : events) {
             if (e.hasLocation()) return true;
@@ -308,7 +481,6 @@ public class Maps extends Fragment
         eventDetailsLayout.setVisibility(View.GONE);
         eventPhoto.setVisibility(View.GONE);
     }
-
 
     private void showEventInBottomContainer(MoodEvent event) {
         noEventSelectedText.setVisibility(View.GONE);
@@ -332,8 +504,7 @@ public class Maps extends Fragment
         });
 
         String moodName = (event.getEmotionalState() != null)
-                ? event.getEmotionalState().getName()
-                : "Unknown";
+                ? event.getEmotionalState().getName() : "Unknown";
         eventEmoji.setText(getEmojiForMood(moodName));
 
         if (event.getPlaceName() != null && !event.getPlaceName().isEmpty()) {
@@ -341,8 +512,7 @@ public class Maps extends Fragment
         } else if (event.hasLocation()) {
             eventLocation.setText(
                     String.format("Location: (%.4f, %.4f)",
-                            event.getLatitude(), event.getLongitude())
-            );
+                            event.getLatitude(), event.getLongitude()));
         } else {
             eventLocation.setText("Location: None");
         }
@@ -379,13 +549,11 @@ public class Maps extends Fragment
 
         userProfile.getFirebaseDB().fetchUserById(userId, userData -> {
             if (userData == null) {
-                // not found
                 callback.onFetched(null, null);
             } else {
                 String fetchedUsername = (String) userData.get("username");
                 String fetchedImageUrl = (String) userData.get("profileImageUrl");
 
-                // cache
                 userNameCache.put(userId, fetchedUsername);
                 userImageCache.put(userId, fetchedImageUrl);
 
@@ -416,7 +584,7 @@ public class Maps extends Fragment
         paint.setTextAlign(Paint.Align.CENTER);
 
         float baseline = -paint.ascent();
-        int width = (int) (paint.measureText(emoji) + 0.5f);
+        int width  = (int) (paint.measureText(emoji) + 0.5f);
         int height = (int) (baseline + paint.descent() + 0.5f);
 
         Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -424,6 +592,20 @@ public class Maps extends Fragment
         canvas.drawText(emoji, width / 2f, baseline, paint);
 
         return BitmapDescriptorFactory.fromBitmap(image);
+    }
+
+
+//     I have used Haversine formula for calculting distance in km
+
+    private double distanceInKm(double lat1, double lng1, double lat2, double lng2) {
+        final double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     @Override
