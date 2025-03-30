@@ -38,13 +38,12 @@ public class FilterFragment extends Fragment {
         public String timePeriod;
         public String emotionalState;
         public String triggerReason;
-        public List<String> eventTypes = new ArrayList<>(); // Changed to List to support multiple selections
+        public List<String> eventTypes = new ArrayList<>();
     }
 
     private FilterListener listener;
     private boolean hideEventTypeFilters = false;
 
-    // UI Elements
     private Button allTimeButton, lastYearButton, lastMonthButton, lastWeekButton;
     private Button angerButton, confusionButton, disgustButton, fearButton, happinessButton, sadnessButton, shameButton, surpriseButton;
     private CheckBox myOwnMoodHistoryCheck, eventsFromPeopleIFollowCheck, nearbyEventsCheck;
@@ -59,7 +58,6 @@ public class FilterFragment extends Fragment {
 
 
     public FilterFragment() {
-        // constructor
     }
 
     public void setFilterListener(FilterListener listener) {
@@ -86,13 +84,11 @@ public class FilterFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Time period buttons
         allTimeButton = view.findViewById(R.id.allTime);
         lastYearButton = view.findViewById(R.id.lastYear);
         lastMonthButton = view.findViewById(R.id.lastMonth);
         lastWeekButton = view.findViewById(R.id.lastWeek);
 
-        // Emotion buttons
         angerButton = view.findViewById(R.id.anger_button);
         confusionButton = view.findViewById(R.id.confusion_button);
         disgustButton = view.findViewById(R.id.disgust_button);
@@ -102,14 +98,12 @@ public class FilterFragment extends Fragment {
         shameButton = view.findViewById(R.id.shame_button);
         surpriseButton = view.findViewById(R.id.surprise_button);
 
-        // Event checkboxes
         eventsTextView = view.findViewById(R.id.events_text);
         eventTypeSection = view.findViewById(R.id.event_type_section);
         myOwnMoodHistoryCheck = view.findViewById(R.id.myOwnMoodHistoryCheck);
         eventsFromPeopleIFollowCheck = view.findViewById(R.id.eventsFromPeopleIFollowCheck);
         nearbyEventsCheck = view.findViewById(R.id.nearbyEventsCheck);
 
-        // Log if any important views are null
         if (eventTypeSection == null) {
             Log.e(TAG, "eventTypeSection is null");
         }
@@ -127,7 +121,6 @@ public class FilterFragment extends Fragment {
         resetButton = view.findViewById(R.id.resetButton);
         applyButton = view.findViewById(R.id.applyButton);
 
-        // Set click listeners for time period selection
         if (allTimeButton != null) {
             allTimeButton.setOnClickListener(v -> {
                 selectedTimePeriod = "All Time";
@@ -156,10 +149,8 @@ public class FilterFragment extends Fragment {
             });
         }
 
-        // Set up emotion button listeners
         setupEmotionButtonListeners();
 
-        // Reset button listener
         if (resetButton != null) {
             resetButton.setOnClickListener(v -> {
                 Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
@@ -172,10 +163,8 @@ public class FilterFragment extends Fragment {
             });
         }
 
-        // Handle visibility conditions for event types
         handleEventTypesVisibility();
 
-        // Apply button listener
         if (applyButton != null) {
             applyButton.setOnClickListener(v -> {
                 Animation scaleUp = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_up);
@@ -187,7 +176,6 @@ public class FilterFragment extends Fragment {
                     triggerReason = "";
                 }
 
-                // Collect selected event types from checkboxes
                 List<String> selectedEventTypes = collectSelectedEventTypes();
 
                 if (selectedTimePeriod.equals("All Time")
@@ -285,28 +273,21 @@ public class FilterFragment extends Fragment {
                 eventsTextView.setVisibility(View.GONE);
             }
 
-            return; // No need to configure individual checkboxes if the section is hidden
+            return;
         }
 
-        // If we reach here, the event type section should be visible
         if (eventTypeSection != null) {
-            Log.d(TAG, "Showing event type section");
             eventTypeSection.setVisibility(View.VISIBLE);
         }
 
-        // Check if "show_only_nearby_event_type" flag is active
         boolean showOnlyNearby = getArguments() != null && getArguments().getBoolean("show_only_nearby_event_type", false);
 
-        // Following the requirement: all 3 events should either show together or none should be visible
         if (showOnlyNearby) {
             Log.d(TAG, "Show only nearby events - auto-checking it");
-            // Even in "show only nearby" mode, we keep all checkboxes visible but auto-check nearby
-            // Auto-check the nearby events option
             if (nearbyEventsCheck != null) {
                 nearbyEventsCheck.setChecked(true);
             }
         } else {
-            // Make sure all checkboxes are visible and initially unchecked
             if (myOwnMoodHistoryCheck != null) {
                 myOwnMoodHistoryCheck.setChecked(false);
             }
@@ -341,20 +322,16 @@ public class FilterFragment extends Fragment {
     }
 
     private void resetSelections() {
-        // Reset time period selection
         selectedTimePeriod = "All Time";
         updateTimePeriodSelection();
 
-        // Reset emotional state selection
         selectedEmotionalState = null;
         updateEmotionalStateSelection();
 
-        // Reset search field
         if (triggerReasonEditText != null) {
             triggerReasonEditText.setText("");
         }
 
-        // Reset checkboxes - with null checks
         if (myOwnMoodHistoryCheck != null) {
             myOwnMoodHistoryCheck.setChecked(false);
         }
@@ -362,10 +339,8 @@ public class FilterFragment extends Fragment {
             eventsFromPeopleIFollowCheck.setChecked(false);
         }
 
-        // For Maps fragment, keep nearbyEventsCheck checked if showOnlyNearby is true
         boolean showOnlyNearby = getArguments() != null && getArguments().getBoolean("show_only_nearby_event_type", false);
         if (nearbyEventsCheck != null && showOnlyNearby) {
-            // In Maps fragment, always keep the nearby events checked
             nearbyEventsCheck.setChecked(true);
         } else if (nearbyEventsCheck != null) {
             nearbyEventsCheck.setChecked(false);
@@ -373,7 +348,6 @@ public class FilterFragment extends Fragment {
     }
 
     private void updateTimePeriodSelection() {
-        // Update button backgrounds for time period selection with null checks
         updateButtonState((AppCompatButton) allTimeButton, "All Time");
         updateButtonState((AppCompatButton) lastYearButton, "Last Year");
         updateButtonState((AppCompatButton) lastMonthButton, "Last Month");
@@ -381,7 +355,6 @@ public class FilterFragment extends Fragment {
     }
 
     private void updateEmotionalStateSelection() {
-        // Update emotion buttons with null checks
         updateButtonState((AppCompatButton)angerButton, "Anger");
         updateButtonState((AppCompatButton)confusionButton, "Confusion");
         updateButtonState((AppCompatButton)disgustButton, "Disgust");
@@ -397,31 +370,22 @@ public class FilterFragment extends Fragment {
 
         boolean isSelected = isStateSelected(stateName);
 
-        // Use just one drawable, but change its tint instead
         button.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.rounded_button_background));
 
 
-        // Apply distinct visual styling for selected vs unselected states
         if (isSelected) {
-            // Make selected state more visually prominent
             DrawableCompat.setTint(button.getBackground(), ContextCompat.getColor(requireContext(), R.color.white));
 
             button.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
             button.animate().scaleX(1.05f).scaleY(1.05f).setDuration(150);
             button.setAlpha(1.0f);
-            // Optional: add elevation for a "pressed" effect
             button.setElevation(0f);
         } else {
-            // Unselected state
 
-            // Consider avoiding alpha changes as they can make text harder to read
-            // Instead of alpha, you could use a different background tint or style
             button.setAlpha(1.0f);
-            // Optional: add elevation for depth
             button.setElevation(2f);
             button.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150);
 
-            // Reset background color and text color for time period buttons
             if (isTimePeriodButton(button)) {
                 DrawableCompat.setTint(button.getBackground(), Color.parseColor("#ecd4d3"));
                 button.setTextColor(ContextCompat.getColor(requireContext(), R.color.time_period_button_color));
@@ -432,14 +396,11 @@ public class FilterFragment extends Fragment {
 
         }
     }
-
-    // Helper function to check if the button is a time period selection button
     private boolean isTimePeriodButton(AppCompatButton button) {
         return button == allTimeButton || button == lastYearButton ||
                 button == lastMonthButton || button == lastWeekButton;
     }
 
-    // Extract the selection logic for better readability
     private boolean isStateSelected(String stateName) {
         return (selectedTimePeriod != null && selectedTimePeriod.equals(stateName)) ||
                 (selectedEmotionalState != null && selectedEmotionalState.equals(stateName));
