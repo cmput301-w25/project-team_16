@@ -308,24 +308,24 @@ public class HomeActivity extends AppCompatActivity implements
 
         clearBackStack();
 
-        int enterAnim = R.anim.slide_in_right;
-        int exitAnim = R.anim.slide_out_left;
+        int enterAnim = R.anim.fade_in;
+        int exitAnim = R.anim.fade_out;
 
         Menu menu = bottomNavigationView.getMenu();
         int previousOrder = menu.findItem(previousNavItemId).getOrder();
         int currentOrder = menu.findItem(itemId).getOrder();
 
         if (currentOrder < previousOrder) {
-            enterAnim = R.anim.slide_in_left;
-            exitAnim = R.anim.slide_out_right;
+            enterAnim = R.anim.fade_in;
+            exitAnim = R.anim.fade_out;
         }
 
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(
                         enterAnim,
                         exitAnim,
-                        R.anim.slide_in_left,
-                        R.anim.slide_out_right
+                        R.anim.fade_in,
+                        R.anim.fade_out
                 )
                 .replace(R.id.fragment_container, fragment)
                 .commit();
@@ -368,7 +368,6 @@ public class HomeActivity extends AppCompatActivity implements
         // Find the fragment container
         View fragmentContainer = findViewById(R.id.fragment_container);
         if (fragmentContainer != null) {
-            // Get its parent - should be the NestedScrollView
             View parent = (View) fragmentContainer.getParent();
             if (parent instanceof NestedScrollView) {
                 NestedScrollView scrollView = (NestedScrollView) parent;

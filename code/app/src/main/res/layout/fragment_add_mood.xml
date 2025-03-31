@@ -249,41 +249,45 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- Step 2: Photo, Location, Save/Delete -->
+
+
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_marginTop="10dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
             android:fillViewport="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp"
+                android:padding="24dp"
+                android:gravity="center_horizontal"
+                android:layout_gravity="center_vertical"
                 android:background="@drawable/gradient_background">
 
-                <!-- Add Photo -->
+                <!-- Photo Section -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/add_photo_text"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:layout_marginTop="8dp">
+                    android:layout_marginBottom="16dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/take_photo_button"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
                         app:backgroundTint="#ecd4d3"
                         android:text="@string/take_photo_text"
                         android:textColor="#573d3e" />
@@ -293,6 +297,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:layout_marginStart="4dp"
                         app:backgroundTint="#ecd4d3"
                         android:text="@string/choose_photo_text"
                         android:textColor="#573d3e" />
@@ -302,38 +307,36 @@
                     android:id="@+id/remove_image_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="24dp"
                     android:visibility="gone"
                     app:backgroundTint="#ff6666"
                     android:text="Remove Image"
                     android:textColor="@android:color/white" />
 
-                <!-- Add Location -->
-                <!-- Add Photo -->
+                <!-- Location Section -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Attach location"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
-
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/add_location_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginBottom="24dp"
                     app:backgroundTint="#e5d7e8"
                     android:text="@string/add_location_text"
                     android:textColor="#573d3e" />
 
-                <!-- Save Mood -->
+                <!-- Action Buttons Section -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/save_mood_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="16dp"
                     app:backgroundTint="#008080"
                     android:text="@string/save_mood_text"
                     android:textColor="@android:color/white" />
@@ -342,7 +345,7 @@
                     android:id="@+id/delete_entry_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="24dp"
                     app:backgroundTint="#f3a3a6"
                     android:text="@string/delete_entry_text"
                     android:textColor="#FF0000" />
@@ -350,14 +353,10 @@
                 <Button
                     android:id="@+id/back_button"
                     android:layout_width="146dp"
-                    android:layout_marginTop="30dp"
                     android:layout_height="wrap_content"
                     android:backgroundTint="#61a5fa"
-                    android:layout_gravity="center"
                     android:text="Back"
                     android:visibility="gone"/>
-
-
             </LinearLayout>
         </ScrollView>
     </ViewFlipper>
