@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import android.app.ProgressDialog;
@@ -63,6 +64,8 @@ public class FirebaseDB {
     public interface FirebaseCallback<T> {
         void onCallback(T result);
     }
+
+
 
     /**
      * Private constructor for singleton pattern
@@ -206,24 +209,41 @@ public class FirebaseDB {
      * Add a mood event
      */
     public void addMoodEvent(MoodEvent moodEvent, FirebaseCallback<Boolean> callback) {
+        // If offline, generate a temporary ID
+        if (moodEvent.getId() == null || moodEvent.getId().isEmpty()) {
+            moodEvent.setId(UUID.randomUUID().toString());
+        }
+
         db.collection(MOODS_COLLECTION)
                 .add(moodEvent)
                 .addOnSuccessListener(documentReference -> {
-                    // Update the mood event with the generated ID
-                    String id = documentReference.getId();
-                    db.collection(MOODS_COLLECTION).document(id)
-                            .update("id", id)
-                            .addOnSuccessListener(aVoid -> callback.onCallback(true))
-                            .addOnFailureListener(e -> {
-                                Log.e("FirebaseDB", "Error updating mood ID", e);
-                                callback.onCallback(false);
-                            });
+                    // Firebase generates an ID for the document
+                    String firebaseGeneratedId = documentReference.getId();
+
+                    // Only update if the generated ID is different from the temporary one
+                    if (!moodEvent.getId().equals(firebaseGeneratedId)) {
+                        db.collection(MOODS_COLLECTION).document(firebaseGeneratedId)
+                                .update("id", firebaseGeneratedId)
+                                .addOnSuccessListener(aVoid -> {
+                                    // Update the local event's ID to match Firebase
+                                    moodEvent.setId(firebaseGeneratedId);
+                                    callback.onCallback(true); // Notify success
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("FirebaseDB", "Error updating mood ID", e);
+                                    callback.onCallback(false); // Notify failure
+                                });
+                    } else {
+                        // No need to update if IDs are already the same
+                        callback.onCallback(true); // Notify success
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error adding mood event", e);
-                    callback.onCallback(false);
+                    callback.onCallback(false); // Notify failure
                 });
     }
+
 
     /**
      * Get mood events with filtering

@@ -4,6 +4,7 @@ import com.example.team_16.database.FirebaseDB;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * PersonalMoodHistory extends MoodHistory with capabilities
@@ -35,7 +36,12 @@ public class PersonalMoodHistory extends MoodHistory {
         // Ensure event has the correct user ID
         event.setUserID(getUserId());
 
-        // Add to in-memory collection temporarily
+        // If no ID is assigned (offline case), generate a temporary one
+        if (event.getId() == null || event.getId().isEmpty()) {
+            event.setId(UUID.randomUUID().toString()); // Generate unique temporary ID
+        }
+
+        // Add to in-memory collection
         List<MoodEvent> events = getAllEvents();
         events.add(event);
         setMoodEvents(events);
@@ -65,6 +71,7 @@ public class PersonalMoodHistory extends MoodHistory {
             }
         }
     }
+
 
     /**
      * Overloaded method without callback

@@ -1,6 +1,5 @@
 package com.example.team_16.ui.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -21,18 +20,24 @@ import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.fragments.AddImage;
 import com.example.team_16.ui.fragments.AddMood;
+import com.example.team_16.ui.fragments.EntryFragment;
 import com.example.team_16.ui.fragments.Feed;
 import com.example.team_16.ui.fragments.FilterFragment;
 import com.example.team_16.ui.fragments.FilterableFragment;
+import com.example.team_16.ui.fragments.LoginFragment;
 import com.example.team_16.ui.fragments.Maps;
 import com.example.team_16.ui.fragments.Profile;
 import com.example.team_16.ui.fragments.Search;
+import com.example.team_16.ui.fragments.SignUp;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Objects;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements
+        EntryFragment.EntryFragmentListener,
+        LoginFragment.LoginFragmentListener,
+        SignUp.SignUpListener {
 
     private BottomNavigationView bottomNavigationView;
     private androidx.appcompat.widget.Toolbar toolbar;
@@ -43,31 +48,148 @@ public class HomeActivity extends AppCompatActivity {
     private int previousNavItemId = -1;
     private int currentNavItemId = R.id.nav_feed;
 
+    // Flag to track auth state
+    private boolean isLoggedIn = false;
+
+    // FirebaseDB instance
+    private FirebaseDB firebaseDB;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // Enable edge-to-edge layout
-        //EdgeToEdge.enable(this);
+        // Initialize FirebaseDB
+        firebaseDB = FirebaseDB.getInstance(this);
+
+        // Initialize toolbar
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        initializeToolbar();
 
         // Check for a valid user session
         UserProfile userProfile = ((MoodTrackerApp) getApplication()).getCurrentUserProfile();
         if (userProfile == null) {
-            Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-            return;
+            // Not logged in, first check if we should show entry (first launch)
+            if (isFirstLaunch()) {
+                showEntryFragment();
+            } else {
+                // Not first launch, go directly to login
+                showLoginFragment();
+            }
+        } else {
+            // User is logged in, set up main navigation
+            isLoggedIn = true;
+            setupMainNavigation(savedInstanceState);
         }
-
-        // Initialize toolbar
-        initializeToolbar();
-
-        // Set up bottom navigation
-        setupNavigation(savedInstanceState);
 
         // Handle back press logic
         setupBackPressHandling();
+    }
+
+    /**
+     * Callback from EntryFragment when "Get Started" is clicked
+     */
+    @Override
+    public void onGetStartedClicked() {
+        showLoginFragment();
+    }
+
+    /**
+     * Callback from LoginFragment when login is successful
+     */
+    @Override
+    public void onLoginSuccess(String userId) {
+        // Load the user profile and handle navigation
+        loadUserProfileAndNavigate(userId);
+    }
+
+    /**
+     * Callback from SignUp fragment when signup is successful
+     * Just reuses the onLoginSuccess method
+     */
+    @Override
+    public void onSignUpSuccess(String userId) {
+        // Same behavior as login success
+        onLoginSuccess(userId);
+    }
+
+    /**
+     * Handles loading the user profile and setting up the app after login/signup
+     */
+    private void loadUserProfileAndNavigate(String userId) {
+        UserProfile.loadFromFirebase(firebaseDB, userId, userProfile -> {
+            if (userProfile != null) {
+                // Store the user profile in the application
+                ((MoodTrackerApp) getApplication()).setCurrentUserProfile(userProfile);
+
+                // Update login state
+                isLoggedIn = true;
+
+                // Restore system bars
+                showSystemBars();
+
+                // Set up main navigation
+                setupMainNavigation(null);
+
+                // Navigate to Feed as the default screen
+                if (bottomNavigationView != null) {
+                    bottomNavigationView.setSelectedItemId(R.id.nav_feed);
+                }
+            } else {
+                // If loading fails - present an error and sign out
+                Toast.makeText(HomeActivity.this,
+                        "Error loading user profile. Please try again.",
+                        Toast.LENGTH_SHORT).show();
+                firebaseDB.logout();
+            }
+        });
+    }
+
+    /**
+     * Show the entry/onboarding fragment
+     */
+    public void showEntryFragment() {
+        // Hide bottom navigation when showing entry
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.GONE);
+        }
+
+        // Hide system bars for immersive experience
+        hideSystemBars();
+
+        // Load entry fragment
+        EntryFragment entryFragment = new EntryFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, entryFragment)
+                .commit();
+    }
+
+    /**
+     * Show the login fragment
+     */
+    public void showLoginFragment() {
+        // Hide bottom navigation when showing login
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.GONE);
+        }
+        hideBottomNavigation();
+        hideToolbar();
+
+
+        updateFilterIconVisibility(false);
+
+        // Hide system bars for immersive experience
+        hideSystemBars();
+
+        // Load login fragment with fade animation
+        LoginFragment loginFragment = new LoginFragment();
+        getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(
+                        R.anim.fade_in,
+                        R.anim.fade_out
+                )
+                .replace(R.id.fragment_container, loginFragment)
+                .commit();
     }
 
     /**
@@ -103,12 +225,18 @@ public class HomeActivity extends AppCompatActivity {
     /**
      * Set up the bottom navigation with fragment switching.
      */
-    private void setupNavigation(Bundle savedInstanceState) {
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
+    private void setupMainNavigation(Bundle savedInstanceState) {
+
+        // Make sure bottom navigation is visible
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+        }
+
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             Fragment selectedFragment = null;
             String title = "";
+
 
             previousNavItemId = currentNavItemId;
             currentNavItemId = itemId;
@@ -144,7 +272,6 @@ public class HomeActivity extends AppCompatActivity {
             return false;
         });
 
-        // Default to Feed tab on first load
         if (savedInstanceState == null) {
             bottomNavigationView.setSelectedItemId(R.id.nav_feed);
         }
@@ -154,6 +281,12 @@ public class HomeActivity extends AppCompatActivity {
      * Replace the current fragment with the selected one, clearing the back stack since these are main tabs.
      */
     private void handleNavigation(Fragment fragment, String title, int itemId) {
+        // Check if we're already showing this fragment
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (currentFragment != null && currentFragment.getClass().equals(fragment.getClass())) {
+            return; // Already showing this fragment
+        }
+
         toolbarTitle.setText(title);
         isNavigatingFragments = true;
 
@@ -239,6 +372,33 @@ public class HomeActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                // If we're not logged in, handle back navigation specially
+                if (!isLoggedIn) {
+                    Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+
+                    if (currentFragment instanceof EntryFragment) {
+                        // Let the entry fragment handle the back press with exit dialog
+                        if (((EntryFragment) currentFragment).handleBackPress()) {
+                            return;
+                        }
+                    } else if (currentFragment instanceof LoginFragment) {
+                        // Try to handle back within the login fragment first
+                        if (((LoginFragment) currentFragment).handleBackPress()) {
+                            return;
+                        }
+
+                        // If we're coming from the entry screen originally, go back to it
+                        if (isFirstLaunch()) {
+                            showEntryFragment();
+                            return;
+                        }
+
+                        // Otherwise, exit app
+                        finish();
+                        return;
+                    }
+                }
+
                 FragmentManager fm = getSupportFragmentManager();
                 if (fm.getBackStackEntryCount() > 0) {
                     // If there's something in the back stack, pop it
@@ -252,7 +412,7 @@ public class HomeActivity extends AppCompatActivity {
                     // If we're in a bottom nav tab with no back stack, go to 'Feed' if not on it
                     if (bottomNavigationView.getSelectedItemId() != R.id.nav_feed) {
                         bottomNavigationView.setSelectedItemId(R.id.nav_feed);
-                        showBottomNavigation(); // Ensure bottom nav is invisible
+                        showBottomNavigation(); // Ensure bottom nav is visible
                         makeToolbarScrollable();
                     } else {
                         finish();
@@ -274,18 +434,23 @@ public class HomeActivity extends AppCompatActivity {
             if (currentFragment instanceof Feed) {
                 makeToolbarScrollable();
                 setToolbarTitle("Feed");
+                currentNavItemId = R.id.nav_feed;
             } else if (currentFragment instanceof Profile) {
                 makeToolbarScrollable();
                 setToolbarTitle("Profile");
+                currentNavItemId = R.id.nav_profile;
             } else if (currentFragment instanceof Maps) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Maps");
+                currentNavItemId = R.id.nav_maps;
             } else if (currentFragment instanceof Search) {
                 setToolbarTitle("Search");
                 makeToolbarUnscrollable();
+                currentNavItemId = R.id.nav_search;
             } else if (currentFragment instanceof AddMood) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Add Mood");
+                currentNavItemId = R.id.nav_add;
             } else if (currentFragment instanceof FilterFragment) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Filter");
@@ -293,16 +458,22 @@ public class HomeActivity extends AppCompatActivity {
             else if (currentFragment instanceof AddImage) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Image Preview");
+            } else if (currentFragment instanceof LoginFragment) {
+                makeToolbarUnscrollable();
+                setToolbarTitle("Login");
+            } else if (currentFragment instanceof EntryFragment) {
+                makeToolbarUnscrollable();
+                setToolbarTitle("Welcome");
             }
-            // ... add other fragments as needed
         });
-
     }
 
     /**
      * Check if current fragment is one of the main 5 tabs and show bottom nav if needed
      */
     private void checkAndShowBottomNav() {
+        if (!isLoggedIn) return;
+
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         // Check if the current fragment is one of the main tabs
         boolean isMainTab = (currentFragment instanceof Feed ||
@@ -326,6 +497,13 @@ public class HomeActivity extends AppCompatActivity {
                 || itemId == R.id.nav_profile);
 
         filterIcon.setVisibility(showFilter ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set filter icon visibility directly
+     */
+    private void updateFilterIconVisibility(boolean visible) {
+        filterIcon.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -367,7 +545,6 @@ public class HomeActivity extends AppCompatActivity {
     private void updateBackButtonVisibility() {
         boolean canGoBack = (getSupportFragmentManager().getBackStackEntryCount() > 0);
 
-
         // Update custom back button visibility
         ImageView backButton = toolbar.findViewById(R.id.navigation_icon);
         backButton.setVisibility(canGoBack ? View.VISIBLE : View.GONE);
@@ -381,8 +558,6 @@ public class HomeActivity extends AppCompatActivity {
         toolbarTitle.setLayoutParams(params);
     }
 
-
-
     /**
      * Log out the user and go back to the login screen.
      */
@@ -391,14 +566,12 @@ public class HomeActivity extends AppCompatActivity {
         ((MoodTrackerApp) getApplication()).clearCurrentUserProfile();
         FirebaseDB.getInstance(this).logout();
 
-        // Return to MainActivity (Login screen)
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        // Update login state
+        isLoggedIn = false;
+
+        // Show login fragment
+        showLoginFragment();
     }
-
-
 
     /**
      * Update the toolbar title text.
@@ -443,8 +616,6 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-
-
     /**
      * Hide the bottom navigation bar.
      */
@@ -463,6 +634,8 @@ public class HomeActivity extends AppCompatActivity {
      * Show the bottom navigation if it was hidden.
      */
     public void showBottomNavigation() {
+        if (!isLoggedIn) return;
+
         if (bottomNavigationView != null &&
                 (bottomNavigationView.getVisibility() == View.GONE || bottomNavigationView.getTranslationY() > 0)) {
             // Make sure it's visible first
@@ -519,5 +692,64 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Check if this is the first launch of the app
+     * @return true if first launch, false otherwise
+     */
+    private boolean isFirstLaunch() {
+        // Use SharedPreferences to determine if this is the first launch
+        boolean isFirstLaunch = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                .getBoolean("is_first_launch", true);
 
+        // If it is the first launch, update the preference for next time
+        if (isFirstLaunch) {
+            getSharedPreferences("app_prefs", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("is_first_launch", false)
+                    .apply();
+        }
+
+        return isFirstLaunch;
+    }
+
+    /**
+     * Hides both the status bar and navigation bar for a more immersive experience
+     */
+    private void hideSystemBars() {
+        // Hide both the navigation bar and the status bar
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+
+        // Cancel any animations and set visibility immediately
+        if (bottomNavigationView != null) {
+            bottomNavigationView.clearAnimation();
+            bottomNavigationView.setVisibility(View.GONE);
+            bottomNavigationView.setTranslationY(0);
+        }
+
+        // Hide toolbar immediately
+        if (toolbar != null) {
+            toolbar.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Shows the status bar and navigation bar
+     */
+    private void showSystemBars() {
+        // Show both the navigation bar and the status bar
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+
+        // Show the toolbar
+        if (toolbar != null) {
+            toolbar.setVisibility(View.VISIBLE);
+        }
+    }
 }
