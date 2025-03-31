@@ -1,3 +1,40 @@
+/**
+ * Profile.java
+ *
+ * This fragment displays the current user's profile, including:
+ * - Profile image, full name, and username
+ * - Total number of mood entries
+ * - Most recent mood emoji
+ * - Follower and following stats
+ * - Mood history displayed in a RecyclerView
+ * - Ability to edit or delete individual mood entries
+ *
+ * Key Features:
+ * - Loads current user data from the application context (`MoodTrackerApp`)
+ * - Fetches followers and following counts from Firebase
+ * - Loads mood history and supports in-place editing/deleting using `MoodHistoryAdapter`
+ * - Allows filtering of mood history based on:
+ *     - Time period (All Time, Last Year, Last Month, Last Week)
+ *     - Emotional state (Happiness, Anger, etc.)
+ *     - Trigger reason (keyword match)
+ * - Integrates with `FilterFragment` to enable filtering
+ * - Shows empty state UI when no mood events match the filter
+ * - Provides navigation to:
+ *     - Edit profile (`EditProfileFragment`)
+ *     - Followers and following (`FollowRequestsFragment`, `FollowingFragment`)
+ *
+ * Usage:
+ * - Typically shown from the bottom nav or after login
+ * - `Profile.newInstance()` returns a new instance of this fragment
+ *
+ * Dependencies:
+ * - `MoodTrackerApp` for current user profile
+ * - `FirebaseDB` for follower/following data
+ * - `MoodHistoryAdapter` for displaying mood events
+ * - `FilterFragment` for user-triggered filtering
+ * - `HomeActivity` for fragment navigation
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
@@ -124,7 +161,6 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         emptyState = view.findViewById(R.id.emptyState);
     }
 
-
     private void setupMoodHistoryRecyclerView() {
         moodHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         moodHistoryRecyclerView.setNestedScrollingEnabled(true);
@@ -136,10 +172,9 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         adapter.setOnMoodEventInteractionListener(new MoodHistoryAdapter.OnMoodEventInteractionListener() {
             @Override
             public void onEditClick(MoodEvent event) {
-                // Navigate to AddMood in edit mode, passing the existing MoodEvent
                 AddMood addMoodFragment = new AddMood();
                 Bundle args = new Bundle();
-                args.putSerializable("moodEvent", event); // pass the entire event for editing
+                args.putSerializable("moodEvent", event);
                 addMoodFragment.setArguments(args);
 
                 if (requireActivity() instanceof HomeActivity) {
@@ -150,18 +185,15 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
             @Override
             public void onDeleteClick(MoodEvent event) {
-                // Prompt user for confirmation
                 new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                         .setTitle("Delete Mood")
                         .setMessage("Are you sure you want to delete this mood event?")
                         .setPositiveButton("Yes", (dialog, which) -> {
-                            // Actually delete via the user profile
                             userProfile.deleteMoodEvent(event.getId(), success -> {
                                 if (success) {
                                     Toast.makeText(requireContext(),
                                             "Mood event deleted successfully!",
                                             Toast.LENGTH_SHORT).show();
-                                    // Refresh our local data
                                     loadData();
                                 } else {
                                     Toast.makeText(requireContext(),

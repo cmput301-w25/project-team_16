@@ -1,3 +1,10 @@
+/**
+ * Adapter for displaying a list of comments in a RecyclerView.
+ * Supports showing user info, profile image, delete functionality for comment owner,
+ * and relative timestamps ("x mins ago").
+ * Used in mood detail views and similar comment threads.
+ */
+
 package com.example.team_16.ui.adapters;
 
 import android.os.Build;

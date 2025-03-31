@@ -1,9 +1,41 @@
+/**
+ * AddMood Fragment allows users to create or edit a mood entry in the app.
+ *
+ * Core Functionalities:
+ * - Select an emotional state (mood) with visual buttons
+ * - Choose social context (Alone, One Person, Two People, Crowd)
+ * - Add optional location using Google Maps
+ * - Add optional photo from camera or gallery with preview via AddImage fragment
+ * - Add a trigger message (max 20 characters)
+ * - Choose between Public or Private visibility
+ * - Save or delete mood events to/from Firebase via UserProfile and FirebaseDB
+ *
+ * Modes:
+ * - Create mode: opens empty form for new entry
+ * - Edit mode: pre-fills data for editing an existing MoodEvent (passed via arguments)
+ *
+ * Image Handling:
+ * - Compresses and uploads selected image to Firebase Storage
+ * - Handles removal and replacement of images (even deletes old image if updated)
+ *
+ * Permissions:
+ * - Requests and handles permissions for Location, Camera, and Media access
+ * - Guides users to app settings if permissions are permanently denied
+ *
+ * Communication:
+ * - Uses FragmentResult API to handle selected images from AddImage
+ * - Uses custom AddLocationDialog for location selection with reverse geocoding
+ *
+ * Usage:
+ * Typically launched when the user clicks "Add Mood" from the bottom navigation.
+ * Can also be launched with arguments to support editing an existing mood.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -48,11 +80,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Fragment to add or edit a mood event, using UserProfile to manage mood events.
- */
+
 public class AddMood extends Fragment {
-    // Permission constants
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 1002;
     private static final int GALLERY_PERMISSION_REQUEST_CODE = 1003;
@@ -71,13 +100,11 @@ public class AddMood extends Fragment {
     private Uri cameraImageUri = null;
     private String selectedMood, socialSetting;
 
-    // Stores the selected coordinates (null if no location selected)
     private LatLng selectedLatLng = null;
-    // Stores the selected place name (null if no name is available)
     private String selectedPlaceName = null;
 
-    private boolean isEditMode = false;      // Are we editing an existing event?
-    private boolean isImageChanged = false;  // Has the image changed (new, replaced, or removed)?
+    private boolean isEditMode = false;
+    private boolean isImageChanged = false;
 
     private String selectedPostType = "Public";
     private String lastImageSource = "";
@@ -111,7 +138,6 @@ public class AddMood extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize views
         triggerInput = view.findViewById(R.id.trigger_text);
         triggerCounter = view.findViewById(R.id.trigger_counter);
         saveMoodButton = view.findViewById(R.id.save_mood_button);
@@ -130,7 +156,6 @@ public class AddMood extends Fragment {
         publicPostButton = view.findViewById(R.id.public_post_button);
         privatePostButton = view.findViewById(R.id.private_post_button);
 
-        // Set up button logic
         setupMoodSelectionButtons(view);
         setupSocialSettingButtons(view);
         setupPostTypeButtons();
@@ -139,15 +164,12 @@ public class AddMood extends Fragment {
         setupSaveButton();
         setupDeleteButton();
 
-        // By default, show camera/gallery buttons, hide remove button
         removeImageButton.setVisibility(View.GONE);
         takePhotoButton.setVisibility(View.VISIBLE);
         choosePhotoButton.setVisibility(View.VISIBLE);
 
-        // Permission check
         checkAndRequestPermissions();
 
-        // If editing, populate UI
         if (isEditMode && moodEvent != null) {
             updateUIForExistingMood();
             deleteMoodButton.setVisibility(View.VISIBLE);
@@ -175,13 +197,10 @@ public class AddMood extends Fragment {
             public void afterTextChanged(Editable s) { }
         });
 
-        // Remove image button logic
         removeImageButton.setOnClickListener(v -> {
-            // User removed the image
             selectedPhotoUri = null;
-            isImageChanged = true;  // Mark that the image is changed (removed)
+            isImageChanged = true;
 
-            // Show photo buttons, hide remove
             takePhotoButton.setVisibility(View.VISIBLE);
             choosePhotoButton.setVisibility(View.VISIBLE);
             removeImageButton.setVisibility(View.GONE);
@@ -192,12 +211,10 @@ public class AddMood extends Fragment {
     }
     private void updatePhotoButtonsVisibility() {
         if (selectedPhotoUri != null) {
-            // We have a photo => show Remove, hide Camera and Gallery
             takePhotoButton.setVisibility(View.GONE);
             choosePhotoButton.setVisibility(View.GONE);
             removeImageButton.setVisibility(View.VISIBLE);
         } else {
-            // No photo => show Camera and Gallery, hide Remove
             takePhotoButton.setVisibility(View.VISIBLE);
             choosePhotoButton.setVisibility(View.VISIBLE);
             removeImageButton.setVisibility(View.GONE);
@@ -205,9 +222,6 @@ public class AddMood extends Fragment {
     }
 
 
-    /**
-     * Sets up the mood buttons (anger, fear, etc.).
-     */
     private void setupMoodSelectionButtons(View view) {
         int[] moodButtonIds = {
                 R.id.anger_button, R.id.confusion_button, R.id.disgust_button,
@@ -338,7 +352,6 @@ public class AddMood extends Fragment {
         });
 
         takePhotoButton.setOnClickListener(v -> {
-            // Prepare to take a photo via the camera
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + System.currentTimeMillis() + ".jpg");
             contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
@@ -359,12 +372,10 @@ public class AddMood extends Fragment {
                 if (success && cameraImageUri != null) {
                     lastImageSource = "camera";
 
-                    // Hide photo buttons, show remove
                     takePhotoButton.setVisibility(View.GONE);
                     choosePhotoButton.setVisibility(View.GONE);
                     removeImageButton.setVisibility(View.VISIBLE);
 
-                    // Pass it to AddImage fragment for possible cropping/edit
                     Bundle args = new Bundle();
                     args.putParcelable("selectedUriOld", selectedPhotoUri);
                     args.putParcelable("selectedUri", cameraImageUri);
@@ -372,7 +383,6 @@ public class AddMood extends Fragment {
                     AddImage addImageFragment = AddImage.newInstance("Camera");
                     addImageFragment.setArguments(args);
 
-                    // Listen for final image result
                     getParentFragmentManager().setFragmentResultListener(
                             "image_result", this, (requestKey, result2) -> {
                                 Uri finalUri = result2.getParcelable("uri");
@@ -425,9 +435,6 @@ public class AddMood extends Fragment {
                 }
             });
 
-    /**
-     * Add Location button logic.
-     */
     private void setupLocationButton() {
         addLocationButton.setOnClickListener(v -> {
             if (addLocationButton.getText().toString().equalsIgnoreCase("Remove Location")) {
@@ -462,9 +469,6 @@ public class AddMood extends Fragment {
         });
     }
 
-    /**
-     * Save button logic.
-     */
     private void setupSaveButton() {
         saveMoodButton.setOnClickListener(v -> {
             if (!validateInputs()) return;
@@ -477,12 +481,10 @@ public class AddMood extends Fragment {
 
             String triggerText = triggerInput.getText().toString().trim();
 
-            // Optional location data
             Double latitude = (selectedLatLng != null) ? selectedLatLng.latitude : null;
             Double longitude = (selectedLatLng != null) ? selectedLatLng.longitude : null;
             String placeName = selectedPlaceName;
 
-//            remove location on clear
             if (addLocationButton.getText().toString().equalsIgnoreCase("Add Location")) {
                 latitude = null;
                 longitude = null;
@@ -500,24 +502,19 @@ public class AddMood extends Fragment {
                 moodEvent.setLongitude(longitude);
                 moodEvent.setPlaceName(placeName);
 
-                // If the image has changed (either replaced or removed)
                 if (isImageChanged) {
-                    // Remove old image if it exists
                     if (moodEvent.getPhotoFilename() != null && !moodEvent.getPhotoFilename().isEmpty()) {
                         deleteImageFromFirebase(moodEvent.getPhotoFilename());
                     }
 
                     if (selectedPhotoUri != null) {
-                        // Upload new photo
                         String filename = uploadImageToFirebase(selectedPhotoUri);
                         moodEvent.setPhotoFilename(filename);
                     } else {
-                        // Photo removed
                         moodEvent.setPhotoFilename(null);
                     }
                 }
 
-                // Finally, save to database
                 userProfile.editMoodEvent(moodEvent.getId(), moodEvent, success -> {
                     if (success) {
                         Toast.makeText(requireContext(), "Mood updated successfully!", Toast.LENGTH_SHORT).show();
@@ -527,7 +524,6 @@ public class AddMood extends Fragment {
                     }
                 });
             } else {
-                // Create a new mood event
                 MoodEvent newMoodEvent = new MoodEvent(
                         userProfile.getId(),
                         emotionalState,
@@ -539,7 +535,6 @@ public class AddMood extends Fragment {
                 );
                 newMoodEvent.setPostType(selectedPostType);
 
-                // If a photo is attached
                 if (selectedPhotoUri != null) {
                     String filename = uploadImageToFirebase(selectedPhotoUri);
                     newMoodEvent.setPhotoFilename(filename);
@@ -569,9 +564,6 @@ public class AddMood extends Fragment {
         return true;
     }
 
-    /**
-     * Delete a file from Firebase Storage by filename.
-     */
     private void deleteImageFromFirebase(String filename) {
         if (filename == null || filename.isEmpty()) {
             Log.e("FirebaseStorage", "Filename is null or empty. Nothing to delete.");
@@ -620,24 +612,18 @@ public class AddMood extends Fragment {
         }
     }
 
-    /**
-     * Update UI fields for editing an existing MoodEvent.
-     */
+
     private void updateUIForExistingMood() {
         if (moodEvent == null) return;
 
-        // Mood selection
         highlightMoodButton(getView(), getMoodButtonId(moodEvent.getEmotionalState().getName()));
         selectedMood = moodEvent.getEmotionalState().getName();
 
-        // Social setting
         highlightSocialButton(getSocialButton(moodEvent.getSocialSituation()));
         socialSetting = moodEvent.getSocialSituation();
 
-        // Trigger
         triggerInput.setText(moodEvent.getTrigger());
 
-        // Post Type
         if ("Private".equalsIgnoreCase(moodEvent.getPostType())) {
             selectedPostType = "Private";
             highlightPostTypeButton(privatePostButton);
@@ -647,7 +633,6 @@ public class AddMood extends Fragment {
             highlightPostTypeButton(publicPostButton);
             privatePostButton.setAlpha(0.5f);
         }
-        // This ne is for  Location- harman
         if (moodEvent.hasLocation()) {
             selectedLatLng = new LatLng(moodEvent.getLatitude(), moodEvent.getLongitude());
             selectedPlaceName = moodEvent.getPlaceName();
@@ -656,14 +641,11 @@ public class AddMood extends Fragment {
             addLocationButton.setText("Add Location");
         }
 
-        // If there's an existing photo
         if (moodEvent.getPhotoFilename() != null && !moodEvent.getPhotoFilename().isEmpty()) {
-            // Hide camera/gallery, show remove
             removeImageButton.setVisibility(View.VISIBLE);
             takePhotoButton.setVisibility(View.GONE);
             choosePhotoButton.setVisibility(View.GONE);
         } else {
-            // No photo, so show camera/gallery
             removeImageButton.setVisibility(View.GONE);
             takePhotoButton.setVisibility(View.VISIBLE);
             choosePhotoButton.setVisibility(View.VISIBLE);
@@ -707,7 +689,6 @@ public class AddMood extends Fragment {
                     .setTitle("Delete Mood")
                     .setMessage("Are you sure you want to delete this mood event?")
                     .setPositiveButton("Yes", (dialog, which) -> {
-                        // If the mood event had a photo, delete it from Firebase
                         if (moodEvent.getPhotoFilename() != null && !moodEvent.getPhotoFilename().isEmpty()) {
                             deleteImageFromFirebase(moodEvent.getPhotoFilename());
                         }
@@ -763,8 +744,7 @@ public class AddMood extends Fragment {
         if (!hasPermission(Manifest.permission.CAMERA)) {
             permissionsNeeded.add(Manifest.permission.CAMERA);
         }
-        // For newer Android versions, READ_MEDIA_IMAGES is needed. Otherwise, READ_EXTERNAL_STORAGE.
-        // Adjust logic as needed for your minSdkVersion / targetSdkVersion
+
         if (!hasPermission(Manifest.permission.READ_MEDIA_IMAGES)) {
             permissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES);
         }

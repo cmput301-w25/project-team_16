@@ -1,3 +1,18 @@
+/**
+ * AddImage is a Fragment that allows users to preview and update a selected image
+ * either from the camera or gallery before confirming it.
+ *
+ * It supports:
+ * - Displaying a previously selected image or a newly selected one.
+ * - Launching the camera or gallery to choose a new image.
+ * - Applying a rounded corners transformation using Glide.
+ * - Returning the final image URI to the parent fragment using FragmentResult API.
+ *
+ * Usage:
+ * This fragment is typically used as part of the mood event creation flow,
+ * where the user wants to attach an image to their mood event.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.app.Activity;
@@ -27,7 +42,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.team_16.R;
-import com.example.team_16.models.MoodEvent;
 
 import java.util.Objects;
 
@@ -50,7 +64,6 @@ public class AddImage extends Fragment {
     private static final String ARG_PARAM1 = "param1";
 
     public AddImage() {
-        // Required empty public constructor
     }
 
     public static AddImage newInstance(String type) {
@@ -85,7 +98,6 @@ public class AddImage extends Fragment {
         if (getActivity() != null) {
             getActivity().setTitle("Image Preview");
         }
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add_image, container, false);
     }
 
@@ -93,7 +105,6 @@ public class AddImage extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set toolbar title
         if (getActivity() != null) {
             getActivity().setTitle("Image Preview");
         }
@@ -168,7 +179,6 @@ public class AddImage extends Fragment {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    // Get the selected image URI.
                     imageUri = (Uri) result.getData().getData();
 
                     imageView.setVisibility(View.VISIBLE);
@@ -199,6 +209,5 @@ public class AddImage extends Fragment {
                 }
 
             });
-
 
 }

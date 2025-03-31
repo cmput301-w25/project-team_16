@@ -1,3 +1,20 @@
+/**
+ * EntryFragment serves as the welcome/onboarding screen when the app is first launched.
+ *
+ * Key Features:
+ * - Shows a "Get Started" button to guide users to the login/signup flow.
+ * - Implements an EntryFragmentListener interface to communicate with the hosting activity (e.g., HomeActivity).
+ * - On back press, shows a confirmation dialog to exit the app.
+ * - Interacts with the parent HomeActivity to:
+ *     - Set the toolbar title to "Welcome"
+ *     - Hide the bottom navigation bar
+ *     - Make the toolbar unscrollable
+ *
+ * Usage:
+ * This fragment is displayed only on the first launch of the app (determined using SharedPreferences).
+ * After "Get Started" is clicked, the app proceeds to LoginFragment.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.app.AlertDialog;
@@ -17,11 +34,8 @@ import androidx.fragment.app.Fragment;
 import com.example.team_16.R;
 import com.example.team_16.ui.activity.HomeActivity;
 
-/**
- * Entry/Onboarding Fragment that shows welcome screen and get started button
- */
+
 public class EntryFragment extends Fragment {
-    // Interface for communication with host activity
     public interface EntryFragmentListener {
         void onGetStartedClicked();
     }
@@ -31,7 +45,6 @@ public class EntryFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        // Ensure the host activity implements the callback interface
         try {
             listener = (EntryFragmentListener) context;
         } catch (ClassCastException e) {
@@ -49,7 +62,6 @@ public class EntryFragment extends Fragment {
             Animation scale_down = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_down);
             getStartedButton.startAnimation(scale_down);
 
-            // Notify the activity through the callback
             if (listener != null) {
                 listener.onGetStartedClicked();
             }
@@ -63,7 +75,6 @@ public class EntryFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        // Update the UI elements and ensure full screen experience
         if (getActivity() instanceof HomeActivity) {
             HomeActivity activity = (HomeActivity) getActivity();
             activity.setToolbarTitle("Welcome");
@@ -77,24 +88,20 @@ public class EntryFragment extends Fragment {
      * @return true if handled, false otherwise
      */
     public boolean handleBackPress() {
-        // Show exit confirmation dialog
         new AlertDialog.Builder(requireContext())
                 .setTitle("Exit App")
                 .setMessage("Are you sure you want to exit?")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    // Exit the app
                     if (getActivity() != null) {
                         getActivity().finish();
                     }
                 })
                 .setNegativeButton("No", (dialog, which) -> {
-                    // Dismiss dialog
                     dialog.dismiss();
                 })
                 .create()
                 .show();
 
-        // Return true to indicate we've handled the back press
         return true;
     }
 }

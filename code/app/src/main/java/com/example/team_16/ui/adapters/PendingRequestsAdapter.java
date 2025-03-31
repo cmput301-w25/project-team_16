@@ -1,3 +1,9 @@
+/**
+ * PendingRequestsAdapter displays a list of incoming follow requests.
+ * It provides options to accept or reject each request, and handles profile clicks.
+ * Uses Glide for loading profile images and supports modular click listeners for actions.
+ */
+
 package com.example.team_16.ui.adapters;
 
 import android.util.Log;
@@ -17,9 +23,6 @@ import com.example.team_16.R;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Adapter to display pending follow requests (Accept/Reject).
- */
 public class PendingRequestsAdapter
         extends RecyclerView.Adapter<PendingRequestsAdapter.ViewHolder> {
 

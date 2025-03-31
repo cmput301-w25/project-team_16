@@ -1,3 +1,11 @@
+/**
+ * Represents a comment made by a user on a mood event.
+ * Stores user details, comment text, timestamp, and optional profile image.
+ * Used for displaying and managing user interactions on posts.
+ *
+ * Note: Currently assumes timestamp is set on creation; no server sync yet.
+ */
+
 package com.example.team_16.models;
 
 public class Comment {

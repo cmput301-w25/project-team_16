@@ -1,3 +1,15 @@
+/**
+ * HomeActivity is the main activity that manages the app’s core navigation and authentication flow.
+ * It handles fragment switching via the bottom navigation bar, manages the toolbar, and coordinates
+ * the login/signup process, onboarding (entry), and session persistence using Firebase.
+ *
+ * Key responsibilities:
+ * - Directs users to login/signup or the main app interface.
+ * - Controls the bottom navigation and toolbar behaviors.
+ * - Handles fragment transactions and custom back press logic.
+ * - Maintains UI consistency and immersive experience via toolbar/system bar visibility control.
+ */
+
 package com.example.team_16.ui.activity;
 
 import android.os.Bundle;
@@ -48,7 +60,7 @@ public class HomeActivity extends AppCompatActivity implements
     private int previousNavItemId = -1;
     private int currentNavItemId = R.id.nav_feed;
 
-    // Flag to track auth state
+
     private boolean isLoggedIn = false;
 
     // FirebaseDB instance

@@ -1,3 +1,9 @@
+/**
+ * Adapter for displaying a list of accepted followers in a RecyclerView.
+ * Supports profile image loading, item clicks for viewing profiles, and a button for removal.
+ * Used in profile-related screens to manage a user's followers.
+ */
+
 package com.example.team_16.ui.adapters;
 
 import android.util.Log;
