@@ -237,6 +237,7 @@ public class HomeActivity extends AppCompatActivity implements
             Fragment selectedFragment = null;
             String title = "";
 
+
             previousNavItemId = currentNavItemId;
             currentNavItemId = itemId;
             showBottomNavigation();
@@ -271,7 +272,6 @@ public class HomeActivity extends AppCompatActivity implements
             return false;
         });
 
-        // Default to Feed tab on first load
         if (savedInstanceState == null) {
             bottomNavigationView.setSelectedItemId(R.id.nav_feed);
         }
@@ -281,6 +281,12 @@ public class HomeActivity extends AppCompatActivity implements
      * Replace the current fragment with the selected one, clearing the back stack since these are main tabs.
      */
     private void handleNavigation(Fragment fragment, String title, int itemId) {
+        // Check if we're already showing this fragment
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        if (currentFragment != null && currentFragment.getClass().equals(fragment.getClass())) {
+            return; // Already showing this fragment
+        }
+
         toolbarTitle.setText(title);
         isNavigatingFragments = true;
 
@@ -428,18 +434,23 @@ public class HomeActivity extends AppCompatActivity implements
             if (currentFragment instanceof Feed) {
                 makeToolbarScrollable();
                 setToolbarTitle("Feed");
+                currentNavItemId = R.id.nav_feed;
             } else if (currentFragment instanceof Profile) {
                 makeToolbarScrollable();
                 setToolbarTitle("Profile");
+                currentNavItemId = R.id.nav_profile;
             } else if (currentFragment instanceof Maps) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Maps");
+                currentNavItemId = R.id.nav_maps;
             } else if (currentFragment instanceof Search) {
                 setToolbarTitle("Search");
                 makeToolbarUnscrollable();
+                currentNavItemId = R.id.nav_search;
             } else if (currentFragment instanceof AddMood) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Add Mood");
+                currentNavItemId = R.id.nav_add;
             } else if (currentFragment instanceof FilterFragment) {
                 makeToolbarUnscrollable();
                 setToolbarTitle("Filter");
