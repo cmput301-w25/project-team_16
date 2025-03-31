@@ -71,6 +71,7 @@ import com.example.team_16.models.EmotionalState;
 import com.example.team_16.models.EmotionalStateRegistry;
 import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
+import com.example.team_16.ui.activity.HomeActivity;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -485,12 +486,22 @@ public class AddMood extends Fragment {
             Double longitude = (selectedLatLng != null) ? selectedLatLng.longitude : null;
             String placeName = selectedPlaceName;
 
+
+            // remove location on clear
             if (addLocationButton.getText().toString().equalsIgnoreCase("Add Location")) {
                 latitude = null;
                 longitude = null;
                 placeName = null;
             }
 
+            // Disable the save button to prevent multiple saves
+            saveMoodButton.setEnabled(false);
+
+            // Check if we're offline
+            boolean isOffline = !FirebaseDB.getInstance(requireContext()).isOnline();
+            if (isOffline) {
+                Toast.makeText(requireContext(), "You're offline. Changes will sync when connected.", Toast.LENGTH_LONG).show();
+            }
 
             if (isEditMode) {
                 // Editing existing
@@ -515,12 +526,31 @@ public class AddMood extends Fragment {
                     }
                 }
 
-                userProfile.editMoodEvent(moodEvent.getId(), moodEvent, success -> {
-                    if (success) {
-                        Toast.makeText(requireContext(), "Mood updated successfully!", Toast.LENGTH_SHORT).show();
-                        requireActivity().onBackPressed();
+                // Dismiss fragment immediately
+                if (isEditMode) {
+                    // When editing, go back to profile
+                    if (getParentFragmentManager() != null) {
+                        getParentFragmentManager().popBackStack();
+                    } else if (getFragmentManager() != null) {
+                        getFragmentManager().popBackStack();
+
                     } else {
+                        requireActivity().onBackPressed();
+                    }
+                } else {
+                    // When adding new mood, go back to feed
+                    if (requireActivity() instanceof HomeActivity) {
+                        ((HomeActivity) requireActivity()).navigateToFragment(new Feed(), "Feed");
+                    }
+                }
+
+                // Save to database in background
+                userProfile.editMoodEvent(moodEvent.getId(), moodEvent, success -> {
+                    if (!isAdded()) return; // Check if fragment is still attached
+                    if (!success) {
                         Toast.makeText(requireContext(), "Failed to update mood.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Mood updated successfully!", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else {
@@ -540,12 +570,30 @@ public class AddMood extends Fragment {
                     newMoodEvent.setPhotoFilename(filename);
                 }
 
-                userProfile.addMoodEvent(newMoodEvent, success -> {
-                    if (success) {
-                        Toast.makeText(requireContext(), "Mood saved successfully!", Toast.LENGTH_SHORT).show();
-                        requireActivity().onBackPressed();
+                // Dismiss fragment immediately
+                if (isEditMode) {
+                    // When editing, go back to profile
+                    if (getParentFragmentManager() != null) {
+                        getParentFragmentManager().popBackStack();
+                    } else if (getFragmentManager() != null) {
+                        getFragmentManager().popBackStack();
                     } else {
+                        requireActivity().onBackPressed();
+                    }
+                } else {
+                    // When adding new mood, go back to feed
+                    if (requireActivity() instanceof HomeActivity) {
+                        ((HomeActivity) requireActivity()).navigateToFragment(new Feed(), "Feed");
+                    }
+                }
+
+                // Save to database in background
+                userProfile.addMoodEvent(newMoodEvent, success -> {
+                    if (!isAdded()) return; // Check if fragment is still attached
+                    if (!success) {
                         Toast.makeText(requireContext(), "Failed to save mood.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Mood saved successfully!", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -689,18 +737,34 @@ public class AddMood extends Fragment {
                     .setTitle("Delete Mood")
                     .setMessage("Are you sure you want to delete this mood event?")
                     .setPositiveButton("Yes", (dialog, which) -> {
+
+                        // Check if we're offline
+                        boolean isOffline = !FirebaseDB.getInstance(requireContext()).isOnline();
+                        if (isOffline) {
+                            Toast.makeText(requireContext(), "You're offline. Changes will sync when connected.", Toast.LENGTH_LONG).show();
+                        }
+
+                        // Dismiss fragment immediately
+                        if (getParentFragmentManager() != null) {
+                            getParentFragmentManager().popBackStack();
+                        } else if (getFragmentManager() != null) {
+                            getFragmentManager().popBackStack();
+                        } else {
+                            requireActivity().onBackPressed();
+                        }
+
+                        // Delete from Firebase in background
+
                         if (moodEvent.getPhotoFilename() != null && !moodEvent.getPhotoFilename().isEmpty()) {
                             deleteImageFromFirebase(moodEvent.getPhotoFilename());
                         }
 
                         userProfile.deleteMoodEvent(moodEvent.getId(), success -> {
-                            if (success) {
-                                Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
-                                if (getFragmentManager() != null) {
-                                    getFragmentManager().popBackStack();
-                                }
-                            } else {
+                            if (!isAdded()) return; // Check if fragment is still attached
+                            if (!success) {
                                 Toast.makeText(requireContext(), "Failed to delete mood event.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
                             }
                         });
                     })
@@ -808,6 +872,14 @@ public class AddMood extends Fragment {
                     })
                     .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                     .show();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (requireActivity() instanceof HomeActivity) {
+            ((HomeActivity) requireActivity()).setToolbarTitle(isEditMode ? "Edit Mood" : "Add Mood");
         }
     }
 

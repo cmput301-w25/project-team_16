@@ -34,34 +34,23 @@ public class PersonalMoodHistory extends MoodHistory {
     public void addEvent(MoodEvent event, FirebaseDB.FirebaseCallback<Boolean> callback) {
         event.setUserID(getUserId());
 
+    
         if (event.getId() == null || event.getId().isEmpty()) {
             event.setId(UUID.randomUUID().toString());
         }
 
-        // Add to in-memory collection
+        // Add to in-memory list
         List<MoodEvent> events = getAllEvents();
         events.add(event);
         setMoodEvents(events);
 
+        // Directly write to Firestore (Firestore handles offline queuing)
         FirebaseDB firebaseDB = getFirebaseDB();
-        if (firebaseDB.isOnline()) {
-            firebaseDB.addMoodEvent(event, success -> {
-                if (success) {
-                    refresh();
-                } else {
-                    queuePendingOperation(OperationType.ADD, event);
-                }
-
-                if (callback != null) {
-                    callback.onCallback(success);
-                }
-            });
-        } else {
-            queuePendingOperation(OperationType.ADD, event);
+        firebaseDB.addMoodEvent(event, success -> {
             if (callback != null) {
-                callback.onCallback(true);
+                callback.onCallback(success);
             }
-        }
+        });
     }
 
 
@@ -82,14 +71,12 @@ public class PersonalMoodHistory extends MoodHistory {
      * @param callback Callback to handle result
      */
     public void editEvent(String eventId, MoodEvent updates, FirebaseDB.FirebaseCallback<Boolean> callback) {
-        // Ensure event has the correct ID and user ID
         updates.setId(eventId);
         updates.setUserID(getUserId());
 
-        // Find and update the event in memory
+        // Update in-memory list
         MoodEvent existingEvent = getEventById(eventId);
         if (existingEvent != null) {
-            // Update the event in our local cache
             List<MoodEvent> events = getAllEvents();
             int index = events.indexOf(existingEvent);
             if (index >= 0) {
@@ -97,25 +84,8 @@ public class PersonalMoodHistory extends MoodHistory {
                 setMoodEvents(events);
             }
 
-            FirebaseDB firebaseDB = getFirebaseDB();
-            if (firebaseDB.isOnline()) {
-                firebaseDB.updateMoodEvent(eventId, updates, success -> {
-                    if (success) {
-                        refresh();
-                    } else {
-                        queuePendingOperation(OperationType.UPDATE, updates);
-                    }
-
-                    if (callback != null) {
-                        callback.onCallback(success);
-                    }
-                });
-            } else {
-                queuePendingOperation(OperationType.UPDATE, updates);
-                if (callback != null) {
-                    callback.onCallback(true);
-                }
-            }
+            // Directly update Firestore
+            getFirebaseDB().updateMoodEvent(eventId, updates, callback);
         } else if (callback != null) {
             callback.onCallback(false);
         }
@@ -138,33 +108,14 @@ public class PersonalMoodHistory extends MoodHistory {
      * @param callback Callback to handle result
      */
     public void deleteEvent(String eventId, FirebaseDB.FirebaseCallback<Boolean> callback) {
-        // Find and remove the event from memory
         MoodEvent existingEvent = getEventById(eventId);
         if (existingEvent != null) {
-            // Remove from our local cache
             List<MoodEvent> events = getAllEvents();
             events.remove(existingEvent);
             setMoodEvents(events);
 
-            // Check if we're online
-            FirebaseDB firebaseDB = getFirebaseDB();
-            if (firebaseDB.isOnline()) {
-                // Delete from Firebase
-                firebaseDB.deleteMoodEvent(eventId, success -> {
-                    if (!success) {
-                        queuePendingOperation(OperationType.DELETE, existingEvent);
-                    }
-
-                    if (callback != null) {
-                        callback.onCallback(success);
-                    }
-                });
-            } else {
-                queuePendingOperation(OperationType.DELETE, existingEvent);
-                if (callback != null) {
-                    callback.onCallback(true);
-                }
-            }
+            // Directly delete from Firestore
+            getFirebaseDB().deleteMoodEvent(eventId, callback);
         } else if (callback != null) {
             callback.onCallback(false);
         }
