@@ -8,7 +8,6 @@ Picture this: an Android app so slick, so clutch, it’s like a therapist, journ
 ---
 
 ## 👥 The Dream Team: team_16  
-### *Legends Who Don’t Sleep, They Build*  
 
 | Name                  | CCID       | GitHub Username     | 
 |-----------------------|------------|---------------------|
@@ -42,7 +41,6 @@ Oh, and it’s powered by **Firebase**—real-time sync, offline mode, bulletpro
 - **🔎 Profiles That Pop:** Search users, peep their stats, and pimp your own. You’re the star here.  
 - **💡 Wow Factor:** *Shh… it’s coming. Brace yourself for next-level dope.*  
 
-Competitors? They’re still buffering. We’re already live.
 
 ---
 
