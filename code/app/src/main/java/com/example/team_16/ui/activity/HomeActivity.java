@@ -332,7 +332,6 @@ public class HomeActivity extends AppCompatActivity implements
 
         updateFilterIconVisibility(itemId);
 
-        // Reset scroll position using the direct ID
         resetScrollPosition();
     }
 

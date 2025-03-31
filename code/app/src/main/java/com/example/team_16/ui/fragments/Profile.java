@@ -53,6 +53,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.bumptech.glide.Glide;
 import com.example.team_16.MoodTrackerApp;
 import com.example.team_16.R;
@@ -90,6 +91,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
     private LinearLayout emptyState;
     private ShapeableImageView profileImageView;
+    private LottieAnimationView progressBar;
 
     public Profile() {
     }
@@ -162,6 +164,7 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         mostFrequentMoodTxt = view.findViewById(R.id.mostFrequentMoodTxt);
         moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
         emptyState = view.findViewById(R.id.emptyState);
+        progressBar = view.findViewById(R.id.progressBar);
     }
 
     private void setupMoodHistoryRecyclerView() {
@@ -475,21 +478,30 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     }
 
     private void loadData() {
-        fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
+        progressBar.setVisibility(View.VISIBLE);
+        moodHistoryRecyclerView.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
 
-        // Sort events by timestamp in descending order (most recent first)
-        fullMoodEvents.sort((event1, event2) ->
-                event2.getTimestamp().compareTo(event1.getTimestamp()));
+        userProfile.getPersonalMoodHistory().refresh(() -> {
+            fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
 
-        if (currentCriteria != null) {
-            applyFilter(currentCriteria);
-        } else {
-            moodEvents = new ArrayList<>(fullMoodEvents);
-            if (adapter != null) {
-                adapter.updateData(moodEvents);
-            }
-        }
-        updateEmptyState();
+            fullMoodEvents.sort((event1, event2) ->
+                    event2.getTimestamp().compareTo(event1.getTimestamp()));
+
+            requireActivity().runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+
+                if (currentCriteria != null) {
+                    applyFilter(currentCriteria);
+                } else {
+                    moodEvents = new ArrayList<>(fullMoodEvents);
+                    if (adapter != null) {
+                        adapter.updateData(moodEvents);
+                    }
+                }
+                updateEmptyState();
+            });
+        });
     }
 
     @Override
