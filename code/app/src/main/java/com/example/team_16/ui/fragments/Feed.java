@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.team_16.MoodTrackerApp;
@@ -39,6 +40,7 @@ import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.MoodHistory;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
+import com.airbnb.lottie.LottieAnimationView;
 
 import com.example.team_16.ui.adapters.FeedAdapter;
 import android.view.View;
@@ -55,12 +57,14 @@ import java.util.Map;
 public class Feed extends Fragment implements FilterableFragment, FilterFragment.FilterListener {
 
     private RecyclerView recyclerView;
+
     private UserProfile userProfile;
     private LinearLayout emptyState;
 
     private List<MoodEvent> fullMoodEvents;
     private List<MoodEvent> moodEvents;
     private FeedAdapter adapter;
+    private LottieAnimationView progressBar;
     private FilterFragment.FilterCriteria currentCriteria = null;
 
     public Feed() {
@@ -98,6 +102,7 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
     @Override
     public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        progressBar = view.findViewById(R.id.progressBar);
 
         emptyState = view.findViewById(R.id.emptyState);
         recyclerView = view.findViewById(R.id.feed_recycler_view);
@@ -210,6 +215,10 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
         updateEmptyState();
     }
     private void loadData() {
+        progressBar.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
+
         MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
 
         // Refresh from Firebase first
@@ -227,6 +236,15 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
                     groupedByUser.get(userId).add(event);
                 }
             }
+            requireActivity().runOnUiThread(() -> {
+                progressBar.setVisibility(View.GONE);
+                if (currentCriteria != null) {
+                    applyFilter(currentCriteria);
+                } else {
+                    adapter.updateData(moodEvents);
+                }
+                updateEmptyState();
+            });
 
             List<MoodEvent> limitedEvents = new ArrayList<>();
             for (List<MoodEvent> userEvents : groupedByUser.values()) {

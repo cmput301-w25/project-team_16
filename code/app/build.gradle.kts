@@ -108,6 +108,7 @@ dependencies {
     // Glide Dependencies
     implementation("com.github.bumptech.glide:glide:4.13.2")
     annotationProcessor("com.github.bumptech.glide:compiler:4.13.2")
+    implementation("com.airbnb.android:lottie:6.1.0")
 
 
     // MPAndroidChart for mood visualizations
