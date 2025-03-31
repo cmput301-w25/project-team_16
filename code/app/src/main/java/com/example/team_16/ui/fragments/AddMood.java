@@ -55,6 +55,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -109,6 +110,12 @@ public class AddMood extends Fragment {
 
     private String selectedPostType = "Public";
     private String lastImageSource = "";
+    private int currentFlipperIndex = 0;
+
+
+
+    private ViewFlipper viewFlipper;
+    private Button backButton, nextButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -120,6 +127,9 @@ public class AddMood extends Fragment {
             Toast.makeText(requireContext(), "Failed to load user profile.", Toast.LENGTH_SHORT).show();
             requireActivity().finish();
             return;
+        }
+        if (savedInstanceState != null) {
+            currentFlipperIndex = savedInstanceState.getInt("flipper_index", 0);
         }
 
         if (getArguments() != null && getArguments().containsKey("moodEvent")) {
@@ -156,6 +166,14 @@ public class AddMood extends Fragment {
 
         publicPostButton = view.findViewById(R.id.public_post_button);
         privatePostButton = view.findViewById(R.id.private_post_button);
+        viewFlipper = view.findViewById(R.id.view_flipper);
+
+
+        backButton = view.findViewById(R.id.back_button);
+        nextButton = view.findViewById(R.id.next_button);
+
+        nextButton.setOnClickListener(v -> navigateToNextStep());
+        backButton.setOnClickListener(v -> navigateToPreviousStep());
 
         setupMoodSelectionButtons(view);
         setupSocialSettingButtons(view);
@@ -169,7 +187,11 @@ public class AddMood extends Fragment {
         takePhotoButton.setVisibility(View.VISIBLE);
         choosePhotoButton.setVisibility(View.VISIBLE);
 
+        backButton.setVisibility(currentFlipperIndex == 1 ? View.VISIBLE : View.GONE);
+        nextButton.setVisibility(currentFlipperIndex == 0 ? View.VISIBLE : View.GONE);
+
         checkAndRequestPermissions();
+        viewFlipper.setDisplayedChild(currentFlipperIndex);
 
         if (isEditMode && moodEvent != null) {
             updateUIForExistingMood();
@@ -250,6 +272,27 @@ public class AddMood extends Fragment {
                 }
             });
         }
+    }
+    private void navigateToNextStep() {
+        if (selectedMood == null) {
+            Toast.makeText(requireContext(), "Please select a mood.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (socialSetting == null) {
+            Toast.makeText(requireContext(), "Please select a social setting.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        viewFlipper.setDisplayedChild(1);
+        currentFlipperIndex = 1;
+        backButton.setVisibility(View.VISIBLE);
+        nextButton.setVisibility(View.GONE);
+    }
+
+    private void navigateToPreviousStep() {
+        viewFlipper.setDisplayedChild(0);
+        currentFlipperIndex = 0;
+        backButton.setVisibility(View.GONE);
+        nextButton.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -380,6 +423,7 @@ public class AddMood extends Fragment {
                     Bundle args = new Bundle();
                     args.putParcelable("selectedUriOld", selectedPhotoUri);
                     args.putParcelable("selectedUri", cameraImageUri);
+                    currentFlipperIndex = viewFlipper.getDisplayedChild();
 
                     AddImage addImageFragment = AddImage.newInstance("Camera");
                     addImageFragment.setArguments(args);
@@ -415,6 +459,8 @@ public class AddMood extends Fragment {
                         Bundle args = new Bundle();
                         args.putParcelable("selectedUriOld", selectedPhotoUri);
                         args.putParcelable("selectedUri", imageUri);
+                        currentFlipperIndex = viewFlipper.getDisplayedChild();  // save current index
+
 
                         AddImage addImageFragment = AddImage.newInstance("Gallery");
                         addImageFragment.setArguments(args);
@@ -427,6 +473,9 @@ public class AddMood extends Fragment {
                                 updatePhotoButtonsVisibility();
                             }
                         });
+                        viewFlipper.setDisplayedChild(currentFlipperIndex);
+                        backButton.setVisibility(currentFlipperIndex == 1 ? View.VISIBLE : View.GONE);
+                        nextButton.setVisibility(currentFlipperIndex == 0 ? View.VISIBLE : View.GONE);
 
                         getParentFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, addImageFragment)
@@ -435,6 +484,12 @@ public class AddMood extends Fragment {
                     }
                 }
             });
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("flipper_index", currentFlipperIndex);
+    }
 
     private void setupLocationButton() {
         addLocationButton.setOnClickListener(v -> {

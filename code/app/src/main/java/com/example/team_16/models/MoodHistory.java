@@ -98,8 +98,47 @@ public class MoodHistory {
     }
 
     public void refresh() {
-        loadEvents();
+        loadEvents(); // existing behavior
     }
+
+    // New overloaded method
+    public void refresh(Runnable callback) {
+        if (mode == MODE_PERSONAL) {
+            firebaseDB.getMoodEvents(
+                    userId,
+                    null,
+                    null,
+                    null,
+                    events -> {
+                        setMoodEvents(events);
+                        if (callback != null) {
+                            callback.run();
+                        }
+                    }
+            );
+        } else if (mode == MODE_FOLLOWING) {
+            firebaseDB.getFollowingMoodEvents(
+                    userId,
+                    null,
+                    null,
+                    null,
+                    events -> {
+                        List<MoodEvent> publicEvents = new ArrayList<>();
+                        for (MoodEvent e : events) {
+                            if ("Public".equalsIgnoreCase(e.getPostType())) {
+                                publicEvents.add(e);
+                            }
+                        }
+                        setMoodEvents(publicEvents);
+                        if (callback != null) {
+                            callback.run();
+                        }
+                    }
+            );
+        }
+    }
+
+
 
     /**
      * Get filtered events based on criteria

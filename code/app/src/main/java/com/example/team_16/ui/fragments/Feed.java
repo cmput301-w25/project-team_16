@@ -211,40 +211,44 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
     }
     private void loadData() {
         MoodHistory followingMoodHistory = userProfile.getFollowingMoodHistory();
-        List<MoodEvent> allEvents = followingMoodHistory.getAllEvents();
 
-        allEvents.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+        // Refresh from Firebase first
+        followingMoodHistory.refresh(() -> {
+            List<MoodEvent> allEvents = followingMoodHistory.getAllEvents();
+            allEvents.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
 
-        Map<String, List<MoodEvent>> groupedByUser = new LinkedHashMap<>();
-        for (MoodEvent event : allEvents) {
-            String userId = event.getUserID();
-            if (!groupedByUser.containsKey(userId)) {
-                groupedByUser.put(userId, new ArrayList<>());
+            Map<String, List<MoodEvent>> groupedByUser = new LinkedHashMap<>();
+            for (MoodEvent event : allEvents) {
+                String userId = event.getUserID();
+                if (!groupedByUser.containsKey(userId)) {
+                    groupedByUser.put(userId, new ArrayList<>());
+                }
+                if (groupedByUser.get(userId).size() < 3) {
+                    groupedByUser.get(userId).add(event);
+                }
             }
-            if (groupedByUser.get(userId).size() < 3) {
-                groupedByUser.get(userId).add(event);
+
+            List<MoodEvent> limitedEvents = new ArrayList<>();
+            for (List<MoodEvent> userEvents : groupedByUser.values()) {
+                limitedEvents.addAll(userEvents);
             }
-        }
 
-        List<MoodEvent> limitedEvents = new ArrayList<>();
-        for (List<MoodEvent> userEvents : groupedByUser.values()) {
-            limitedEvents.addAll(userEvents);
-        }
+            limitedEvents.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
 
-        limitedEvents.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+            fullMoodEvents = new ArrayList<>(limitedEvents);
+            moodEvents = new ArrayList<>(fullMoodEvents);
 
-        fullMoodEvents = new ArrayList<>(limitedEvents);
-        moodEvents = new ArrayList<>(fullMoodEvents);
-
-        if (currentCriteria != null) {
-            applyFilter(currentCriteria);
-        } else {
-            if (adapter != null) {
-                adapter.updateData(moodEvents);
-                updateEmptyState();
+            if (currentCriteria != null) {
+                applyFilter(currentCriteria);
+            } else {
+                if (adapter != null) {
+                    adapter.updateData(moodEvents);
+                    updateEmptyState();
+                }
             }
-        }
+        });
     }
+
 
     @Override
     public void onResume() {

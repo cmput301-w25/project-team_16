@@ -522,6 +522,8 @@ public class Maps extends Fragment
         noEventSelectedText.setVisibility(View.GONE);
         eventDetailsLayout.setVisibility(View.VISIBLE);
 
+        eventDetailsLayout.setTranslationY(0);
+
         String userId = event.getUserID();
         fetchUserData(userId, (username, imageUrl) -> {
             if (username == null || username.isEmpty()) {
