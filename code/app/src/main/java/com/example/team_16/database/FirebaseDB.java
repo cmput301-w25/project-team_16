@@ -308,12 +308,35 @@ public class FirebaseDB {
      * Update a mood event
      */
     public void updateMoodEvent(String eventId, MoodEvent updates, FirebaseCallback<Boolean> callback) {
+        // Convert MoodEvent to Map for update
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("emotionalState", updates.getEmotionalState());
+        updateData.put("trigger", updates.getTrigger());
+        updateData.put("socialSituation", updates.getSocialSituation());
+        updateData.put("latitude", updates.getLatitude());
+        updateData.put("longitude", updates.getLongitude());
+        updateData.put("placeName", updates.getPlaceName());
+        updateData.put("photoUrl", updates.getPhotoUrl());
+        updateData.put("photoFilename", updates.getPhotoFilename());
+        updateData.put("postType", updates.getPostType());
+        updateData.put("isPrivate", updates.isPrivate());
+        
+        // Only update timestamp if we're online
+        if (isOnline()) {
+            updateData.put("timestamp", FieldValue.serverTimestamp());
+        }
+
         db.collection(MOODS_COLLECTION).document(eventId)
-                .set(updates)
+                .update(updateData)
                 .addOnSuccessListener(aVoid -> callback.onCallback(true))
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error updating mood event", e);
-                    callback.onCallback(false);
+                    // If offline, still consider it a success as it will be synced when online
+                    if (!isOnline()) {
+                        callback.onCallback(true);
+                    } else {
+                        callback.onCallback(false);
+                    }
                 });
     }
 

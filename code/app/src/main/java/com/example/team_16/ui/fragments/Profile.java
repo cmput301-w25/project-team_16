@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.app.AlertDialog;
 
 public class Profile extends Fragment implements FilterableFragment, FilterFragment.FilterListener {
 
@@ -150,23 +151,41 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
             @Override
             public void onDeleteClick(MoodEvent event) {
-                // Prompt user for confirmation
-                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                new AlertDialog.Builder(requireContext())
                         .setTitle("Delete Mood")
                         .setMessage("Are you sure you want to delete this mood event?")
                         .setPositiveButton("Yes", (dialog, which) -> {
-                            // Actually delete via the user profile
+                            // Check if we're offline
+                            boolean isOffline = !FirebaseDB.getInstance(requireContext()).isOnline();
+                            if (isOffline) {
+                                Toast.makeText(requireContext(), "You're offline. Changes will sync when connected.", Toast.LENGTH_LONG).show();
+                            }
+
+                            // Remove from both lists
+                            moodEvents.remove(event);
+                            fullMoodEvents.remove(event);
+                            
+                            // Update adapter with current list
+                            adapter.updateData(moodEvents);
+                            
+                            // Update UI elements
+                            totalMoodEntriesTxt.setText("Total Mood Entries: " + fullMoodEvents.size());
+                            String recentMood = getMostRecentMood();
+                            if (recentMood != null) {
+                                mostFrequentMoodTxt.setText("Most Recent Mood: " + recentMood);
+                            }
+                            updateEmptyState();
+
+                            // Delete from Firebase in background
                             userProfile.deleteMoodEvent(event.getId(), success -> {
+                                if (!isAdded()) return; // Check if fragment is still attached
+
                                 if (success) {
-                                    Toast.makeText(requireContext(),
-                                            "Mood event deleted successfully!",
-                                            Toast.LENGTH_SHORT).show();
-                                    // Refresh our local data
-                                    loadData();
+                                    Toast.makeText(requireContext(), "Mood event deleted successfully!", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Toast.makeText(requireContext(),
-                                            "Failed to delete mood event.",
-                                            Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(requireContext(), "Failed to delete mood event.", Toast.LENGTH_SHORT).show();
+                                    // If Firebase deletion fails, refresh the data
+                                    loadData();
                                 }
                             });
                         })
@@ -337,6 +356,10 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
     private void loadData() {
         fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
+        
+        // Sort events by timestamp in descending order (most recent first)
+        fullMoodEvents.sort((event1, event2) -> 
+            event2.getTimestamp().compareTo(event1.getTimestamp()));
 
         if (currentCriteria != null) {
             applyFilter(currentCriteria);

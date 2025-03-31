@@ -285,6 +285,12 @@ public class MoodEvent implements Serializable {
             }
             return;
         }
+        
+        // If offline, update local timestamp
+        if (!firebaseDB.isOnline()) {
+            setTimestamp(Timestamp.now());
+        }
+        
         firebaseDB.updateMoodEvent(id, this, callback);
     }
 
