@@ -67,3 +67,4 @@ Ready to vibe with *MoodTracker*?
 - ✅ Scrum Board: [See Us Hustle](https://github.com/orgs/cmput301-w25/projects/92)
 - 🎨 UI Mockups: [Eye Candy](https://github.com/cmput301-w25/project-team_16/wiki/UI-Mockups-and-Storyboard-Sequence)
 - 📊 UML: [The Blueprint](https://github.com/cmput301-w25/project-team_16/wiki/UML)
+- 📃 Javadoc: [Browse Code Docs](docs/index.html)
