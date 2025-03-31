@@ -113,25 +113,30 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         holder.moodDescription.setTextColor(event.getEmotionalState().getTextColor());
         holder.moodDescription2.setText("");
 
-        Date actualDate = event.getTimestamp().toDate();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            LocalDateTime eventDateTime = LocalDateTime.ofInstant(
-                    actualDate.toInstant(), ZoneId.systemDefault()
-            );
-            Duration duration = Duration.between(eventDateTime, currentDateTime);
-            int hourDifference = (int) Math.abs(duration.toHours());
-            String timeAgo;
-            if (hourDifference >= 24) {
-                int dayDifference = hourDifference / 24;
-                timeAgo = dayDifference + " days ago";
+        if (event.getTimestamp() != null) {
+            Date actualDate = event.getTimestamp().toDate();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                LocalDateTime currentDateTime = LocalDateTime.now();
+                LocalDateTime eventDateTime = LocalDateTime.ofInstant(
+                        actualDate.toInstant(), ZoneId.systemDefault()
+                );
+                Duration duration = Duration.between(eventDateTime, currentDateTime);
+                int hourDifference = (int) Math.abs(duration.toHours());
+                String timeAgo;
+                if (hourDifference >= 24) {
+                    int dayDifference = hourDifference / 24;
+                    timeAgo = dayDifference + " days ago";
+                } else {
+                    timeAgo = hourDifference + " hours ago";
+                }
+                holder.timeView.setText(timeAgo);
             } else {
-                timeAgo = hourDifference + " hours ago";
+                holder.timeView.setText("Time not supported");
             }
-            holder.timeView.setText(timeAgo);
         } else {
-            holder.timeView.setText("Time not supported");
+            holder.timeView.setText("No timestamp");
         }
+
 
         if (event.getPhotoFilename() != null) {
             holder.moodImage.setVisibility(View.VISIBLE);
