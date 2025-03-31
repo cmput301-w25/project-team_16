@@ -16,6 +16,7 @@
 
     <!-- Read media files (Android 13+) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".MoodTrackerApp"
@@ -46,32 +47,22 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
+        <!-- Main Entry Point (HomeActivity) -->
         <activity
-            android:name=".ui.activity.MapsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_maps" />
-        <activity
-            android:name=".ui.activity.EntryActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Team_16">
+            android:name=".ui.activity.HomeActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Login/Signup Activity -->
-        <activity
-            android:name=".ui.activity.MainActivity"
-            android:exported="true"
-            />
 
-
-        <!-- Main App Activity -->
+        <!-- Maps Activity -->
         <activity
-            android:name=".ui.activity.HomeActivity"
+            android:name=".ui.activity.MapsActivity"
             android:exported="false"
-            />
+            android:label="@string/title_activity_maps" />
 
         <meta-data
             android:name="preloaded_fonts"

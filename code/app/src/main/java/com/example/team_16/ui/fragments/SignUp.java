@@ -1,5 +1,6 @@
 package com.example.team_16.ui.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -13,7 +14,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,15 +21,19 @@ import androidx.fragment.app.Fragment;
 
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
-import com.example.team_16.ui.activity.MainActivity;
 import com.google.android.material.textfield.TextInputLayout;
-
 
 /**
  * Fragment for user sign-up.
  * Allows users to register by entering their full name, username, email, and password.
  */
 public class SignUp extends Fragment {
+    // Interface for communication with parent fragment/activity
+    public interface SignUpListener {
+        void onSignUpSuccess(String userId);
+    }
+
+    private SignUpListener listener;
 
     // UI elements for sign up
     private TextInputLayout nameLayout, usernameLayout, emailLayout, passwordLayout;
@@ -39,8 +43,25 @@ public class SignUp extends Fragment {
     // FirebaseDB instance
     private FirebaseDB firebaseDB;
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
 
-    // default constructor
+        // Try to get the listener from parent fragment first
+        Fragment parentFragment = getParentFragment();
+        if (parentFragment instanceof SignUpListener) {
+            listener = (SignUpListener) parentFragment;
+        }
+        // If not found in parent fragment, try the activity
+        else if (context instanceof SignUpListener) {
+            listener = (SignUpListener) context;
+        } else {
+            throw new ClassCastException(
+                    "Parent fragment or host activity must implement SignUpListener");
+        }
+    }
+
+    // Default constructor
     public SignUp() {
     }
 
@@ -50,7 +71,7 @@ public class SignUp extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        // sign up layout (activity_sign_up.xml)
+        // Sign up layout (activity_sign_up.xml)
         View view = inflater.inflate(R.layout.activity_sign_up, container, false);
 
         // Initialize FirebaseDB
@@ -89,16 +110,13 @@ public class SignUp extends Fragment {
             signUpButton.startAnimation(scaleDown);
         });
 
-
         return view;
     }
-
 
     /**
      * Validates input fields and attempts to register a new user using FirebaseDB.
      */
     private void attemptSignUp() {
-
         // This section retrieves and trims the input values
         String name = nameEditText.getText().toString().trim();
         String username = usernameEditText.getText().toString().trim();
@@ -126,12 +144,12 @@ public class SignUp extends Fragment {
             usernameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Must be 3-30 characters"));
             hasError = true;
 
-        // check spaces - present error if invalid
+            // check spaces - present error if invalid
         } else if (username.contains(" ")) {
             usernameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> No spaces allowed"));
             hasError = true;
 
-        // ensure only allowed characters using regex
+            // ensure only allowed characters using regex
         } else if (!username.matches("^[A-Za-z0-9_]+$")) {
             // Check for invalid characters
             usernameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Letters, numbers, underscores only"));
@@ -175,9 +193,9 @@ public class SignUp extends Fragment {
                     if (loginMessage.equals("Login successful!")) {
                         String userId = firebaseDB.getCurrentUserId();
 
-                        // Load profile and navigate - call MainActivity's method
-                        if (getActivity() instanceof MainActivity) {
-                            ((MainActivity) getActivity()).loadUserProfileAndNavigate(userId);
+                        // Notify the listener about successful signup
+                        if (listener != null) {
+                            listener.onSignUpSuccess(userId);
                         }
                     }
                 });
