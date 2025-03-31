@@ -196,7 +196,8 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/text_tertiary"
                     android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/post_location"
