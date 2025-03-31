@@ -24,6 +24,7 @@ import com.example.team_16.models.MoodEvent;
 import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
 import com.example.team_16.ui.adapters.MoodHistoryAdapter;
+import com.example.team_16.utils.TestDataGenerator;
 import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 
 public class Profile extends Fragment implements FilterableFragment, FilterFragment.FilterListener {
 
@@ -61,7 +63,6 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -164,10 +165,10 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                             // Remove from both lists
                             moodEvents.remove(event);
                             fullMoodEvents.remove(event);
-                            
+
                             // Update adapter with current list
                             adapter.updateData(moodEvents);
-                            
+
                             // Update UI elements
                             totalMoodEntriesTxt.setText("Total Mood Entries: " + fullMoodEvents.size());
                             String recentMood = getMostRecentMood();
@@ -243,6 +244,54 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
                         .navigateToFragment(new FollowingFragment(), "Following");
             }
         });
+
+        // Monthly Mood Recap button
+        Button btnMonthlyRecap = requireView().findViewById(R.id.btnMonthlyRecap);
+        btnMonthlyRecap.setOnClickListener(v -> {
+            if (requireActivity() instanceof HomeActivity) {
+                // Create the recap fragment and set the user profile
+                MonthlyMoodRecapFragment recapFragment = new MonthlyMoodRecapFragment();
+                recapFragment.setUserProfile(userProfile);
+
+                ((HomeActivity) requireActivity())
+                        .navigateToFragment(recapFragment, "Monthly Mood Recap");
+            }
+        });
+
+        // Test Data Generator (long press on Monthly Recap button)
+        btnMonthlyRecap.setOnLongClickListener(v -> {
+            generateTestData();
+            return true;
+        });
+    }
+
+    private void generateTestData() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Generate Test Data")
+                .setMessage("This will generate test mood events for February 2025. Continue?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // Show loading dialog
+                    ProgressDialog progressDialog = new ProgressDialog(requireContext());
+                    progressDialog.setMessage("Generating test data...");
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+
+                    // Generate test data
+                    TestDataGenerator.generateFebruaryMoodEvents(userProfile, () -> {
+                        // Dismiss progress dialog
+                        progressDialog.dismiss();
+
+                        // Refresh the view
+                        loadData();
+
+                        // Show success message
+                        Toast.makeText(requireContext(),
+                                "Test data generated for February 2025",
+                                Toast.LENGTH_LONG).show();
+                    });
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 
     private void refreshCounts() {
@@ -356,10 +405,10 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
 
     private void loadData() {
         fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
-        
+
         // Sort events by timestamp in descending order (most recent first)
-        fullMoodEvents.sort((event1, event2) -> 
-            event2.getTimestamp().compareTo(event1.getTimestamp()));
+        fullMoodEvents.sort((event1, event2) ->
+                event2.getTimestamp().compareTo(event1.getTimestamp()));
 
         if (currentCriteria != null) {
             applyFilter(currentCriteria);

@@ -113,6 +113,19 @@
             android:textSize="14sp"
             android:layout_marginTop="4dp"/>
 
+        <!-- Monthly Mood Recap Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMonthlyRecap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Monthly Mood Recap"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            app:icon="@drawable/ic_calendar"
+            app:iconGravity="textStart"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
         <!-- Mood History Title -->
         <TextView
             android:id="@+id/moodHistoryTitle"

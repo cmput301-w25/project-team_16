@@ -1,4 +1,3 @@
-import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -76,7 +75,7 @@ android {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation(libs.gson)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -100,15 +99,17 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     // JUnit Test Dependencies
-    androidTestImplementation("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(libs.runner)
+    androidTestImplementation(libs.junit.v115)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     // Maps SDK for Android
-    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-maps:19.1.0")
 
     // Glide Dependencies
     implementation("com.github.bumptech.glide:glide:4.13.2")
     annotationProcessor("com.github.bumptech.glide:compiler:4.13.2")
 
+    // MPAndroidChart for mood visualizations
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
 
