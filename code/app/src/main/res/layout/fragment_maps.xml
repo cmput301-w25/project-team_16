@@ -23,65 +23,82 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Empty view message -->
         <TextView
             android:id="@+id/no_event_selected_text"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Click on any mood event to see more details..."
-            android:textSize="16sp"
-            android:visibility="visible"/>
+            android:gravity="center"
+            android:text="😊 Tap on a mood event to see the details!"
+            android:textSize="18sp"
+            android:textColor="#777"
+            android:visibility="visible"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp" />
 
+        <!-- Event details layout -->
         <LinearLayout
             android:id="@+id/event_details_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/border_background"
+            android:padding="16dp"
+            android:gravity="center_horizontal"
             android:layout_marginTop="12dp"
-            android:orientation="horizontal"
             android:visibility="gone">
 
+            <!-- Profile image in center -->
             <ImageView
                 android:id="@+id/event_user_profile_image"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_marginEnd="12dp"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop" />
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="12dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/circle_background"
+                android:padding="2dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <!-- Username -->
+            <TextView
+                android:id="@+id/event_username"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:layout_gravity="center" />
 
-                <TextView
-                    android:id="@+id/event_username"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:textSize="18sp" />
+            <!-- Emoji, Location, Trigger -->
+            <TextView
+                android:id="@+id/event_emoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:layout_gravity="center" />
 
-                <TextView
-                    android:id="@+id/event_emoji"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textSize="16sp" />
+            <TextView
+                android:id="@+id/event_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:layout_gravity="center" />
 
-                <TextView
-                    android:id="@+id/event_location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/event_trigger_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textSize="16sp" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/event_trigger_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:layout_gravity="center" />
         </LinearLayout>
 
+        <!-- Event photo -->
         <ImageView
             android:id="@+id/event_photo"
             android:layout_width="match_parent"
@@ -89,8 +106,9 @@
             android:layout_marginTop="8dp"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
-            android:visibility="gone"/>
-
+            android:visibility="gone"
+            android:background="@drawable/rounded_photo_bg" />
     </LinearLayout>
+
 </LinearLayout>
 
