@@ -139,5 +139,6 @@
     <string name="reset">Reset</string>
     <string name="apply">Apply</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="location">Location</string>
 
 </resources>

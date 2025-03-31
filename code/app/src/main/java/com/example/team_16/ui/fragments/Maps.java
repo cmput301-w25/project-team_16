@@ -612,7 +612,7 @@ public class Maps extends Fragment
     public void onResume() {
         super.onResume();
         if (getActivity() != null) {
-            ((HomeActivity) getActivity()).setToolbarTitle("My Mood Map");
+            ((HomeActivity) getActivity()).setToolbarTitle("MAP VIEW");
         }
     }
 }
