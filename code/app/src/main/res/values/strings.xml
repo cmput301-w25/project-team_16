@@ -147,4 +147,39 @@
     <string name="here_s_how_different_social_settings_affect_your_mood">Here\'s how different social settings affect your mood</string>
     <string name="open_in_spotify">Open in Spotify</string>
 
+    <string name="mood_history">Mood History</string>
+    <string name="no_mood_events">No mood events yet</string>
+    <string name="add_mood">Add Mood</string>
+    <string name="edit_mood">Edit Mood</string>
+    <string name="mood_stats">Mood Statistics</string>
+    <string name="profile">Profile</string>
+
+    <string name="emotional_state">Emotional State</string>
+    <string name="happiness">Happiness</string>
+    <string name="sadness">Sadness</string>
+    <string name="anger">Anger</string>
+    <string name="fear">Fear</string>
+    <string name="disgust">Disgust</string>
+    <string name="trigger">Trigger</string>
+    <string name="trigger_hint">What triggered this mood?</string>
+    <string name="social_situation">Social Situation</string>
+    <string name="social_situation_hint">Who were you with?</string>
+    <string name="save">Save</string>
+
+    <string name="delete">Delete</string>
+    <string name="select_emotional_state">Please select an emotional state</string>
+    <string name="mood_updated">Mood updated successfully</string>
+    <string name="update_failed">Failed to update mood</string>
+    <string name="mood_deleted">Mood deleted successfully</string>
+    <string name="delete_failed">Failed to delete mood</string>
+
+    <string name="average_mood">Average Mood</string>
+    <string name="most_common_mood">Most Common Mood</string>
+    <string name="total_events">Total Events</string>
+    <string name="no_data">No mood data available</string>
+
+    <string name="average_mood_format">Average Mood: %.1f</string>
+    <string name="most_common_mood_format">Most Common Mood: %s</string>
+    <string name="total_events_format">Total Events: %d</string>
+
 </resources>
