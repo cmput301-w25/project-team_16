@@ -7,6 +7,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
@@ -73,6 +74,13 @@ public class FirebaseDB {
     private FirebaseDB(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
+
+        // Enable Firestore offline persistence
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
+
         this.auth = FirebaseAuth.getInstance();
         this.storage = FirebaseStorage.getInstance();
     }
@@ -209,38 +217,19 @@ public class FirebaseDB {
      * Add a mood event
      */
     public void addMoodEvent(MoodEvent moodEvent, FirebaseCallback<Boolean> callback) {
-        // If offline, generate a temporary ID
+        // Generate a UUID if no ID exists
         if (moodEvent.getId() == null || moodEvent.getId().isEmpty()) {
             moodEvent.setId(UUID.randomUUID().toString());
         }
 
+        // Use set() with the provided ID
         db.collection(MOODS_COLLECTION)
-                .add(moodEvent)
-                .addOnSuccessListener(documentReference -> {
-                    // Firebase generates an ID for the document
-                    String firebaseGeneratedId = documentReference.getId();
-
-                    // Only update if the generated ID is different from the temporary one
-                    if (!moodEvent.getId().equals(firebaseGeneratedId)) {
-                        db.collection(MOODS_COLLECTION).document(firebaseGeneratedId)
-                                .update("id", firebaseGeneratedId)
-                                .addOnSuccessListener(aVoid -> {
-                                    // Update the local event's ID to match Firebase
-                                    moodEvent.setId(firebaseGeneratedId);
-                                    callback.onCallback(true); // Notify success
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("FirebaseDB", "Error updating mood ID", e);
-                                    callback.onCallback(false); // Notify failure
-                                });
-                    } else {
-                        // No need to update if IDs are already the same
-                        callback.onCallback(true); // Notify success
-                    }
-                })
+                .document(moodEvent.getId())
+                .set(moodEvent)
+                .addOnSuccessListener(aVoid -> callback.onCallback(true))
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error adding mood event", e);
-                    callback.onCallback(false); // Notify failure
+                    callback.onCallback(false);
                 });
     }
 
