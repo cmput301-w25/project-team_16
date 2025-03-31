@@ -541,7 +541,6 @@ public class AddMood extends Fragment {
             Double longitude = (selectedLatLng != null) ? selectedLatLng.longitude : null;
             String placeName = selectedPlaceName;
 
-
             // remove location on clear
             if (addLocationButton.getText().toString().equalsIgnoreCase("Add Location")) {
                 latitude = null;
@@ -588,14 +587,8 @@ public class AddMood extends Fragment {
                         getParentFragmentManager().popBackStack();
                     } else if (getFragmentManager() != null) {
                         getFragmentManager().popBackStack();
-
                     } else {
                         requireActivity().onBackPressed();
-                    }
-                } else {
-                    // When adding new mood, go back to feed
-                    if (requireActivity() instanceof HomeActivity) {
-                        ((HomeActivity) requireActivity()).navigateToFragment(new Feed(), "Feed");
                     }
                 }
 
@@ -607,6 +600,7 @@ public class AddMood extends Fragment {
                     } else {
                         Toast.makeText(requireContext(), "Mood updated successfully!", Toast.LENGTH_SHORT).show();
                     }
+                    saveMoodButton.setEnabled(true);
                 });
             } else {
                 MoodEvent newMoodEvent = new MoodEvent(
@@ -625,36 +619,77 @@ public class AddMood extends Fragment {
                     newMoodEvent.setPhotoFilename(filename);
                 }
 
-                // Dismiss fragment immediately
-                if (isEditMode) {
-                    // When editing, go back to profile
-                    if (getParentFragmentManager() != null) {
-                        getParentFragmentManager().popBackStack();
-                    } else if (getFragmentManager() != null) {
-                        getFragmentManager().popBackStack();
-                    } else {
-                        requireActivity().onBackPressed();
-                    }
-                } else {
-                    // When adding new mood, go back to feed
-                    if (requireActivity() instanceof HomeActivity) {
-                        ((HomeActivity) requireActivity()).navigateToFragment(new Feed(), "Feed");
-                    }
-                }
-
                 // Save to database in background
                 userProfile.addMoodEvent(newMoodEvent, success -> {
                     if (!isAdded()) return; // Check if fragment is still attached
+
                     if (!success) {
                         Toast.makeText(requireContext(), "Failed to save mood.", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(requireContext(), "Mood saved successfully!", Toast.LENGTH_SHORT).show();
+
+                        // Reset the form instead of navigating to Feed
+                        resetForm();
                     }
+                    saveMoodButton.setEnabled(true);
                 });
             }
         });
     }
 
+    /**
+     * Reset all form fields after successful submission
+     */
+    private void resetForm() {
+        // Reset mood selection
+        selectedMood = null;
+
+        // Reset all mood buttons
+        int[] moodButtonIds = {
+                R.id.anger_button, R.id.confusion_button, R.id.disgust_button,
+                R.id.fear_button, R.id.happiness_button, R.id.sadness_button,
+                R.id.shame_button, R.id.surprise_button
+        };
+
+        for (int buttonId : moodButtonIds) {
+            View view = getView();
+            if (view != null) {
+                Button button = view.findViewById(buttonId);
+                button.setAlpha(0.5f);
+            }
+        }
+
+        // Reset social setting
+        socialSetting = null;
+        aloneButton.setAlpha(0.5f);
+        onePersonButton.setAlpha(0.5f);
+        twoPersonButton.setAlpha(0.5f);
+        crowdButton.setAlpha(0.5f);
+
+        // Reset trigger text
+        triggerInput.setText("");
+
+        // Reset photo
+        selectedPhotoUri = null;
+        isImageChanged = false;
+        updatePhotoButtonsVisibility();
+
+        // Reset location
+        selectedLatLng = null;
+        selectedPlaceName = null;
+        addLocationButton.setText("Add Location");
+
+        // Reset post type to default (Public)
+        selectedPostType = "Public";
+        highlightPostTypeButton(publicPostButton);
+        privatePostButton.setAlpha(0.5f);
+
+        // Reset to the first screen
+        viewFlipper.setDisplayedChild(0);
+        currentFlipperIndex = 0;
+        backButton.setVisibility(View.GONE);
+        nextButton.setVisibility(View.VISIBLE);
+    }
     private boolean validateInputs() {
         if (selectedMood == null) {
             Toast.makeText(requireContext(), "Please select a mood before saving.", Toast.LENGTH_SHORT).show();
