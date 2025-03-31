@@ -3,11 +3,17 @@
  * Encapsulates user data, mood history (personal and following), and social features like following and follow requests.
  * Also provides methods to manage profile updates, password reset, and offline sync.
  */
-
 package com.example.team_16.models;
 
+
+import androidx.annotation.NonNull;
+
 import com.example.team_16.database.FirebaseDB;
+import com.example.team_16.utils.MoodAnalytics;
+
 import java.util.ArrayList;
+import java.util.Calendar;
+
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +22,10 @@ import java.util.Map;
  */
 public class
 UserProfile {
-    private String id;
+
+    // Core user information
+    private final String id;
+
     private String username;
     private String fullName;
     private String email;
@@ -24,21 +33,16 @@ UserProfile {
 
     private final FirebaseDB firebaseDB;
 
-    private PersonalMoodHistory personalMoodHistory;
-    private MoodHistory followingMoodHistory;
 
-    /**
-     * Constructor for creating a new user profile
-     *
-     * @param firebaseDB Firebase database instance
-     * @param id Unique user identifier
-     * @param username User's unique username
-     * @param fullName User's full name
-     * @param email User's email address
-     */
+    // Mood-related components
+    private final PersonalMoodHistory personalMoodHistory;
+    private final MoodHistory followingMoodHistory;
+
+
+
     // New follow-related fields
-    private List<String> pendingFollow = new ArrayList<>();
-    private List<String> userFollowing = new ArrayList<>();
+    private final List<String> pendingFollow = new ArrayList<>();
+    private final List<String> userFollowing = new ArrayList<>();
 
     public UserProfile(FirebaseDB firebaseDB, String id, String username,
                        String fullName, String email, String profileImageUrl) {
@@ -316,12 +320,6 @@ UserProfile {
      * @param email New email address
      * @param callback Callback to handle update result
      */
-    // Derek: I edited teh update profile , the new version is below this one
-
-    /**
-     * Update user profile (fullName, email, username)
-     */
-    // have not implemented email yet
     public void updateProfile(String fullName,
                               String email,
                               String username,
@@ -405,6 +403,7 @@ UserProfile {
      *
      * @return String representation
      */
+    @NonNull
     @Override
     public String toString() {
         return "UserProfile{" +
@@ -413,5 +412,82 @@ UserProfile {
                 ", fullName='" + fullName + '\'' +
                 ", profileImageUrl='" + profileImageUrl + '\'' +
                 '}';
+    }
+
+    /**
+     * Get monthly mood statistics for the current month
+     * @param callback Callback to receive the statistics
+     */
+    public void getCurrentMonthStats(FirebaseDB.FirebaseCallback<Map<String, Object>> callback) {
+        Calendar cal = Calendar.getInstance();
+        getMonthlyStats(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, callback);
+    }
+
+    /**
+     * Get monthly mood statistics for a specific month
+     * @param year The year to analyze
+     * @param month The month to analyze (1-12)
+     * @param callback Callback to receive the statistics
+     */
+    public void getMonthlyStats(int year, int month, FirebaseDB.FirebaseCallback<Map<String, Object>> callback) {
+        personalMoodHistory.getFilteredEvents(null, null, null, events -> {
+            Map<String, Object> stats = MoodAnalytics.getMonthlyStats(events, year, month);
+
+            // Count total entries manually
+            long totalEntries = events.stream()
+                    .filter(event -> {
+                        Calendar eventDate = Calendar.getInstance();
+                        eventDate.setTime(event.getDate());
+                        return eventDate.get(Calendar.YEAR) == year && eventDate.get(Calendar.MONTH) + 1 == month;
+                    })
+                    .count();
+
+            stats.put("totalEntries", totalEntries); // Ensure it exists
+
+            callback.onCallback(stats);
+        });
+    }
+      /**
+     * Get mood trend for the current month
+     * @param callback Callback to receive the trend data
+     */
+    public void getCurrentMonthTrend(FirebaseDB.FirebaseCallback<Map<Integer, EmotionalState>> callback) {
+        Calendar cal = Calendar.getInstance();
+        getMonthlyTrend(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, callback);
+    }
+
+    /**
+     * Get mood trend for a specific month
+     * @param year The year to analyze
+     * @param month The month to analyze (1-12)
+     * @param callback Callback to receive the trend data
+     */
+    public void getMonthlyTrend(int year, int month, FirebaseDB.FirebaseCallback<Map<Integer, EmotionalState>> callback) {
+        personalMoodHistory.getFilteredEvents(null, null, null, events -> {
+            Map<Integer, EmotionalState> trend = MoodAnalytics.getMoodTrend(events, year, month);
+            callback.onCallback(trend);
+        });
+    }
+
+    /**
+     * Calculate mood stability score for the current month
+     * @param callback Callback to receive the stability score
+     */
+    public void getCurrentMonthStability(FirebaseDB.FirebaseCallback<Double> callback) {
+        Calendar cal = Calendar.getInstance();
+        getMonthlyStability(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, callback);
+    }
+
+    /**
+     * Calculate mood stability score for a specific month
+     * @param year The year to analyze
+     * @param month The month to analyze (1-12)
+     * @param callback Callback to receive the stability score
+     */
+    public void getMonthlyStability(int year, int month, FirebaseDB.FirebaseCallback<Double> callback) {
+        personalMoodHistory.getFilteredEvents(null, null, null, events -> {
+            double stability = MoodAnalytics.calculateMoodStability(events, year, month);
+            callback.onCallback(stability);
+        });
     }
 }

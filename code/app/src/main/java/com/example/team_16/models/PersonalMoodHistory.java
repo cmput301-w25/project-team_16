@@ -130,6 +130,9 @@ public class PersonalMoodHistory extends MoodHistory {
         deleteEvent(eventId, null);
     }
 
+    public void getMonthlyEvents(int year, int month, Object o) {
+    }
+
     /**
      * Enumeration of operation types for pending operations
      */

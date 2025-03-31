@@ -141,5 +141,10 @@
     <string name="apply">Apply</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="location">Location</string>
+    <string name="what_affected_your_mood">What Affected Your Mood</string>
+    <string name="these_were_your_top_mood_influencers_this_month">These were your top mood influencers this month</string>
+    <string name="your_social_connections">Your Social Connections</string>
+    <string name="here_s_how_different_social_settings_affect_your_mood">Here\'s how different social settings affect your mood</string>
+    <string name="open_in_spotify">Open in Spotify</string>
 
 </resources>
