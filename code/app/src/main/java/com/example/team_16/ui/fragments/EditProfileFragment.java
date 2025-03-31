@@ -1,3 +1,27 @@
+/**
+ * EditProfileFragment allows the user to update their profile information,
+ * including full name, username, and profile picture.
+ *
+ * Key Features:
+ * - Displays current name and username
+ * - Allows editing of full name and username fields
+ * - Validates that username is not already taken by another user
+ * - Opens system image picker to select a new profile picture
+ * - Uploads selected image to Firebase Storage
+ * - Updates user profile information in Firebase Firestore
+ * - Shows progress dialogs during uploads
+ * - Updates UI with new data after successful update
+ *
+ * Usage:
+ * Typically launched from the Profile section or settings screen.
+ * Expects the current user profile to be available from MoodTrackerApp.
+ *
+ * Important:
+ * - Ensures username uniqueness by checking existing records in Firestore
+ * - Uses Glide for image loading
+ * - Relies on FirebaseDB helper functions for uploading and updating
+ */
+
 package com.example.team_16.ui.fragments;
 
 import static android.app.Activity.RESULT_OK;
@@ -36,13 +60,10 @@ public class EditProfileFragment extends Fragment {
     private Button btnSave;
     private ShapeableImageView avatarImageView;
 
-    // Progress dialog for showing "uploading..."
     private ProgressDialog progressDialog;
 
-    // Current user
     private UserProfile userProfile;
 
-    // Holds the newly picked image URI if user chooses one
     private Uri selectedImageUri;
 
     @Override
@@ -57,10 +78,8 @@ public class EditProfileFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Get the current UserProfile instance
         userProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
 
-        // Find views
         currentNameView     = view.findViewById(R.id.currentName);
         currentUsernameView = view.findViewById(R.id.currentUsername);
         editFullName        = view.findViewById(R.id.editFullName);
@@ -68,7 +87,6 @@ public class EditProfileFragment extends Fragment {
         btnSave             = view.findViewById(R.id.btnSave);
         avatarImageView     = view.findViewById(R.id.avatarImageView);
 
-        // Prefill
         currentNameView.setText("Current Name: " +
                 (userProfile.getFullName() != null ? userProfile.getFullName() : ""));
         currentUsernameView.setText("Current Username: @" +
@@ -77,19 +95,16 @@ public class EditProfileFragment extends Fragment {
         editFullName.setText(userProfile.getFullName());
         editUsername.setText(userProfile.getUsername());
 
-        // If we already have a profile image URL, load it with Glide
         if (userProfile.getProfileImageUrl() != null
                 && !userProfile.getProfileImageUrl().isEmpty()) {
             Glide.with(this)
                     .load(userProfile.getProfileImageUrl())
-                    .placeholder(R.drawable.image) // fallback placeholder
+                    .placeholder(R.drawable.image)
                     .into(avatarImageView);
         }
 
-        // Clicking the avatar picks a new image
         avatarImageView.setOnClickListener(v -> openImageChooser());
 
-        // Single onClickListener for the Save button
         btnSave.setOnClickListener(v -> {
             String newFullName = editFullName.getText().toString().trim();
             String newUsername = editUsername.getText().toString().trim();
@@ -99,9 +114,7 @@ public class EditProfileFragment extends Fragment {
                 return;
             }
 
-            // Check if username changed
             if (!newUsername.equals(userProfile.getUsername())) {
-                // If changed, see if it's taken
                 userProfile.searchUsersByUsername(newUsername, users -> {
                     boolean usernameTaken = false;
                     if (users != null) {
@@ -117,18 +130,15 @@ public class EditProfileFragment extends Fragment {
                     if (usernameTaken) {
                         Toast.makeText(getContext(), "Username already taken", Toast.LENGTH_SHORT).show();
                     } else {
-                        // Username is free => proceed with the update
                         updateProfileWithOrWithoutImage(newFullName, newUsername);
                     }
                 });
             } else {
-                // Username not changed => just update
                 updateProfileWithOrWithoutImage(newFullName, newUsername);
             }
         });
     }
 
-    // Step 1: Let user pick an image from gallery
     private void openImageChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -136,7 +146,6 @@ public class EditProfileFragment extends Fragment {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
 
-    // Step 2: Get the chosen image URI in onActivityResult
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  @Nullable Intent data) {
@@ -146,29 +155,23 @@ public class EditProfileFragment extends Fragment {
                 data != null && data.getData() != null) {
             selectedImageUri = data.getData();
 
-            // Immediately show it locally (so user sees what they picked)
             avatarImageView.setImageURI(selectedImageUri);
         }
     }
 
-    // Depending on whether user picked a new image, call "upload and update" or just "update".
     private void updateProfileWithOrWithoutImage(String newFullName, String newUsername) {
         if (selectedImageUri != null) {
             uploadImageAndUpdateProfile(newFullName, newUsername);
         } else {
-            // No new image => keep old image URL
             doProfileUpdate(newFullName, newUsername, userProfile.getProfileImageUrl());
         }
     }
 
-    // Step 3: Actually upload the image to Firebase Storage, then update Firestore with the new URL
     private void uploadImageAndUpdateProfile(String newFullName, String newUsername) {
         showProgressDialog("Uploading image...");
 
-        // userProfile has getFirebaseDB(), which can upload the file
         userProfile.getFirebaseDB().uploadProfileImage(selectedImageUri, userProfile.getId(), imageUrl -> {
             if (imageUrl != null) {
-                // If upload success, pass this new URL to doProfileUpdate
                 doProfileUpdate(newFullName, newUsername, imageUrl);
             } else {
                 dismissProgressDialog();
@@ -177,17 +180,13 @@ public class EditProfileFragment extends Fragment {
         });
     }
 
-    // Step 4: Actually update the Firestore user doc with new fields
     private void doProfileUpdate(String fullName, String username, String imageUrl) {
-        // Keep the same email from current user
         String email = userProfile.getEmail();
 
-        // Full update with new username, new image
         userProfile.updateProfile(fullName, email, username, imageUrl, success -> {
             dismissProgressDialog();
             if (success) {
                 Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
-                // Optionally show new image again or pop back
                 Glide.with(this)
                         .load(imageUrl)
                         .placeholder(R.drawable.image)

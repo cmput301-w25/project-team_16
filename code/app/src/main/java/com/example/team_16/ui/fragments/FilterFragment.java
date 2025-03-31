@@ -1,3 +1,35 @@
+/**
+ * FilterFragment.java
+ *
+ * This Fragment provides a flexible UI for users to filter mood events based on:
+ * - Time Period (All Time, Last Year, Last Month, Last Week)
+ * - Emotional State (Happiness, Sadness, etc.)
+ * - Trigger Reason (text input)
+ * - Event Types (Own Mood History, Events from People I Follow, Nearby Events)
+ *
+ * It supports two key use cases:
+ * - Full filter UI (with all event type checkboxes)
+ * - Condensed version (e.g., for Mood History screen, by hiding event types via Bundle argument)
+ *
+ * Usage:
+ * - Implement `FilterListener` in the parent fragment or activity to handle filter apply/reset.
+ * - Call `setFilterListener()` before showing the fragment.
+ * - Optionally pass arguments via Bundle:
+ *     - `hide_event_type_filters` (boolean) → to hide the checkboxes
+ *     - `show_only_nearby_event_type` (boolean) → to default-select "Nearby Events"
+ *
+ * On apply, a `FilterCriteria` object containing the selected filters is returned.
+ * On reset, all filters are cleared and the UI is restored to default state.
+ *
+ * Example:
+ * Bundle args = new Bundle();
+ * args.putBoolean("hide_event_type_filters", true);
+ * FilterFragment fragment = new FilterFragment();
+ * fragment.setArguments(args);
+ * fragment.setFilterListener(...);
+ * getParentFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;

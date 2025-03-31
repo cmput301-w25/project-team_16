@@ -1,3 +1,11 @@
+/**
+ * Central registry for managing available EmotionalState instances.
+ * Supports registering, retrieving, and resetting both base and custom emotional states.
+ *
+ * Note: Modifications affect global state; use reset() to restore defaults.
+ */
+
+
 package com.example.team_16.models;
 
 import java.util.Collections;
@@ -8,14 +16,11 @@ import java.util.Set;
 public class EmotionalStateRegistry {
     private static final Map<String, EmotionalState> emotions = new HashMap<>();
 
-    // Initialize the registry with the base emotional states
     static {
         registerBaseEmotions();
     }
 
-    /**
-     * Registers the base emotional states required by the system.
-     */
+
     private static void registerBaseEmotions() {
         register(new EmotionalState("Anger"));
         register(new EmotionalState("Confusion"));

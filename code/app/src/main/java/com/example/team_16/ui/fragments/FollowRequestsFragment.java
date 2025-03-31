@@ -1,3 +1,33 @@
+/**
+ * FollowRequestsFragment.java
+ *
+ * Displays two tabs: Accepted Followers and Pending Follow Requests for the current user.
+ *
+ * Functionality:
+ * - Users can toggle between viewing:
+ *   1. Accepted followers (people who follow the user).
+ *   2. Pending requests (people who sent a follow request).
+ * - Supports accepting or rejecting incoming follow requests.
+ * - Allows the user to remove an accepted follower.
+ * - Provides a live search bar to filter results by username.
+ * - Displays an empty state message if no results match or no followers/requests exist.
+ * - Opens another user's profile when their card is clicked.
+ *
+ * Lifecycle:
+ * - onViewCreated initializes UI, sets up RecyclerView and listeners.
+ * - onResume sets the toolbar title using HomeActivity.
+ *
+ * Dependencies:
+ * - FirebaseDB: for accessing user/follow data.
+ * - PendingRequestsAdapter & AcceptedFollowersAdapter: for rendering lists and handling clicks.
+ * - OtherUserProfileFragment: for viewing another user’s profile.
+ *
+ * Notes:
+ * - `currentUserId` is fetched from FirebaseDB.
+ * - Animations are used to enhance tab switching.
+ * - Uses ViewModel-like patterns but operates directly with Firebase callbacks.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
@@ -63,8 +93,6 @@ public class FollowRequestsFragment extends Fragment {
 
         initViews(view);
         setupRecyclerView();
-
-
         btnAccepted.setSelected(true);
         btnPending.setSelected(false);
         showAcceptedFollowers();

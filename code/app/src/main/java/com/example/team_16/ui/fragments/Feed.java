@@ -1,3 +1,26 @@
+/**
+ * Feed Fragment
+ *
+ * This fragment displays a personalized feed of mood events posted by users the current user follows.
+ * It provides real-time filtering options and integrates with a FilterFragment to narrow down mood entries.
+ *
+ * Core Features:
+ * - Displays up to 3 recent mood events per followed user
+ * - Allows filtering by emotional state, trigger text, and time period (All Time, Last Year, etc.)
+ * - Handles dynamic UI updates based on filtering results
+ * - Navigates to:
+ *   - MoodDetails fragment when a mood event is clicked
+ *   - OtherUserProfileFragment when a user profile is clicked
+ * - Shows an empty state view when no results are available
+ *
+ * Integration:
+ * - Works closely with HomeActivity for toolbar and fragment navigation
+ * - Communicates with FilterFragment using the `FilterableFragment` interface
+ *
+ * Usage:
+ * Appears under the bottom navigation "Feed" tab to let users browse updates from people they follow.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
@@ -41,7 +64,7 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
     private FilterFragment.FilterCriteria currentCriteria = null;
 
     public Feed() {
-        // constructor
+
     }
 
     public static Feed newInstance() {
@@ -84,8 +107,6 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
         adapter = new FeedAdapter(getContext(), moodEvents);
         recyclerView.setAdapter(adapter);
 
-        // add new code to select a users profile
-        // If user taps entire feed item => open MoodDetails
         adapter.setOnItemClickListener(event -> {
             MoodDetails moodDetailsFragment = MoodDetails.newInstance(event.getId());
             if (getActivity() instanceof HomeActivity) {
@@ -94,7 +115,6 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
             }
         });
 
-        // If user taps the post owner's profile then open OtherUserProfileFragment
         adapter.setOnProfileClickListener(userId -> {
             OtherUserProfileFragment fragment = OtherUserProfileFragment.newInstance(userId);
             if (getActivity() instanceof HomeActivity) {
@@ -103,11 +123,8 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
             }
         });
 
-        // update the empty state
         updateEmptyState();
     }
-
-    // end new code
 
     private void updateEmptyState() {
         if (moodEvents.isEmpty()) {
@@ -154,7 +171,6 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
         for (MoodEvent event : fullMoodEvents) {
             boolean matches = true;
 
-            // Time Period Filter
             if (!criteria.timePeriod.equals("All Time")) {
                 Date eventDate = event.getTimestamp().toDate();
                 long diff = currentDate.getTime() - eventDate.getTime();
@@ -169,14 +185,12 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
                 }
             }
 
-            // Emotional State Filter
             if (matches && criteria.emotionalState != null) {
                 if (!criteria.emotionalState.equalsIgnoreCase(event.getEmotionalState().getName())) {
                     matches = false;
                 }
             }
 
-            // Trigger Reason Filter
             if (matches && !TextUtils.isEmpty(criteria.triggerReason)) {
                 if (event.getTrigger() == null || !event.getTrigger().toLowerCase().contains(criteria.triggerReason.toLowerCase())) {
                     matches = false;
@@ -231,7 +245,6 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
             }
         }
     }
-
 
     @Override
     public void onResume() {

@@ -1,3 +1,9 @@
+/**
+ * FollowingAdapter displays a list of users the current user is following.
+ * It supports user profile viewing and unfollowing actions.
+ * Uses Glide for image loading and handles click events via listener interfaces.
+ */
+
 package com.example.team_16.ui.adapters;
 
 import android.util.Log;

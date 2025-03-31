@@ -1,3 +1,33 @@
+/**
+ * FollowingFragment.java
+ *
+ * Displays a list of users that the currently logged-in user is following.
+ *
+ * Core Features:
+ * - Fetches the list of followed user IDs from Firebase.
+ * - For each user ID, fetches user data (username and profile image).
+ * - Displays the list using a RecyclerView with the FollowingAdapter.
+ * - Allows unfollowing a user directly from the list (removes them visually + updates Firebase).
+ * - Supports live search filtering via a search bar.
+ * - Shows an empty state message when there are no matching results or no followed users.
+ * - Navigates to another user's profile on click using OtherUserProfileFragment.
+ *
+ * Lifecycle:
+ * - onViewCreated initializes UI components, RecyclerView, and loads data.
+ * - onResume updates the toolbar title in the parent HomeActivity.
+ *
+ * Usage:
+ * - This fragment is typically hosted inside a container like R.id.fragment_container.
+ *
+ * Dependencies:
+ * - FirebaseDB.java (for retrieving user and following data)
+ * - FollowingAdapter.java (handles item rendering and actions)
+ * - OtherUserProfileFragment.java (used for profile redirection)
+ *
+ * Note:
+ * Make sure Firebase authentication is complete before showing this fragment.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;

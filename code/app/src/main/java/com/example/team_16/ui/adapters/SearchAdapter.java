@@ -1,3 +1,9 @@
+/**
+ * SearchAdapter is responsible for displaying a list of user profiles in the search results.
+ * It supports actions such as following, unfollowing, and viewing user profiles.
+ * The adapter dynamically updates UI elements based on the current user's following and pending request lists.
+ */
+
 package com.example.team_16.ui.adapters;
 
 import android.graphics.Color;
@@ -24,7 +30,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     public interface OnFollowClickListener {
         void onFollowClick(String targetUserId);
         void onUnfollowClick(String targetUserId);
-        // New - added to click on users
         void onUserClick(String targetUserId);
     }
 
@@ -58,10 +63,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         String userId = (String) user.get("id");
         String profileImageUrl = (String) user.get("profileImageUrl");
 
-        // Set user name
         holder.personName.setText(username);
 
-        // Load profile image using Glide; use a placeholder if needed.
         if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
             Glide.with(holder.itemView.getContext())
                     .load(profileImageUrl)
@@ -72,16 +75,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
             holder.profileImage.setImageResource(R.drawable.image);
         }
 
-        // New code: Entire row click -> open user profile
         holder.itemView.setOnClickListener(v -> {
             if (followClickListener != null) {
                 followClickListener.onUserClick(userId);
             }
         });
 
-        // Setup follow button states
         if (followingIds.contains(userId)) {
-            // UNFOLLOW state
             holder.followButton.setText("Unfollow");
             holder.followButton.setEnabled(true);
             holder.followButton.setBackgroundResource(R.drawable.unfollow_button_bg);
@@ -92,13 +92,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
                 }
             });
         } else if (pendingIds.contains(userId)) {
-            // PENDING state
             holder.followButton.setText("Pending");
             holder.followButton.setEnabled(false);
             holder.followButton.setBackgroundResource(R.drawable.pending_button_bg);
             holder.followButton.setTextColor(Color.parseColor("#1E293F"));
         } else {
-            // FOLLOW state
             holder.followButton.setText("Follow");
             holder.followButton.setEnabled(true);
             holder.followButton.setBackgroundResource(R.drawable.follow_button_bg);

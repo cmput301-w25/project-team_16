@@ -1,3 +1,8 @@
+/**
+ * Extends MoodHistory to enable full CRUD operations (add, edit, delete) on a user's mood events.
+ * Includes offline support by queuing changes locally and syncing with Firebase when reconnected.
+ */
+
 package com.example.team_16.models;
 
 import com.example.team_16.database.FirebaseDB;
@@ -6,13 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * PersonalMoodHistory extends MoodHistory with capabilities
- * for managing a user's own mood events (create, edit, delete)
- * and with offline capabilities for future implementations
- */
 public class PersonalMoodHistory extends MoodHistory {
-    // Track pending operations for offline functionality
     private final List<PendingOperation> pendingOperations;
 
     /**
@@ -35,7 +34,7 @@ public class PersonalMoodHistory extends MoodHistory {
     public void addEvent(MoodEvent event, FirebaseDB.FirebaseCallback<Boolean> callback) {
         event.setUserID(getUserId());
 
-        // Ensure the event has an ID
+    
         if (event.getId() == null || event.getId().isEmpty()) {
             event.setId(UUID.randomUUID().toString());
         }
@@ -193,11 +192,9 @@ public class PersonalMoodHistory extends MoodHistory {
             return;
         }
 
-        // Process each pending operation
         List<PendingOperation> operationsToProcess = new ArrayList<>(pendingOperations);
         pendingOperations.clear();
 
-        // Simple counter to track when all operations are complete
         final int[] completedOperations = {0};
         final boolean[] allSuccessful = {true};
 
@@ -207,7 +204,6 @@ public class PersonalMoodHistory extends MoodHistory {
                     firebaseDB.addMoodEvent(operation.getEvent(), success -> {
                         if (!success) {
                             allSuccessful[0] = false;
-                            // Re-queue failed operation
                             queuePendingOperation(operation.getType(), operation.getEvent());
                         }
                         completedOperations[0]++;
@@ -219,7 +215,6 @@ public class PersonalMoodHistory extends MoodHistory {
                     firebaseDB.updateMoodEvent(operation.getEvent().getId(), operation.getEvent(), success -> {
                         if (!success) {
                             allSuccessful[0] = false;
-                            // Re-queue failed operation
                             queuePendingOperation(operation.getType(), operation.getEvent());
                         }
                         completedOperations[0]++;
@@ -231,7 +226,6 @@ public class PersonalMoodHistory extends MoodHistory {
                     firebaseDB.deleteMoodEvent(operation.getEvent().getId(), success -> {
                         if (!success) {
                             allSuccessful[0] = false;
-                            // Re-queue failed operation
                             queuePendingOperation(operation.getType(), operation.getEvent());
                         }
                         completedOperations[0]++;

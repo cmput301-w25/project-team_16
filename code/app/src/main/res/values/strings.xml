@@ -26,14 +26,14 @@
     <!-- Strings for interactable elements on AddMood screen -->
     <string name="track_your_mood_text">Track Your Mood</string>
     <string name="how_are_you_feeling_text">How are you feeling?</string>
-    <string name="anger_text">😡 Anger</string>
-    <string name="confusion_text">🤔 Confusion</string>
-    <string name="disgust_text">🤮 Disgust</string>
-    <string name="fear_text">😰 Fear</string>
-    <string name="happiness_text">😊 Happiness</string>
-    <string name="sadness_text">☹️ Sadness</string>
-    <string name="shame_text">😔 Shame</string>
-    <string name="surprise_text">😳 Surprise</string>
+    <string name="anger_text">😡 Angry</string>
+    <string name="confusion_text">🤔 Confused</string>
+    <string name="disgust_text">🤮 Disgusted</string>
+    <string name="fear_text">😰 Scared</string>
+    <string name="happiness_text">😊 Happy</string>
+    <string name="sadness_text">☹️ Sad</string>
+    <string name="shame_text">😔 Ashamed</string>
+    <string name="surprise_text">😳 Surprised</string>
     <string name="trigger_optional_text">Reason</string>
     <string name="word_limit_text">Max 3 words, 20 characters</string>
     <string name="who_were_you_with_text">Who were you with?</string>

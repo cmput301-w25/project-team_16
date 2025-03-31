@@ -27,11 +27,13 @@
             <Button
                 android:id="@+id/updateImageButton"
 
-                android:layout_width="373dp"
-                android:layout_height="47dp"
-                android:backgroundTint="#ecd4d3"
+                android:layout_width="245dp"
+                android:layout_height="60dp"
+                android:backgroundTint="#ECD4D4"
+                android:layout_gravity="center_horizontal"
                 android:text="Update"
                 android:textColor="#573d3e" />
+
 
         </LinearLayout>
 
@@ -48,8 +50,8 @@
 
         <ImageView
             android:id="@+id/addMoodImage"
-            android:layout_width="0dp"
-            android:layout_height="250dp"
+            android:layout_width="370dp"
+            android:layout_height="321dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:scaleType="centerCrop"
@@ -70,13 +72,13 @@
 
         <Button
             android:id="@+id/confirmImageButton"
-            android:layout_width="373dp"
-            android:layout_height="47dp"
+            android:layout_width="240dp"
+            android:layout_height="60dp"
             android:layout_marginStart="22dp"
             android:layout_marginEnd="16dp"
-            android:backgroundTint="#61a5fa"
+            android:backgroundTint="#008080"
             android:text="Confirm"
-            android:textColor="#573d3e"
+            android:textColor="#ffffff"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

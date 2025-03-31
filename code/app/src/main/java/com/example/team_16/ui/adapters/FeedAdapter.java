@@ -1,3 +1,10 @@
+/**
+ * FeedAdapter binds mood events to the feed RecyclerView.
+ * It handles dynamic content such as emotional state visuals,
+ * user profile info, and optional mood images.
+ * Implements DiffUtil for efficient list updates and supports user/profile click interactions.
+ */
+
 package com.example.team_16.ui.adapters;
 
 import android.app.Activity;
@@ -18,12 +25,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.team_16.MoodTrackerApp;
+
 import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.example.team_16.models.MoodEvent;
-import com.example.team_16.models.UserProfile;
-import com.google.firebase.storage.FirebaseStorage;
+
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -34,9 +40,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import java.util.ArrayList;
 import java.util.Objects;
 
-/**
- * Adapter responsible for displaying and updating the recyclerView of mood events.
- */
+
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> {
     private final Context context;
     private List<MoodEvent> moodEvents;
@@ -46,9 +50,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public interface OnItemClickListener {
         void onItemClick(MoodEvent event);
     }
-    /**
-     * Interface for clicking on the post owner's profile (name or avatar).
-     */
+
     public interface OnProfileClickListener {
         void onProfileClick(String userId);
     }
@@ -58,7 +60,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void setOnProfileClickListener(OnProfileClickListener listener) {
         this.profileClickListener = listener;
     }
-    // end new code
 
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
@@ -259,7 +260,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            // Compare unique identifiers
             MoodEvent oldEvent = oldList.get(oldItemPosition);
             MoodEvent newEvent = newList.get(newItemPosition);
 

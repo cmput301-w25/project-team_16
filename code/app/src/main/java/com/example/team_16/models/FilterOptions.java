@@ -1,3 +1,10 @@
+/**
+ * Represents user-defined filter criteria for mood event queries.
+ * Includes filters by time period, emotional states, event types, and trigger keywords.
+ *
+ * Used when retrieving and displaying filtered mood history.
+ */
+
 package com.example.team_16.models;
 
 import java.util.ArrayList;

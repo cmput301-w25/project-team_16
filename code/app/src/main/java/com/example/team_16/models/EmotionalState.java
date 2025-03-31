@@ -1,3 +1,11 @@
+/**
+ * Represents a user's emotional state with display name, gradient color themes,
+ * emoji representation, and text color styling for UI display.
+ * Used across mood tracking and visualization features.
+ *
+ * Note: Ensure emotional state names match expected strings for correct styling.
+ */
+
 package com.example.team_16.models;
 import android.graphics.Color;
 
@@ -6,12 +14,9 @@ import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * Represents an emotional state with a display name, associated gradient, and text color.
- */
 public class EmotionalState implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final String name;  // Display name
+    private final String name;
 
     /**
      * Creates a new emotional state with the given name.
@@ -64,7 +69,6 @@ public class EmotionalState implements Serializable {
             case "Shame":
                 return com.example.team_16.R.drawable.gradient_shame;
             default:
-                // Return a default gradient if no matching emotion is found
                 return com.example.team_16.R.drawable.gradient_default;
         }
     }
@@ -108,29 +112,26 @@ public class EmotionalState implements Serializable {
     public int getTextColor() {
         switch (name) {
             case "Happiness":
-                return Color.parseColor("#594D01");  // Dark yellow-gold from FCD34D
+                return Color.parseColor("#594D01");
             case "Surprise":
-                return Color.parseColor("#593A01");  // Dark orange from F8AA6C
+                return Color.parseColor("#593A01");
             case "Anger":
-                return Color.parseColor("#590001");  // Dark red from EF4444
+                return Color.parseColor("#590001");
             case "Confusion":
-                return Color.parseColor("#320159");  // Dark purple from BB80FF
+                return Color.parseColor("#320159");
             case "Disgust":
-                return Color.parseColor("#015934");  // Dark green from 80FFA8
+                return Color.parseColor("#015934");
             case "Fear":
-                return Color.parseColor("#353535");  // Dark gray from 898989
+                return Color.parseColor("#353535");
             case "Sadness":
-                return Color.parseColor("#013159");  // Dark blue from 83B9FA
+                return Color.parseColor("#013159");
             case "Shame":
-                return Color.parseColor("#590031");  // Dark pink from F392C7
+                return Color.parseColor("#590031");
             default:
-                return Color.parseColor("#333333");  // Default dark gray
+                return Color.parseColor("#333333");
         }
     }
 
-    /**
-     * Return emoji based on emoji name
-     */
     public String getEmoji() {
         switch (name) {
             case "Happiness":
