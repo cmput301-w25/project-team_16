@@ -485,8 +485,12 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
         userProfile.getPersonalMoodHistory().refresh(() -> {
             fullMoodEvents = userProfile.getPersonalMoodHistory().getAllEvents();
 
-            fullMoodEvents.sort((event1, event2) ->
-                    event2.getTimestamp().compareTo(event1.getTimestamp()));
+            fullMoodEvents.sort((event1, event2) -> {
+                if (event1.getTimestamp() == null && event2.getTimestamp() == null) return 0;
+                if (event1.getTimestamp() == null) return 1;
+                if (event2.getTimestamp() == null) return -1;
+                return event2.getTimestamp().compareTo(event1.getTimestamp());
+            });
 
             requireActivity().runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
