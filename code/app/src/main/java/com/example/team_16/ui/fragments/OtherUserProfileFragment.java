@@ -1,3 +1,40 @@
+/**
+ * OtherUserProfileFragment.java
+ *
+ * This fragment displays another user's public profile, including:
+ * - Their profile image, name, and username
+ * - Followers and following counts
+ * - Mood statistics such as:
+ *     - Total mood entries (only public ones)
+ *     - Most frequently posted mood (emoji)
+ * - A list of their public mood events shown in a RecyclerView
+ * - A Follow/Unfollow/Pending button based on the relationship status
+ *
+ * Key Features:
+ * - Uses `UserProfile.loadFromFirebase` to fetch the target user's data
+ * - Filters out private mood events unless the profile is the current user
+ * - Loads and displays mood history using `MoodHistoryAdapter`
+ * - Determines the most frequent mood via frequency counting
+ * - Uses FirebaseDB to manage follow requests and real-time status
+ *
+ * Usage:
+ * - To open this fragment, use `OtherUserProfileFragment.newInstance(targetUserId)`
+ * - Used typically from:
+ *     - Followers/following list
+ *     - Search results
+ *     - Profile click on mood event cards
+ *
+ * Dependencies:
+ * - Glide for loading profile images
+ * - FirebaseDB for database access
+ * - MoodTrackerApp for current user access
+ * - MoodDetails fragment for viewing full mood event details
+ *
+ * Note:
+ * - Follows the same UI pattern as the logged-in user's profile, but read-only
+ * - Follow button state is dynamically set based on currentUser → targetUser relation
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.graphics.Color;
@@ -34,14 +71,11 @@ public class OtherUserProfileFragment extends Fragment {
 
     private static final String ARG_USER_ID = "argUserId";
 
-    // The user we want to display
     private String targetUserId;
     private UserProfile targetUserProfile;
 
-    // Current user (the one who is logged in) - needed for follow/unfollow checks
     private UserProfile currentUserProfile;
 
-    // UI elements
     private ShapeableImageView profileImage;
     private TextView userName;
     private TextView userHandle;
@@ -91,10 +125,8 @@ public class OtherUserProfileFragment extends Fragment {
         moodHistoryRecyclerView = view.findViewById(R.id.moodHistoryRecyclerView);
         btnFollow = view.findViewById(R.id.btnFollow);
 
-        // Get current user profile from the application
         currentUserProfile = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
 
-        // Load the target user from Firestore
         FirebaseDB firebaseDB = FirebaseDB.getInstance(requireContext());
         UserProfile.loadFromFirebase(firebaseDB, targetUserId, profile -> {
             if (profile == null) {
@@ -104,10 +136,8 @@ public class OtherUserProfileFragment extends Fragment {
             }
             targetUserProfile = profile;
 
-            // Display the target user's info, including profile image
             displayUserProfile();
 
-            // Update the Follow/Unfollow button after user profile is loaded
             refreshFollowButton();
         });
     }
@@ -121,7 +151,6 @@ public class OtherUserProfileFragment extends Fragment {
      *  - Mood history list
      */
     private void displayUserProfile() {
-        // Load profile image
         String imageUrl = targetUserProfile.getProfileImageUrl();
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(requireContext())
@@ -136,10 +165,8 @@ public class OtherUserProfileFragment extends Fragment {
         userHandle.setText("@" + targetUserProfile.getUsername());
         refreshFollowCounts();
 
-        // Get and filter mood events
         List<MoodEvent> allEvents = targetUserProfile.getPersonalMoodHistory().getAllEvents();
 
-        // Filtering private posts of another user's profile
         if (!targetUserProfile.getId().equals(currentUserProfile.getId())) {
             List<MoodEvent> publicEvents = new ArrayList<>();
             for (MoodEvent event : allEvents) {

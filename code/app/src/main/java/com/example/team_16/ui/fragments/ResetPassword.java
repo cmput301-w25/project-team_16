@@ -1,3 +1,31 @@
+/**
+ * ResetPassword.java
+ *
+ * A fragment that provides UI and logic for resetting a user's password.
+ *
+ * Key Features:
+ * - Allows users to input their email address to request a password reset link.
+ * - Validates the email input field and displays an error if empty.
+ * - Integrates with FirebaseDB to send the password reset email.
+ * - Uses a scale-down animation on button click for a responsive UI.
+ * - Navigates back to the previous screen on successful reset email trigger.
+ *
+ * UI Components:
+ * - Email input field with validation (`TextInputLayout` + `EditText`)
+ * - Reset button to trigger the email
+ * - Back navigation via custom toolbar
+ *
+ * Dependencies:
+ * - `FirebaseDB`: Custom Firebase wrapper for authentication methods
+ * - `activity_reset_password.xml`: Layout file containing the reset UI
+ * - `R.anim.scale_down`: Animation used on button interaction
+ * - `R.drawable.arrow_back_24px`: Custom back arrow icon for toolbar
+ *
+ * Usage:
+ * - Typically navigated to from the Login screen if the user forgets their password.
+ * - After successful reset email, the fragment returns to the previous screen.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
@@ -24,21 +52,15 @@ import com.example.team_16.database.FirebaseDB;
 import com.google.android.material.textfield.TextInputLayout;
 
 
-/**
- * Fragment for resetting password.
- * Provides a field for entering an email address and a button to send a reset link.
- */
+
 public class ResetPassword extends Fragment {
 
-    // UI elements for reset functionality
     private TextInputLayout emailLayout;
     private EditText emailEditText;
     private Button requestResetButton;
 
-    // FirebaseDB instance
     private FirebaseDB firebaseDB;
 
-    // default constructor
     public ResetPassword() {
     }
 
@@ -48,13 +70,10 @@ public class ResetPassword extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        // reset password layout (activity_reset_password.xml)
         View view = inflater.inflate(R.layout.activity_reset_password, container, false);
 
-        // Initialize FirebaseDB
         firebaseDB = FirebaseDB.getInstance(requireContext());
 
-        // Setup the toolbar as ActionBar with back arrow
         Toolbar toolbar = view.findViewById(R.id.resetToolbar);
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
         activity.setSupportActionBar(toolbar);
@@ -64,15 +83,12 @@ public class ResetPassword extends Fragment {
             activity.getSupportActionBar().setTitle("");
         }
 
-        // Handle the back arrow click
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
-        // UI elements in the layout
         emailLayout = view.findViewById(R.id.emailLayout);
         emailEditText = view.findViewById(R.id.email);
         requestResetButton = view.findViewById(R.id.requestResetButton);
 
-        // Handle the reset button click
         requestResetButton.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
             Animation scaleDown = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_down);
@@ -80,7 +96,6 @@ public class ResetPassword extends Fragment {
             requestResetButton.startAnimation(scaleDown);
 
             if (TextUtils.isEmpty(email)) {
-                // Set error with a red asterisk on the email field
                 emailLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Email required"));
                 Toast.makeText(requireContext(), "Enter an email!", Toast.LENGTH_SHORT).show();
             } else {
@@ -113,7 +128,6 @@ public class ResetPassword extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Clear error message on the email field when the view is destroyed
         if (emailEditText != null) {
             emailEditText.setError(null);
         }

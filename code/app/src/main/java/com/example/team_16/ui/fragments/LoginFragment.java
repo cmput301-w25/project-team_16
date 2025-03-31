@@ -1,3 +1,32 @@
+/**
+ * LoginFragment.java
+ *
+ * This fragment handles the login screen for the Mood Tracker app.
+ *
+ * Core Responsibilities:
+ * - Validates user input (username and password).
+ * - Displays error messages for empty fields using TextInputLayouts.
+ * - Performs login via FirebaseDB and notifies the host activity on success.
+ * - Handles transitions to:
+ *   - SignUp fragment (for new users)
+ *   - ResetPassword fragment (for forgotten passwords)
+ *
+ * Features:
+ * - Animations on button clicks for better UX.
+ * - Nested fragment navigation using a FrameLayout.
+ * - Clears error states when switching views.
+ * - Uses `LoginFragmentListener` to communicate login success to the parent activity.
+ * - Implements `SignUp.SignUpListener` to respond to successful sign-ups.
+ *
+ * UI Elements:
+ * - Login form (username + password).
+ * - Sign-up and reset password buttons.
+ * - `login_fragment_container` used for nested fragment navigation.
+ *
+ * Usage:
+ * The host activity must implement `LoginFragmentListener`.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.content.Context;
@@ -24,13 +53,8 @@ import com.example.team_16.models.UserProfile;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-/**
- * This is the login screen of the app.
- * Users can enter their username and password to login.
- * There are also options to sign up and reset password.
- */
+
 public class LoginFragment extends Fragment implements SignUp.SignUpListener {
-    // Interface for communication with host activity
     public interface LoginFragmentListener {
         void onLoginSuccess(String userId);
     }
@@ -44,7 +68,6 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
     private LinearLayout loginLinearLayout;
     private FrameLayout fragmentContainer;
 
-    // FirebaseDB instance
     private FirebaseDB firebaseDB;
 
     @Override
@@ -63,13 +86,10 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_login, container, false);
 
-        // Initialize Firebase
         firebaseDB = FirebaseDB.getInstance(requireContext());
 
-        // Makes sure the user has to log in / sign up every time
         firebaseDB.logout();
 
-        // Initialize UI elements
         loginLinearLayout = view.findViewById(R.id.loginLinear);
         fragmentContainer = view.findViewById(R.id.login_fragment_container);
         usernameInputLayout = view.findViewById(R.id.usernameInputLayout);
@@ -96,7 +116,6 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
             // The next piece of code is to get the red error messages
             boolean hasError = false;
 
-            // Check username field
             if (username.isEmpty()) {
                 usernameInputLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Username required"));
                 hasError = true;
@@ -104,7 +123,6 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
                 usernameEditText.setError(null);
                 usernameInputLayout.setError(null);
             }
-            // Check password field
             if (password.isEmpty()) {
                 passwordInputLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Password required"));
                 hasError = true;
@@ -112,7 +130,6 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
                 passwordEditText.setError(null);
                 passwordInputLayout.setError(null);
             }
-            // If any field is empty, show toast and stop processing
             if (hasError) {
                 Toast.makeText(requireContext(), "Please enter both username and password!", Toast.LENGTH_SHORT).show();
                 return;
@@ -124,7 +141,6 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
                 if (message.equals("Login successful!")) {
                     String userId = firebaseDB.getCurrentUserId();
 
-                    // Just notify the activity about successful login with userId
                     if (listener != null) {
                         listener.onLoginSuccess(userId);
                     }
@@ -132,9 +148,7 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
             });
         });
 
-        // Show the SignUp Fragment
         signUpButton.setOnClickListener(v -> {
-            // Clear errors on login fields before showing sign-up
             usernameEditText.setError(null);
             passwordEditText.setError(null);
 
@@ -144,9 +158,7 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
             showNestedFragment(new SignUp());
         });
 
-        // Show the ResetPassword Fragment
         resetPasswordButton.setOnClickListener(v -> {
-            // Clear errors on login fields before showing sign-up
             usernameEditText.setError(null);
             passwordEditText.setError(null);
 
@@ -162,20 +174,17 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
      * @param fragment The fragment to show
      */
     private void showNestedFragment(Fragment fragment) {
-        // First make the container visible - it needs to be visible for the animation to work
         fragmentContainer.setVisibility(View.VISIBLE);
 
-        // Create the transaction with animations
         FragmentTransaction transaction = getChildFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(
-                        R.anim.slide_in_right,  // Fragment enters from right
-                        R.anim.slide_out_left,   // Current fragment exits to left
-                        R.anim.slide_in_left,    // Fragment enters from left (when popping back stack)
-                        R.anim.slide_out_right   // Current fragment exits to right (when popping back stack)
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
                 );
 
-        // Replace any existing fragment and add to back stack
         transaction.replace(R.id.login_fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
@@ -193,10 +202,6 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
         return false;
     }
 
-    /**
-     * Callback from SignUp fragment when sign-up is successful
-     * This just passes the userId to the activity
-     */
     @Override
     public void onSignUpSuccess(String userId) {
         if (listener != null) {

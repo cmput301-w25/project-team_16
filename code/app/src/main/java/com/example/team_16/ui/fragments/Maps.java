@@ -1,3 +1,39 @@
+/**
+ * Maps.java
+ *
+ * This fragment displays a Google Map populated with mood events from the user and people they follow.
+ * It supports interactive filtering, marker clustering, location-based proximity filtering,
+ * and emoji-based marker icons representing emotional states.
+ *
+ * Features:
+ * - Displays mood events as emoji markers on the map.
+ * - Shows user’s current location using the FusedLocationProviderClient.
+ * - Supports filtering by:
+ *     - Time period (All Time, Last Year, Last Month, Last Week)
+ *     - Emotional state (Happiness, Sadness, Anger, etc.)
+ *     - Trigger keyword
+ *     - Event type (Personal, Following, Nearby)
+ * - When a marker is clicked, detailed mood event information appears in a bottom card.
+ * - Uses cached user data to avoid redundant database queries.
+ * - If user location permission is denied, still renders event markers without proximity-based filtering.
+ *
+ * Usage:
+ * - Must be used within an activity implementing `HomeActivity` for toolbar updates and navigation.
+ * - Implements:
+ *     - `FilterableFragment` (to trigger filtering UI)
+ *     - `FilterFragment.FilterListener` (to receive filter criteria)
+ *     - `OnMapReadyCallback` (to initialize and populate the map)
+ *
+ * Internal Utility:
+ * - Emoji markers are drawn using a canvas on a bitmap.
+ * - Uses Haversine formula to compute distance between event and user.
+ *
+ * Limitations:
+ * - No clustering for overlapping events.
+ * - Location updates are one-time (not continuously tracked).
+ * - Relies on internet for map and image rendering.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.Manifest;

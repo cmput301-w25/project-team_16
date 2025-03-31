@@ -1,3 +1,10 @@
+/**
+ * MoodHistoryAdapter displays a list of mood events for a user’s personal history.
+ * Supports rendering emotional states, images, and contextual details.
+ * Provides edit and delete functionality for events owned by the current user.
+ * Uses DiffUtil for efficient updates and Glide for image loading.
+ */
+
 package com.example.team_16.ui.adapters;
 
 import android.app.Activity;
@@ -46,7 +53,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
         this.currentUserId = userId;
     }
 
-    // new code to edit and delete a mood event
     public interface OnMoodEventInteractionListener {
         void onEditClick(MoodEvent event);
         void onDeleteClick(MoodEvent event);
@@ -185,7 +191,6 @@ public class MoodHistoryAdapter extends RecyclerView.Adapter<MoodHistoryAdapter.
             }
         });
 
-        // end new code
     }
 
     @Override

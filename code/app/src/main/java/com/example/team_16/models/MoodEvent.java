@@ -1,3 +1,13 @@
+/**
+ * Represents a single mood event logged by a user, including their emotional state,
+ * optional triggers, social context, timestamp, location, photo, and visibility settings.
+ *
+ * Supports serialization for Firestore and local offline management.
+ * Includes utility methods for copying, formatting, and Firestore interactions.
+ *
+ * Note: Must contain an EmotionalState to be considered valid.
+ */
+
 package com.example.team_16.models;
 
 import com.example.team_16.database.FirebaseDB;
@@ -16,42 +26,23 @@ import java.util.Date;
 public class MoodEvent implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    /** Unique identifier for the mood event */
     private String id;
 
-    /** Timestamp of when the mood event occurred, automatically set by Firestore */
     @ServerTimestamp
     private transient Timestamp timestamp;
     private long timestampMillis;
-
-    /** Optional description of what triggered this emotional state */
     private String trigger;
-
-    /** The emotional state recorded for this mood event (required) */
     private EmotionalState emotionalState;
-
-    /** Reference to the user who created this mood event */
     private String userID;
-
-    /** Optional description of the social context (e.g., "With friends") */
     private String socialSituation;
     private String photoFilename;
-
-    /** Whether post is public or private */
-    private String postType = "Public"; // Default to Public
-
-    /** Optional location information for this mood event */
+    private String postType = "Public";
     private Double latitude = null;
     private Double longitude = null;
     private String placeName;
     private boolean isPrivate;
-
-    /** Optional photo for this mood event */
     private String photoUrl;
 
-    /**
-     * Default constructor required for Firestore deserialization.
-     */
     public MoodEvent() {
     }
 

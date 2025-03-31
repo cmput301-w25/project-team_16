@@ -1,3 +1,10 @@
+/**
+ * Manages a user's mood history, providing access to their personal or followed users' mood events.
+ * Supports fetching all, recent, or filtered events from Firebase based on mode.
+ *
+ * Designed for read-only operations; editing/deleting is handled by PersonalMoodHistory.
+ */
+
 package com.example.team_16.models;
 
 import com.example.team_16.database.FirebaseDB;
@@ -7,16 +14,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Base class for managing collections of mood events
- * This class only handles fetching/retrieving mood events, not modifying them
- */
 public class MoodHistory {
     // Constants for history modes
     public static final int MODE_PERSONAL = 1;
     public static final int MODE_FOLLOWING = 2;
 
-    // Attributes
     private final String userId;
     private final int mode;
     private List<MoodEvent> moodEvents;
@@ -47,9 +49,6 @@ public class MoodHistory {
         return firebaseDB;
     }
 
-    /**
-     * Loads the appropriate events based on the mode
-     */
     private void loadEvents() {
         if (mode == MODE_PERSONAL) {
             firebaseDB.getMoodEvents(
@@ -82,9 +81,6 @@ public class MoodHistory {
         }
     }
 
-    /**
-     * Interface for data load callback
-     */
     public interface DataLoadCallback {
         void onDataLoaded(List<MoodEvent> events);
     }
@@ -101,9 +97,6 @@ public class MoodHistory {
         }
     }
 
-    /**
-     * Refreshes the events list from Firebase
-     */
     public void refresh() {
         loadEvents();
     }
@@ -211,10 +204,6 @@ public class MoodHistory {
             );
         }
     }
-
-    /**
-     * Protected method to update the mood events list
-     */
     protected void setMoodEvents(List<MoodEvent> events) {
         this.moodEvents = new ArrayList<>(events);
     }

@@ -1,3 +1,39 @@
+/**
+ * MoodDetails.java
+ *
+ * A Fragment that displays the full details of a specific MoodEvent.
+ * It shows information such as:
+ * - Mood name and emoji
+ * - Who posted the mood, their username, and profile picture
+ * - When and where the mood was posted
+ * - A description or trigger note
+ * - A mood image (if available)
+ * - List of comments on the mood
+ * - Comment input field for users (except the mood owner)
+ *
+ * Key Features:
+ * - Loads mood data passed by ID through fragment arguments
+ * - Fetches mood owner's info and image from Firebase
+ * - Dynamically styles the UI based on the selected emotion (color & background)
+ * - Allows users (except the mood poster) to comment on the mood
+ * - Shows time ago using modern Android time formatting (if supported)
+ * - Utilizes RecyclerView and DiffUtil for efficient comment updates
+ *
+ * Usage:
+ * This fragment should be launched using `MoodDetails.newInstance(moodId)`
+ * and passed the ID of the mood event to display. It fetches all mood events
+ * from the current user's personal and following mood histories to find the target event.
+ *
+ * Requirements:
+ * - UserProfile must be set in the MoodTrackerApp application instance
+ * - MoodEvent ID must be passed via arguments
+ * - FirebaseDB must be properly initialized to access comments and user data
+ *
+ * Limitations:
+ * - Relies on the presence of all mood events locally in userProfile histories
+ * - Only works with Android O and above for precise "time ago" formatting
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.annotation.SuppressLint;

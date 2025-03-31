@@ -1,3 +1,36 @@
+/**
+ * SignUp.java
+ *
+ * A fragment that handles the user sign-up process in the Mood Tracker app.
+ * Users can register by providing their full name, username, email, and password.
+ *
+ * Features:
+ * - Validates user input for proper formatting and completeness.
+ * - Displays inline error messages using `TextInputLayout` if validation fails.
+ * - Uses `FirebaseDB` to create a new user in the database.
+ * - Automatically logs the user in upon successful registration.
+ * - Notifies the parent activity or fragment via `SignUpListener` on successful sign-up.
+ *
+ * UI Components:
+ * - `TextInputLayout`s for full name, username, email, and password input.
+ * - `EditText` fields tied to the layouts for user input.
+ * - A `signUpButton` that triggers validation and account creation.
+ * - A `Toolbar` with a back button to return to the login screen.
+ *
+ * Validations:
+ * - Full name must not be empty.
+ * - Username must be 3–30 characters long, no spaces, only letters, numbers, and underscores.
+ * - Email must not be empty (further format validation assumed to be handled by Firebase).
+ * - Password must not be empty (additional strength checks can be added as needed).
+ *
+ * Dependencies:
+ * - `FirebaseDB`: Used to interact with Firebase Authentication and Firestore.
+ *
+ * Navigation:
+ * - On success, `onSignUpSuccess(String userId)` is triggered in the hosting component.
+ * - Toolbar back button allows navigation back to the previous screen.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.content.Context;
@@ -23,36 +56,28 @@ import com.example.team_16.R;
 import com.example.team_16.database.FirebaseDB;
 import com.google.android.material.textfield.TextInputLayout;
 
-/**
- * Fragment for user sign-up.
- * Allows users to register by entering their full name, username, email, and password.
- */
+
 public class SignUp extends Fragment {
-    // Interface for communication with parent fragment/activity
     public interface SignUpListener {
         void onSignUpSuccess(String userId);
     }
 
     private SignUpListener listener;
 
-    // UI elements for sign up
     private TextInputLayout nameLayout, usernameLayout, emailLayout, passwordLayout;
     private EditText nameEditText, usernameEditText, emailEditText, passwordEditText;
     private Button signUpButton;
 
-    // FirebaseDB instance
     private FirebaseDB firebaseDB;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
-        // Try to get the listener from parent fragment first
         Fragment parentFragment = getParentFragment();
         if (parentFragment instanceof SignUpListener) {
             listener = (SignUpListener) parentFragment;
         }
-        // If not found in parent fragment, try the activity
         else if (context instanceof SignUpListener) {
             listener = (SignUpListener) context;
         } else {
@@ -61,7 +86,6 @@ public class SignUp extends Fragment {
         }
     }
 
-    // Default constructor
     public SignUp() {
     }
 
@@ -71,13 +95,10 @@ public class SignUp extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        // Sign up layout (activity_sign_up.xml)
         View view = inflater.inflate(R.layout.activity_sign_up, container, false);
 
-        // Initialize FirebaseDB
         firebaseDB = FirebaseDB.getInstance(requireContext());
 
-        // Setup the toolbar as ActionBar with back arrow
         Toolbar toolbar = view.findViewById(R.id.signUpToolbar);
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
         activity.setSupportActionBar(toolbar);
@@ -87,7 +108,6 @@ public class SignUp extends Fragment {
             activity.getSupportActionBar().setTitle("");
         }
 
-        // Handle the back arrow click
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         nameLayout = view.findViewById(R.id.nameLayout);
@@ -95,14 +115,12 @@ public class SignUp extends Fragment {
         emailLayout = view.findViewById(R.id.emailLayout);
         passwordLayout = view.findViewById(R.id.passwordLayout);
 
-        // Initialize UI elements
         nameEditText = view.findViewById(R.id.name);
         usernameEditText = view.findViewById(R.id.username);
         emailEditText = view.findViewById(R.id.email);
         passwordEditText = view.findViewById(R.id.password);
         signUpButton = view.findViewById(R.id.signUpButton);
 
-        // Handle sign up button click
         signUpButton.setOnClickListener(v -> {
             attemptSignUp();
 
@@ -113,11 +131,8 @@ public class SignUp extends Fragment {
         return view;
     }
 
-    /**
-     * Validates input fields and attempts to register a new user using FirebaseDB.
-     */
+
     private void attemptSignUp() {
-        // This section retrieves and trims the input values
         String name = nameEditText.getText().toString().trim();
         String username = usernameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
@@ -125,33 +140,26 @@ public class SignUp extends Fragment {
 
         boolean hasError = false;
 
-        // Check "Full Name"
         if (name.isEmpty()) {
-            // Set error on the LAYOUT
             nameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Name required"));
             hasError = true;
         } else {
-            // Clear layout error
             nameLayout.setError(null);
         }
 
-        // Check username
         if (username.isEmpty()) {
             usernameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Username required"));
             hasError = true;
-            // check length between 3 and 30
         } else if (username.length() < 3 || username.length() > 30) {
             usernameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Must be 3-30 characters"));
             hasError = true;
 
-            // check spaces - present error if invalid
         } else if (username.contains(" ")) {
             usernameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> No spaces allowed"));
             hasError = true;
 
-            // ensure only allowed characters using regex
+            //  only allowed characters using regex
         } else if (!username.matches("^[A-Za-z0-9_]+$")) {
-            // Check for invalid characters
             usernameLayout.setError(Html.fromHtml("<font color='#FF0000'>*</font> Letters, numbers, underscores only"));
             hasError = true;
 
@@ -175,25 +183,21 @@ public class SignUp extends Fragment {
             passwordLayout.setError(null);
         }
 
-        // If any field is invalid, show toast and stop processing
         if (hasError) {
             Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Call FirebaseDB signup method
         firebaseDB.signup(name, username, email, password, message -> {
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
 
             if (message.equals("Signup successful!")) {
-                // Automatically log in the user after successful signup
                 firebaseDB.login(username, password, loginMessage -> {
                     Toast.makeText(requireContext(), loginMessage, Toast.LENGTH_SHORT).show();
 
                     if (loginMessage.equals("Login successful!")) {
                         String userId = firebaseDB.getCurrentUserId();
 
-                        // Notify the listener about successful signup
                         if (listener != null) {
                             listener.onSignUpSuccess(userId);
                         }
@@ -203,13 +207,10 @@ public class SignUp extends Fragment {
         });
     }
 
-    /**
-     * Clears the error messages
-     */
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Clear any error messages before the view is destroyed
         if (nameEditText != null) nameEditText.setError(null);
         if (usernameEditText != null) usernameEditText.setError(null);
         if (emailEditText != null) emailEditText.setError(null);

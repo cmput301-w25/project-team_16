@@ -1,3 +1,33 @@
+/**
+ * Search.java
+ *
+ * A fragment that allows users to search for other users by their username,
+ * and follow or unfollow them directly from the search results.
+ *
+ * Key Features:
+ * - Uses FirebaseDB to fetch matching usernames.
+ * - Filters out the current user from the results.
+ * - Allows users to send follow requests or unfollow directly.
+ * - Integrates with a `SearchAdapter` to handle UI interactions.
+ * - Displays a message if no users are found.
+ *
+ * UI Components:
+ * - `EditText searchBar`: for typing in the search query.
+ * - `RecyclerView peopleRecyclerView`: displays matched users.
+ * - `TextView noSearchMessage`: shown when there are no results.
+ *
+ * Interaction Flow:
+ * - On text change in `searchBar`, performs a real-time search.
+ * - Search results are updated via the `SearchAdapter`.
+ * - Follow/unfollow actions are triggered via the adapter callbacks.
+ * - Clicking on a user opens their profile using `OtherUserProfileFragment`.
+ *
+ * Dependencies:
+ * - `FirebaseDB`: handles backend user lookup and follow/unfollow operations.
+ * - `UserProfile`: provides current user's data and methods for following users.
+ * - `SearchAdapter`: custom adapter to display search results with interaction support.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.os.Bundle;
@@ -68,7 +98,6 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
             }
         });
 
-        // Show the message initially
         noSearchMessage.setVisibility(View.VISIBLE);
         peopleRecyclerView.setVisibility(View.GONE);
     }
@@ -117,10 +146,8 @@ public class Search extends Fragment implements SearchAdapter.OnFollowClickListe
         adapter.setUsers(filteredUsers);
     }
 
-    // New Feature to click on users profile
     @Override
     public void onUserClick(String targetUserId) {
-        // Navigate to a new fragment that shows the clicked user's profile
         goToUserProfile(targetUserId);
     }
 

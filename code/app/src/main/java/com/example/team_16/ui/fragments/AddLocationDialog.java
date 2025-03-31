@@ -1,3 +1,22 @@
+/**
+ * AddLocationDialog is a DialogFragment that allows users to select a location
+ * by interacting with a Google Map. Users can either:
+ * - Tap on the map to place a marker and select a location
+ * - Use the search bar to look up a place by name
+ * - Use their current location as a default starting point
+ *
+ * Key Features:
+ * - Shows Google Map with zoom and gesture controls
+ * - Supports manual pin placement and geocoding for address retrieval
+ * - Uses Geocoder for reverse geocoding and location name display
+ * - Notifies the calling fragment or activity via the LocationSelectionListener
+ *
+ * Usage:
+ * Typically used when the user wants to tag a mood event with a specific location.
+ * After selection, the selected coordinates and place name are passed back via
+ * the LocationSelectionListener interface.
+ */
+
 package com.example.team_16.ui.fragments;
 
 import android.content.Context;
@@ -78,20 +97,16 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
             return false;
         });
 
-        // Initialize location provider
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        // Initialize the map fragment
         SupportMapFragment mapFragment = (SupportMapFragment)
                 getChildFragmentManager().findFragmentById(R.id.mapFragment);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
 
-        // Cancel button (dismiss dialog without saving)
         cancelButton.setOnClickListener(v -> dismiss());
 
-        // Save button (return data to AddMood class)
         saveButton.setOnClickListener(v -> {
             if (selectedLatLng == null) {
                 Toast.makeText(getContext(), "Please select a location.", Toast.LENGTH_SHORT).show();
@@ -101,7 +116,6 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
             getAddressFromLatLng(selectedLatLng);
 
             if (locationListener != null) {
-                // Send the selected location back
                 locationListener.onLocationSelected(selectedLatLng, selectedPlaceName);
                 dismiss();
             }
@@ -115,11 +129,10 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Enable zoom controls and gestures
-        mMap.getUiSettings().setZoomControlsEnabled(true); // Show zoom buttons (+/-)
-        mMap.getUiSettings().setZoomGesturesEnabled(true); //  Allow pinch-to-zoom
-        mMap.getUiSettings().setScrollGesturesEnabled(true); // Allow scrolling
-        mMap.getUiSettings().setRotateGesturesEnabled(true); // Allow rotation
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
+        mMap.getUiSettings().setScrollGesturesEnabled(true);
+        mMap.getUiSettings().setRotateGesturesEnabled(true);
 
         try {
             fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
@@ -160,7 +173,7 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
             List<Address> addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
-                selectedPlaceName = address.getAddressLine(0);  // Get full address
+                selectedPlaceName = address.getAddressLine(0);
             } else {
                 selectedPlaceName = "Unknown Location";
             }
@@ -188,7 +201,6 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
                 Address address = addresses.get(0);
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-                // Update map and marker
                 if (mMap != null) {
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
 
@@ -200,7 +212,6 @@ public class AddLocationDialog extends DialogFragment implements OnMapReadyCallb
                             .title("Searched Location"));
                     selectedLatLng = latLng;
 
-                    // Update place name
                     getAddressFromLatLng(latLng);
                 }
             } else {

@@ -1,3 +1,8 @@
+/**
+ * Represents a user in the mood tracking application.
+ * Encapsulates user data, mood history (personal and following), and social features like following and follow requests.
+ * Also provides methods to manage profile updates, password reset, and offline sync.
+ */
 package com.example.team_16.models;
 
 
@@ -8,6 +13,7 @@ import com.example.team_16.utils.MoodAnalytics;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+
 import java.util.List;
 import java.util.Map;
 
@@ -16,19 +22,22 @@ import java.util.Map;
  */
 public class
 UserProfile {
+
     // Core user information
     private final String id;
+
     private String username;
     private String fullName;
     private String email;
     private String profileImageUrl;
 
-    // Firebase database interface
     private final FirebaseDB firebaseDB;
+
 
     // Mood-related components
     private final PersonalMoodHistory personalMoodHistory;
     private final MoodHistory followingMoodHistory;
+
 
 
     // New follow-related fields
