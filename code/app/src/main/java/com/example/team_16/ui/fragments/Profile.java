@@ -25,6 +25,7 @@ import com.example.team_16.models.UserProfile;
 import com.example.team_16.ui.activity.HomeActivity;
 import com.example.team_16.ui.adapters.MoodHistoryAdapter;
 import com.example.team_16.utils.TestDataGenerator;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.ArrayList;
@@ -266,32 +267,63 @@ public class Profile extends Fragment implements FilterableFragment, FilterFragm
     }
 
     private void generateTestData() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Generate Test Data")
-                .setMessage("This will generate test mood events for February 2025. Continue?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    // Show loading dialog
-                    ProgressDialog progressDialog = new ProgressDialog(requireContext());
-                    progressDialog.setMessage("Generating test data...");
-                    progressDialog.setCancelable(false);
-                    progressDialog.show();
+        String[] months = {"February 2025", "March 2025"};
 
-                    // Generate test data
-                    TestDataGenerator.generateFebruaryMoodEvents(userProfile, () -> {
-                        // Dismiss progress dialog
-                        progressDialog.dismiss();
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Generate Test Data");
 
-                        // Refresh the view
-                        loadData();
+        builder.setItems(months, (dialog, which) -> {
+            // First, show a confirmation dialog before generating test data
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Confirm Test Data Generation")
+                    .setMessage("Are you sure you want to generate test data for " + months[which] + "?")
+                    .setPositiveButton("Generate", (confirmDialog, confirmWhich) -> {
+                        // Show a progress dialog during generation
+                        ProgressDialog progressDialog = new ProgressDialog(requireContext());
+                        progressDialog.setTitle("Generating Test Data");
+                        progressDialog.setMessage("Please wait while test data is being generated...");
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
 
-                        // Show success message
-                        Toast.makeText(requireContext(),
-                                "Test data generated for February 2025",
-                                Toast.LENGTH_LONG).show();
-                    });
-                })
-                .setNegativeButton("No", null)
-                .show();
+                        // Generate test data based on selected month
+                        if (which == 0) {  // February
+                            TestDataGenerator.generateFebruaryMoodEvents(userProfile, () -> {
+                                // Dismiss progress dialog
+                                progressDialog.dismiss();
+
+                                // Refresh the view
+                                loadData();
+
+                                // Show success confirmation dialog
+                                new AlertDialog.Builder(requireContext())
+                                        .setTitle("Test Data Generation")
+                                        .setMessage("Test data successfully generated for February 2025.")
+                                        .setPositiveButton("OK", null)
+                                        .show();
+                            });
+                        } else if (which == 1) {  // March
+                            TestDataGenerator.generateMarchMoodEvents(userProfile, () -> {
+                                // Dismiss progress dialog
+                                progressDialog.dismiss();
+
+                                // Refresh the view
+                                loadData();
+
+                                // Show success confirmation dialog
+                                new AlertDialog.Builder(requireContext())
+                                        .setTitle("Test Data Generation")
+                                        .setMessage("Test data successfully generated for March 2025.")
+                                        .setPositiveButton("OK", null)
+                                        .show();
+                            });
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
+
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
     }
 
     private void refreshCounts() {

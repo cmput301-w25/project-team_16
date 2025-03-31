@@ -88,11 +88,13 @@ public class TestDataGenerator {
         put("Shame", 5);      // Less common
     }};
 
+
+
     public static void generateFebruaryMoodEvents(UserProfile userProfile, Runnable onComplete) {
         List<MoodEvent> events = new ArrayList<>();
         Random random = new Random();
         Calendar calendar = Calendar.getInstance();
-        
+
         // Set to February 2025
         calendar.set(2025, Calendar.FEBRUARY, 1);
         int daysInFebruary = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
@@ -101,17 +103,17 @@ public class TestDataGenerator {
         for (int day = 1; day <= daysInFebruary; day++) {
             calendar.set(2025, Calendar.FEBRUARY, day);
             int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-            
+
             // More events on weekdays, fewer on weekends
             int maxEvents = (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) ? 2 : 3;
-            
+
             // 30% chance to skip a weekend day, 10% chance to skip a weekday
             if (random.nextFloat() < ((dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) ? 0.3 : 0.1)) {
                 continue;
             }
 
             int eventsForDay = random.nextInt(maxEvents) + 1; // 1-2 on weekends, 1-3 on weekdays
-            
+
             for (int i = 0; i < eventsForDay; i++) {
                 // Set time based on event index
                 if (eventsForDay == 1) {
@@ -128,16 +130,16 @@ public class TestDataGenerator {
                     calendar.set(Calendar.HOUR_OF_DAY, 13 + random.nextInt(4));
                 }
                 calendar.set(Calendar.MINUTE, random.nextInt(60));
-                
+
                 // Select emotion using weights
                 String emotionName = selectWeightedEmotion(random);
                 EmotionalState emotion = new EmotionalState(emotionName);
-                
+
                 // Select trigger appropriate for the emotion
                 String[] appropriateTriggers = EMOTION_TRIGGERS.get(emotionName);
                 assert appropriateTriggers != null;
                 String trigger = appropriateTriggers[random.nextInt(appropriateTriggers.length)];
-                
+
                 // Select time-appropriate social situation
                 String socialSituation = selectTimeSensitiveSocialSituation(
                     calendar.get(Calendar.HOUR_OF_DAY),
@@ -148,7 +150,7 @@ public class TestDataGenerator {
                 // Create a new MoodEvent with a unique ID
                 String eventId = UUID.randomUUID().toString();
                 Timestamp timestamp = new Timestamp(calendar.getTime());
-                
+
                 MoodEvent event = new MoodEvent(
                     eventId,
                     timestamp,
@@ -160,13 +162,100 @@ public class TestDataGenerator {
                     null,  // longitude
                     null   // placeName
                 );
-                
+
                 // Set additional fields
                 event.setPostType("Public");  // Default to public posts
                 event.setPhotoUrl(null);      // No photos for test data
                 event.setPhotoFilename(null);
                 event.setPrivate(false);
-                
+
+                events.add(event);
+            }
+        }
+
+        // Add events in sequence with small delays to avoid overwhelming Firebase
+        addEventsSequentially(userProfile, events, 0, onComplete);
+    }
+
+    public static void generateMarchMoodEvents(UserProfile userProfile, Runnable onComplete) {
+        List<MoodEvent> events = new ArrayList<>();
+        Random random = new Random();
+        Calendar calendar = Calendar.getInstance();
+
+        // Set to March 2025
+        calendar.set(2025, Calendar.MARCH, 1);
+        int daysInMarch = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        // Generate events for each day in March
+        for (int day = 1; day <= daysInMarch; day++) {
+            calendar.set(2025, Calendar.MARCH, day);
+            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+            // More events on weekdays, fewer on weekends
+            int maxEvents = (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) ? 2 : 3;
+
+            // 30% chance to skip a weekend day, 10% chance to skip a weekday
+            if (random.nextFloat() < ((dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) ? 0.3 : 0.1)) {
+                continue;
+            }
+
+            int eventsForDay = random.nextInt(maxEvents) + 1; // 1-2 on weekends, 1-3 on weekdays
+
+            for (int i = 0; i < eventsForDay; i++) {
+                // Set time based on event index
+                if (eventsForDay == 1) {
+                    // If only one event, random time during waking hours
+                    calendar.set(Calendar.HOUR_OF_DAY, 8 + random.nextInt(14)); // 8 AM to 10 PM
+                } else if (i == 0) {
+                    // First event of multiple: morning (8 AM to 12 PM)
+                    calendar.set(Calendar.HOUR_OF_DAY, 8 + random.nextInt(4));
+                } else if (i == eventsForDay - 1) {
+                    // Last event of multiple: evening (6 PM to 10 PM)
+                    calendar.set(Calendar.HOUR_OF_DAY, 18 + random.nextInt(4));
+                } else {
+                    // Middle event: afternoon (1 PM to 5 PM)
+                    calendar.set(Calendar.HOUR_OF_DAY, 13 + random.nextInt(4));
+                }
+                calendar.set(Calendar.MINUTE, random.nextInt(60));
+
+                // Select emotion using weights
+                String emotionName = selectWeightedEmotion(random);
+                EmotionalState emotion = new EmotionalState(emotionName);
+
+                // Select trigger appropriate for the emotion
+                String[] appropriateTriggers = EMOTION_TRIGGERS.get(emotionName);
+                assert appropriateTriggers != null;
+                String trigger = appropriateTriggers[random.nextInt(appropriateTriggers.length)];
+
+                // Select time-appropriate social situation
+                String socialSituation = selectTimeSensitiveSocialSituation(
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        dayOfWeek,
+                        trigger
+                );
+
+                // Create a new MoodEvent with a unique ID
+                String eventId = UUID.randomUUID().toString();
+                Timestamp timestamp = new Timestamp(calendar.getTime());
+
+                MoodEvent event = new MoodEvent(
+                        eventId,
+                        timestamp,
+                        emotion,
+                        trigger,
+                        userProfile.getId(),
+                        socialSituation,
+                        null,  // latitude
+                        null,  // longitude
+                        null   // placeName
+                );
+
+                // Set additional fields
+                event.setPostType("Public");  // Default to public posts
+                event.setPhotoUrl(null);      // No photos for test data
+                event.setPhotoFilename(null);
+                event.setPrivate(false);
+
                 events.add(event);
             }
         }
@@ -179,14 +268,14 @@ public class TestDataGenerator {
         int totalWeight = EMOTION_WEIGHTS.values().stream().mapToInt(Integer::intValue).sum();
         int randomWeight = random.nextInt(totalWeight);
         int currentWeight = 0;
-        
+
         for (Map.Entry<String, Integer> entry : EMOTION_WEIGHTS.entrySet()) {
             currentWeight += entry.getValue();
             if (randomWeight < currentWeight) {
                 return entry.getKey();
             }
         }
-        
+
         return EMOTIONAL_STATE_NAMES[0]; // Fallback to happiness
     }
 
@@ -195,40 +284,40 @@ public class TestDataGenerator {
         if (hour >= 8 && hour < 10) {
             return "Alone";  // Most likely getting ready or commuting
         }
-        
+
         // Class hours (10 AM - 4 PM on weekdays)
         if (hour >= 10 && hour < 16 && !(dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY)) {
             if (trigger.contains("class") || trigger.contains("lecture")) {
-                return "In class";
+                return "One Person";  // More personal interaction likely
             } else if (trigger.contains("lab")) {
-                return "In lab group";
+                return "Two People";  // Likely to be in pairs for labs
             } else if (trigger.contains("group")) {
-                return "With project team";
+                return "Crowd";  // More likely to be in a group setting
             }
-            return "With classmates";
+            return "One Person";  // Default for interactions during classes
         }
-        
+
         // Evening (6 PM onwards)
         if (hour >= 18) {
             if (trigger.contains("roommate")) {
-                return "With roommates";
+                return "One Person";  // Likely with a roommate
             } else if (trigger.contains("study")) {
-                return "In study group";
+                return "Two People";  // Study groups usually involve two people
             } else if (trigger.contains("friend")) {
-                return "With friends";
+                return "Crowd";  // Likely to be with multiple friends
             }
-            return "Alone";
+            return "Alone";  // Default for solo evening activities
         }
-        
+
         // Default social situations based on trigger context
         if (trigger.contains("family")) {
-            return "With family";
+            return "One Person";  // Likely to be with family or alone with them
         } else if (trigger.contains("event")) {
-            return "At campus event";
+            return "Crowd";  // Events often involve large groups
         } else if (trigger.contains("project") || trigger.contains("group")) {
-            return "With project team";
+            return "Crowd";  // Project teams often involve multiple people
         }
-        
+
         return "Alone";  // Default to alone if no specific context
     }
 
