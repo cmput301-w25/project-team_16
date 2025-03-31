@@ -65,12 +65,26 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         viewBinding = true
         buildConfig = true
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+            all {
+                it.useJUnitPlatform()
+                it.jvmArgs("-Dnet.bytebuddy.experimental=true")
+                it.testLogging {
+                    events("passed", "skipped", "failed")
+                }
+            }
+        }
     }
 }
 
@@ -85,23 +99,37 @@ dependencies {
     implementation(libs.core)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
-    testImplementation(libs.junit)
-    testImplementation(libs.espresso.core)
-    testImplementation(libs.ext.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
-    //firebase dependencies
+    
+    // Test dependencies
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:4.11.0")
+    testImplementation("org.mockito:mockito-android:4.11.0")
+    testImplementation("org.robolectric:robolectric:4.11.1")
+    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("androidx.test:runner:1.5.2")
+    testImplementation("androidx.test:rules:1.5.0")
+    testImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation("androidx.test.ext:truth:1.5.0")
+    testImplementation("com.google.truth:truth:1.1.3")
+    testImplementation("androidx.fragment:fragment-testing:1.6.2")
+    testImplementation("androidx.viewpager2:viewpager2:1.0.0")
+    testImplementation("com.google.android.material:material:1.12.0")
+    testImplementation("androidx.appcompat:appcompat:1.7.0")
+
+    // Android test dependencies
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("org.mockito:mockito-android:4.11.0")
+    
+    // Firebase dependencies
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
-    //test dependencies
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-    // JUnit Test Dependencies
-    androidTestImplementation(libs.runner)
-    androidTestImplementation(libs.junit.v115)
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+
     // Maps SDK for Android
     implementation("com.google.android.gms:play-services-maps:19.1.0")
 
@@ -110,10 +138,15 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.13.2")
     implementation("com.airbnb.android:lottie:6.1.0")
 
-
     // MPAndroidChart for mood visualizations
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
-    testImplementation("org.mockito:mockito-core:5.2.0")
+}
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+    jvmArgs("-Dnet.bytebuddy.experimental=true")
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
 

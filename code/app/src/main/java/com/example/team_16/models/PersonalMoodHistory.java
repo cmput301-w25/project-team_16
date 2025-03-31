@@ -34,7 +34,6 @@ public class PersonalMoodHistory extends MoodHistory {
     public void addEvent(MoodEvent event, FirebaseDB.FirebaseCallback<Boolean> callback) {
         event.setUserID(getUserId());
 
-    
         if (event.getId() == null || event.getId().isEmpty()) {
             event.setId(UUID.randomUUID().toString());
         }
@@ -44,15 +43,28 @@ public class PersonalMoodHistory extends MoodHistory {
         events.add(event);
         setMoodEvents(events);
 
-        // Directly write to Firestore (Firestore handles offline queuing)
+        // Check if we're offline
         FirebaseDB firebaseDB = getFirebaseDB();
+        if (!firebaseDB.isOnline()) {
+            // Queue the operation for later
+            queuePendingOperation(OperationType.ADD, event);
+            if (callback != null) {
+                callback.onCallback(true); // Local operation succeeded
+            }
+            return;
+        }
+
+        // If online, directly write to Firestore
         firebaseDB.addMoodEvent(event, success -> {
+            if (!success) {
+                // If Firebase write fails, queue for later retry
+                queuePendingOperation(OperationType.ADD, event);
+            }
             if (callback != null) {
                 callback.onCallback(success);
             }
         });
     }
-
 
     /**
      * Overloaded method without callback
