@@ -236,15 +236,6 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
                     groupedByUser.get(userId).add(event);
                 }
             }
-            requireActivity().runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                if (currentCriteria != null) {
-                    applyFilter(currentCriteria);
-                } else {
-                    adapter.updateData(moodEvents);
-                }
-                updateEmptyState();
-            });
 
             List<MoodEvent> limitedEvents = new ArrayList<>();
             for (List<MoodEvent> userEvents : groupedByUser.values()) {
@@ -256,13 +247,16 @@ public class Feed extends Fragment implements FilterableFragment, FilterFragment
             fullMoodEvents = new ArrayList<>(limitedEvents);
             moodEvents = new ArrayList<>(fullMoodEvents);
 
-            if (currentCriteria != null) {
-                applyFilter(currentCriteria);
-            } else {
-                if (adapter != null) {
-                    adapter.updateData(moodEvents);
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    if (currentCriteria != null) {
+                        applyFilter(currentCriteria);
+                    } else {
+                        adapter.updateData(moodEvents);
+                    }
                     updateEmptyState();
-                }
+                });
             }
         });
     }
