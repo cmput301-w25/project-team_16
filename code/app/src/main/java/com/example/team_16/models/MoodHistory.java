@@ -1,8 +1,25 @@
 /**
- * Manages a user's mood history, providing access to their personal or followed users' mood events.
- * Supports fetching all, recent, or filtered events from Firebase based on mode.
+ * Manages a collection of mood events, providing functionality to access and filter
+ * mood entries. This class serves as the base for both personal and following mood histories.
  *
- * Designed for read-only operations; editing/deleting is handled by PersonalMoodHistory.
+ * Key Features:
+ * - Stores and manages a list of mood events
+ * - Provides methods to get all, recent, or filtered events
+ * - Supports filtering by emotional state, date, and search text
+ * - Handles data loading from Firebase
+ * - Includes callback mechanism for data updates
+ *
+ * Usage:
+ * This class is typically used as a base for PersonalMoodHistory and FollowingMoodHistory.
+ * It provides the core functionality for managing mood events.
+ *
+ * Example:
+ * <pre>
+ * MoodHistory history = new MoodHistory();
+ * history.loadEvents(firebaseDB, userId, events -> {
+ *     // Handle loaded events
+ * });
+ * </pre>
  */
 
 package com.example.team_16.models;

@@ -1,7 +1,6 @@
 /**
- * PendingRequestsAdapter displays a list of incoming follow requests.
- * It provides options to accept or reject each request, and handles profile clicks.
- * Uses Glide for loading profile images and supports modular click listeners for actions.
+ * Adapter for displaying and managing pending follow requests in the Mood Tracker app.
+ * Handles the display of incoming follow requests and provides callbacks for accepting or rejecting them.
  */
 
 package com.example.team_16.ui.adapters;
@@ -26,13 +25,22 @@ import java.util.List;
 public class PendingRequestsAdapter
         extends RecyclerView.Adapter<PendingRequestsAdapter.ViewHolder> {
 
-
+    /**
+     * Represents a single pending follow request with user details
+     */
     public static class PendingRequest {
         public String requestId;
         public String fromUserId;
         public String fromUsername;
         public String fromUserImageUrl;
 
+        /**
+         * Creates a new pending request
+         * @param requestId The unique identifier of the follow request
+         * @param fromUserId The ID of the user who sent the request
+         * @param fromUsername The username of the user who sent the request
+         * @param fromUserImageUrl The profile image URL of the user who sent the request
+         */
         public PendingRequest(String requestId, String fromUserId,
                               String fromUsername, String fromUserImageUrl) {
             this.requestId = requestId;
@@ -42,24 +50,60 @@ public class PendingRequestsAdapter
         }
     }
 
+    /**
+     * Interface for handling accept actions on follow requests
+     */
     @FunctionalInterface
     public interface OnAcceptListener {
+        /**
+         * Called when a follow request is accepted
+         * @param request The accepted request
+         * @param position The position of the request in the adapter
+         */
         void onAcceptClicked(PendingRequest request, int position);
     }
 
+    /**
+     * Interface for handling reject actions on follow requests
+     */
     @FunctionalInterface
     public interface OnRejectListener {
+        /**
+         * Called when a follow request is rejected
+         * @param request The rejected request
+         * @param position The position of the request in the adapter
+         */
         void onRejectClicked(PendingRequest request, int position);
     }
 
+    /**
+     * Interface for handling both accept and reject actions on follow requests
+     */
     public interface OnActionListener {
+        /**
+         * Called when a follow request is accepted
+         * @param request The accepted request
+         * @param position The position of the request in the adapter
+         */
         void onAcceptClicked(PendingRequest request, int position);
+
+        /**
+         * Called when a follow request is rejected
+         * @param request The rejected request
+         * @param position The position of the request in the adapter
+         */
         void onRejectClicked(PendingRequest request, int position);
     }
 
-
+    /**
+     * Interface for handling clicks on request items
+     */
     @FunctionalInterface
     public interface OnItemClickListener {
+        /**
+         * Called when a request item is clicked
+         * @param userId The ID of the user who sent the request
+         */
         void onItemClick(String userId);
     }
 
@@ -67,6 +111,12 @@ public class PendingRequestsAdapter
     private final OnActionListener actionListener;
     private final OnItemClickListener itemClickListener;
 
+    /**
+     * Creates a new adapter for pending follow requests
+     * @param acceptListener Listener for accept actions
+     * @param rejectListener Listener for reject actions
+     * @param itemClickListener Listener for item clicks
+     */
     public PendingRequestsAdapter(
             OnAcceptListener acceptListener,
             OnRejectListener rejectListener,

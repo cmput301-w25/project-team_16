@@ -58,7 +58,14 @@ import com.google.android.material.textfield.TextInputLayout;
 
 
 public class SignUp extends Fragment {
+    /**
+     * Interface for handling successful sign-up events
+     */
     public interface SignUpListener {
+        /**
+         * Called when a user successfully creates an account
+         * @param userId The unique identifier of the newly created user
+         */
         void onSignUpSuccess(String userId);
     }
 
@@ -70,6 +77,11 @@ public class SignUp extends Fragment {
 
     private FirebaseDB firebaseDB;
 
+    /**
+     * Called when the fragment is attached to its context
+     * Sets up the listener for sign-up success events
+     * @param context The context the fragment is being attached to
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -89,6 +101,15 @@ public class SignUp extends Fragment {
     public SignUp() {
     }
 
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     * Sets up the toolbar, input fields, and click listeners.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     * @return The View for the fragment's UI
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -132,6 +153,11 @@ public class SignUp extends Fragment {
     }
 
 
+    /**
+     * Attempts to create a new user account with the provided information.
+     * Validates all input fields and shows appropriate error messages if validation fails.
+     * If validation passes, creates the account and automatically logs the user in.
+     */
     private void attemptSignUp() {
         String name = nameEditText.getText().toString().trim();
         String username = usernameEditText.getText().toString().trim();
@@ -208,6 +234,10 @@ public class SignUp extends Fragment {
     }
 
 
+    /**
+     * Called when the fragment's view is being destroyed.
+     * Clears any error messages from the input fields.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

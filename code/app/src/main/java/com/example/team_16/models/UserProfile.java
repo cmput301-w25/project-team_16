@@ -1,7 +1,25 @@
 /**
- * Represents a user in the mood tracking application.
- * Encapsulates user data, mood history (personal and following), and social features like following and follow requests.
- * Also provides methods to manage profile updates, password reset, and offline sync.
+ * Represents a user's profile in the mood tracking application.
+ * This class manages user data, mood history, and social features like following
+ * and follow requests. It provides methods for profile updates, password resets,
+ * and offline synchronization.
+ *
+ * Key Features:
+ * - Manages user authentication and profile data
+ * - Handles mood history (personal and following)
+ * - Supports social features (following/followers)
+ * - Provides offline data synchronization
+ * - Manages profile image uploads
+ *
+ * Usage:
+ * UserProfile instances are typically created during login/signup
+ * and stored in the MoodTrackerApp application instance.
+ *
+ * Example:
+ * <pre>
+ * UserProfile profile = new UserProfile("user123", "John Doe", "john@example.com");
+ * profile.setUsername("johndoe");
+ * </pre>
  */
 package com.example.team_16.models;
 
@@ -318,6 +336,8 @@ UserProfile {
      *
      * @param fullName New full name
      * @param email New email address
+     * @param username New username
+     * @param profileImageUrl New profile image URL
      * @param callback Callback to handle update result
      */
     public void updateProfile(String fullName,
@@ -327,7 +347,6 @@ UserProfile {
                               FirebaseDB.FirebaseCallback<Boolean> callback) {
         firebaseDB.updateUserProfile(this.id, fullName, email, username, profileImageUrl, success -> {
             if (success) {
-
                 this.fullName = fullName;
                 this.email = email;
                 this.username = username;

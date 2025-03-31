@@ -1,6 +1,29 @@
 /**
- * Extends MoodHistory to enable full CRUD operations (add, edit, delete) on a user's mood events.
- * Includes offline support by queuing changes locally and syncing with Firebase when reconnected.
+ * Extends MoodHistory to provide full CRUD operations for a user's personal mood events.
+ * This class supports adding, editing, and deleting mood events, with offline capabilities
+ * through a queue of pending operations.
+ *
+ * Key Features:
+ * - Full CRUD operations for mood events
+ * - Offline support with operation queuing
+ * - Automatic synchronization with Firebase when online
+ * - Handles image uploads for mood events
+ * - Manages pending operations queue
+ *
+ * Usage:
+ * This class is typically used as part of a UserProfile to manage the user's
+ * personal mood entries. It provides write operations that the base MoodHistory
+ * class does not support.
+ *
+ * Example:
+ * <pre>
+ * PersonalMoodHistory history = new PersonalMoodHistory();
+ * history.addEvent(newMoodEvent, success -> {
+ *     if (success) {
+ *         // Event added successfully
+ *     }
+ * });
+ * </pre>
  */
 
 package com.example.team_16.models;

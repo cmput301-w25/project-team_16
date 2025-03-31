@@ -66,6 +66,12 @@ public class AddImage extends Fragment {
     public AddImage() {
     }
 
+    /**
+     * Creates a new instance of the AddImage fragment.
+     *
+     * @param type The type of image selection (e.g., "Camera" or "Gallery")
+     * @return A new instance of AddImage fragment
+     */
     public static AddImage newInstance(String type) {
         AddImage fragment = new AddImage();
         Bundle args = new Bundle();
@@ -74,6 +80,12 @@ public class AddImage extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes the fragment and retrieves arguments.
+     * Sets up the image URI from either new selection or existing image.
+     *
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +103,15 @@ public class AddImage extends Fragment {
 
     }
 
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     * Sets the activity title to "Image Preview".
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     * @return The View for the fragment's UI
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -101,6 +122,13 @@ public class AddImage extends Fragment {
         return inflater.inflate(R.layout.fragment_add_image, container, false);
     }
 
+    /**
+     * Called immediately after onCreateView() has returned.
+     * Sets up UI components and click listeners for image update and confirmation.
+     *
+     * @param view The View returned by onCreateView()
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -138,6 +166,10 @@ public class AddImage extends Fragment {
         });
 
     }
+    /**
+     * Handles the image update process based on the selection type.
+     * Launches either the camera or gallery picker based on the type parameter.
+     */
     private void handleImageUpdate() {
         if (Objects.equals(type, "Camera")) {
             ContentValues contentValues = new ContentValues();
@@ -160,11 +192,21 @@ public class AddImage extends Fragment {
             pickImageLauncher.launch(intent);
         }
     }
+    /**
+     * Confirms the image selection and returns the result to the parent fragment.
+     * Uses FragmentResult API to communicate the selected image URI.
+     */
     private void confirmSelection() {
         result.putParcelable("uri", imageUri != null ? imageUri : oldImageUri);
         getParentFragmentManager().setFragmentResult("image_result", result);
         getParentFragmentManager().popBackStack();
     }
+    /**
+     * Loads and displays an image from the given URI.
+     * Applies rounded corners transformation using Glide.
+     *
+     * @param uri The URI of the image to load
+     */
     private void loadImage(Uri uri) {
         imageView.setVisibility(View.VISIBLE);
         textView.setVisibility(View.GONE);
@@ -175,6 +217,10 @@ public class AddImage extends Fragment {
     }
 
 
+    /**
+     * ActivityResultLauncher for picking images from the gallery.
+     * Handles the result of the image picker and updates the UI accordingly.
+     */
     private ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -193,6 +239,10 @@ public class AddImage extends Fragment {
             }
     );
 
+    /**
+     * ActivityResultLauncher for taking photos with the camera.
+     * Handles the result of the camera capture and updates the UI accordingly.
+     */
     private final ActivityResultLauncher<Uri> takePhotoLauncher =
             registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
 

@@ -53,9 +53,20 @@ import com.example.team_16.models.UserProfile;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-
+/**
+ * Fragment responsible for handling user authentication in the Mood Tracker app.
+ * Provides a login form for users to sign in with their username and password.
+ * Supports password reset functionality and navigation to the sign-up screen.
+ */
 public class LoginFragment extends Fragment implements SignUp.SignUpListener {
+    /**
+     * Interface for handling successful login events
+     */
     public interface LoginFragmentListener {
+        /**
+         * Called when a user successfully logs in
+         * @param userId The unique identifier of the logged-in user
+         */
         void onLoginSuccess(String userId);
     }
 
@@ -70,6 +81,12 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
 
     private FirebaseDB firebaseDB;
 
+    /**
+     * Called when the fragment is attached to its context
+     * Sets up the listener for login success events
+     * @param context The context the fragment is being attached to
+     * @throws ClassCastException if the context does not implement LoginFragmentListener
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -81,6 +98,15 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
         }
     }
 
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     * Initializes UI components and sets up click listeners.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     * @return The View for the fragment's UI
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -105,6 +131,11 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
         return view;
     }
 
+    /**
+     * Sets up click listeners for all interactive UI elements.
+     * Handles login button clicks with validation and Firebase authentication.
+     * Manages navigation to sign-up and password reset screens.
+     */
     private void setupClickListeners() {
         loginButton.setOnClickListener(v -> {
             Animation scale_down = AnimationUtils.loadAnimation(requireContext(), R.anim.scale_down);
@@ -202,6 +233,12 @@ public class LoginFragment extends Fragment implements SignUp.SignUpListener {
         return false;
     }
 
+    /**
+     * Called when a user successfully signs up.
+     * Forwards the success event to the parent activity via the login listener.
+     *
+     * @param userId The unique identifier of the newly created user
+     */
     @Override
     public void onSignUpSuccess(String userId) {
         if (listener != null) {

@@ -1,11 +1,29 @@
 /**
- * Represents a single mood event logged by a user, including their emotional state,
- * optional triggers, social context, timestamp, location, photo, and visibility settings.
+ * Represents a single mood event logged by a user in the mood tracking application.
+ * This class encapsulates all information related to a mood entry, including:
+ * - The emotional state
+ * - Trigger or reason for the mood
+ * - Social context
+ * - Timestamp
+ * - Location data
+ * - Visibility settings
+ * - Associated image
  *
- * Supports serialization for Firestore and local offline management.
- * Includes utility methods for copying, formatting, and Firestore interactions.
+ * Key Features:
+ * - Supports serialization for Firestore storage
+ * - Includes utility methods for copying and formatting
+ * - Handles Firestore document conversion
+ * - Manages image attachments
  *
- * Note: Must contain an EmotionalState to be considered valid.
+ * Usage:
+ * MoodEvents are typically created through the AddMood fragment
+ * and stored in the user's MoodHistory.
+ *
+ * Example:
+ * <pre>
+ * MoodEvent event = new MoodEvent(emotionalState, "Work stress", "Alone");
+ * event.setTrigger("Deadline approaching");
+ * </pre>
  */
 
 package com.example.team_16.models;
@@ -17,6 +35,7 @@ import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Represents a single mood event in the mood tracking application.
@@ -47,10 +66,10 @@ public class MoodEvent implements Serializable {
     }
 
     /**
-     * Creates a new mood event with required fields only.
+     * Constructs a new MoodEvent with the specified emotional state and social context.
      *
      * @param userID The ID of the user creating this mood event
-     * @param emotionalState The emotional state being recorded (required)
+     * @param emotionalState The emotional state of the mood
      */
     public MoodEvent(String userID, EmotionalState emotionalState) {
         setTimestamp(Timestamp.now());
@@ -112,6 +131,11 @@ public class MoodEvent implements Serializable {
         this.placeName = placeName;
     }
 
+    /**
+     * Gets the unique identifier of the mood event.
+     *
+     * @return The mood event ID
+     */
     public String getId() {
         return id;
     }
@@ -130,11 +154,21 @@ public class MoodEvent implements Serializable {
         this.timestampMillis = timestamp != null ? timestamp.toDate().getTime() : 0;
     }
 
+    /**
+     * Gets the date and time of this mood event.
+     *
+     * @return The event date
+     */
     @Exclude
     public Date getDate() {
         return timestamp != null ? timestamp.toDate() : null;
     }
 
+    /**
+     * Gets the trigger or reason for this mood event.
+     *
+     * @return The trigger text
+     */
     public String getTrigger() {
         return trigger;
     }
@@ -142,6 +176,11 @@ public class MoodEvent implements Serializable {
         this.trigger = trigger;
     }
 
+    /**
+     * Gets the emotional state associated with this mood event.
+     *
+     * @return The emotional state
+     */
     public EmotionalState getEmotionalState() {
         return emotionalState;
     }
@@ -149,7 +188,11 @@ public class MoodEvent implements Serializable {
         this.emotionalState = emotionalState;
     }
 
-
+    /**
+     * Gets the ID of the user who created this mood event.
+     *
+     * @return The user ID
+     */
     public String getUserID() {
         return userID;
     }
@@ -157,6 +200,11 @@ public class MoodEvent implements Serializable {
         this.userID = userID;
     }
 
+    /**
+     * Gets the social context of this mood event.
+     *
+     * @return The social situation
+     */
     public String getSocialSituation() {
         return socialSituation;
     }
@@ -164,10 +212,20 @@ public class MoodEvent implements Serializable {
         this.socialSituation = socialSituation;
     }
 
+    /**
+     * Gets the filename of the associated image.
+     *
+     * @return The photo filename
+     */
     public String getPhotoFilename() {
         return photoFilename;
     }
 
+    /**
+     * Sets the filename of the associated image.
+     *
+     * @param photoFilename The photo filename to set
+     */
     public void setPhotoFilename(String photoFilename) {
         this.photoFilename = photoFilename;
     }
@@ -240,10 +298,9 @@ public class MoodEvent implements Serializable {
     }
 
     /**
-     * Validates whether this mood event meets the minimum requirements.
-     * A valid mood event must have an emotional state.
+     * Gets the visibility type of this mood event.
      *
-     * @return true if this mood event is valid, false otherwise
+     * @return The post type (e.g., "Public", "Private")
      */
     public String getPostType() {
         return postType;
@@ -296,6 +353,11 @@ public class MoodEvent implements Serializable {
         firebaseDB.deleteMoodEvent(id, callback);
     }
 
+    /**
+     * Creates a copy of this mood event with a new ID.
+     *
+     * @return A new MoodEvent instance with the same data but a new ID
+     */
     @Exclude
     public MoodEvent copy() {
         MoodEvent copyEvent = new MoodEvent(id, timestamp, emotionalState, trigger, userID, socialSituation, latitude, longitude, placeName);
@@ -303,6 +365,11 @@ public class MoodEvent implements Serializable {
         return copyEvent;
     }
 
+    /**
+     * Formats the date of this mood event as a string.
+     *
+     * @return The formatted date string
+     */
     @Exclude
     public String getFormattedDate() {
         if (timestamp == null) {
@@ -321,6 +388,11 @@ public class MoodEvent implements Serializable {
         this.isPrivate = isPrivate;
     }
 
+    /**
+     * Returns a string representation of this MoodEvent.
+     *
+     * @return A string containing the emotional state and date
+     */
     @Override
     public String toString() {
         return "MoodEvent{" +
@@ -331,6 +403,13 @@ public class MoodEvent implements Serializable {
                 '}';
     }
 
+    /**
+     * Compares this MoodEvent with another object for equality.
+     * Two MoodEvents are considered equal if they have the same ID.
+     *
+     * @param obj The object to compare with
+     * @return true if the objects are equal, false otherwise
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -349,6 +428,12 @@ public class MoodEvent implements Serializable {
         return postType != null ? postType.equals(other.postType) : other.postType == null;
     }
 
+    /**
+     * Generates a hash code for this MoodEvent.
+     * The hash code is based on the ID of the mood event.
+     *
+     * @return The hash code for this MoodEvent
+     */
     @Override
     public int hashCode() {
         int result = (id != null) ? id.hashCode() : 0;

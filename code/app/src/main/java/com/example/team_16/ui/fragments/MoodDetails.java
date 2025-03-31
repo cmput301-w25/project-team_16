@@ -112,6 +112,12 @@ public class MoodDetails extends Fragment {
     public MoodDetails() {
     }
 
+    /**
+     * Creates a new instance of the MoodDetails fragment.
+     *
+     * @param param1 The ID of the mood event to display
+     * @return A new instance of MoodDetails fragment
+     */
     public static MoodDetails newInstance(String param1) {
         MoodDetails fragment = new MoodDetails();
         Bundle args = new Bundle();
@@ -120,6 +126,10 @@ public class MoodDetails extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes the fragment and loads the mood event data.
+     * Retrieves the mood event from either personal or following history.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,12 +156,26 @@ public class MoodDetails extends Fragment {
         }
     }
 
-
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     * @return The View for the fragment's UI
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_mood_details, container, false);
     }
 
+    /**
+     * Called immediately after onCreateView() has returned.
+     * Sets up all UI components and initializes the view state.
+     *
+     * @param view The View returned by onCreateView()
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -199,6 +223,10 @@ public class MoodDetails extends Fragment {
         setupCommentInput();
     }
 
+    /**
+     * Applies styling to the UI based on the selected emotional state.
+     * Sets colors and gradients for the mood display.
+     */
     private void applyEmotionStyling() {
         if (moodEvent != null) {
             mood_one_view.setTextColor(moodEvent.getEmotionalState().getTextColor());
@@ -213,6 +241,10 @@ public class MoodDetails extends Fragment {
         }
     }
 
+    /**
+     * Displays all the details of the mood event in the UI.
+     * Sets text, images, and visibility of various UI elements.
+     */
     @SuppressLint("SetTextI18n")
     private void displayMoodDetails() {
 
@@ -308,6 +340,10 @@ public class MoodDetails extends Fragment {
         }
     }
 
+    /**
+     * Sets up the RecyclerView for displaying comments.
+     * Initializes the adapter and layout manager.
+     */
     private void setupCommentsRecyclerView() {
         UserProfile user = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
         String currentUserId = user != null ? user.getId() : null;
@@ -332,6 +368,10 @@ public class MoodDetails extends Fragment {
         noCommentsView.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Loads comments for the current mood event from Firebase.
+     * Updates the UI with the loaded comments.
+     */
     private void loadComments() {
         FirebaseDB.getInstance(requireContext())
                 .fetchCommentsForMoodEvent(moodEvent.getId(), fetchedComments -> {
@@ -339,6 +379,10 @@ public class MoodDetails extends Fragment {
                 });
     }
 
+    /**
+     * Sets up the comment input field and send button.
+     * Handles comment submission and UI updates.
+     */
     private void setupCommentInput() {
         UserProfile currentUser = ((MoodTrackerApp) requireActivity().getApplication()).getCurrentUserProfile();
         if (currentUser == null) {
@@ -398,6 +442,12 @@ public class MoodDetails extends Fragment {
                 });
     }
 
+    /**
+     * Updates the comments list with new data.
+     * Uses DiffUtil for efficient updates.
+     *
+     * @param newComments The new list of comments
+     */
     private void updateCommentsList(List<Comment> newComments) {
         if (newComments == null) {
             newComments = new ArrayList<>();

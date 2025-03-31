@@ -66,6 +66,14 @@ public class EditProfileFragment extends Fragment {
 
     private Uri selectedImageUri;
 
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     * @return The View for the fragment's UI
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
@@ -73,6 +81,13 @@ public class EditProfileFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_edit_profile, container, false);
     }
 
+    /**
+     * Called immediately after onCreateView() has returned.
+     * Sets up UI components and initializes the view state with current user data.
+     *
+     * @param view The View returned by onCreateView()
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
@@ -139,6 +154,9 @@ public class EditProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Opens the system image picker to allow the user to select a new profile picture.
+     */
     private void openImageChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -146,6 +164,14 @@ public class EditProfileFragment extends Fragment {
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
 
+    /**
+     * Handles the result of the image picker activity.
+     * Updates the avatar image view with the selected image.
+     *
+     * @param requestCode The request code passed to startActivityForResult
+     * @param resultCode The result code returned by the child activity
+     * @param data The Intent returned by the child activity
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  @Nullable Intent data) {
@@ -159,6 +185,13 @@ public class EditProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Updates the user's profile with new information.
+     * Handles both cases where a new image is selected and where it isn't.
+     *
+     * @param newFullName The new full name for the user
+     * @param newUsername The new username for the user
+     */
     private void updateProfileWithOrWithoutImage(String newFullName, String newUsername) {
         if (selectedImageUri != null) {
             uploadImageAndUpdateProfile(newFullName, newUsername);
@@ -167,6 +200,12 @@ public class EditProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Uploads a new profile image to Firebase Storage and then updates the profile.
+     *
+     * @param newFullName The new full name for the user
+     * @param newUsername The new username for the user
+     */
     private void uploadImageAndUpdateProfile(String newFullName, String newUsername) {
         showProgressDialog("Uploading image...");
 
@@ -180,6 +219,13 @@ public class EditProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Performs the actual profile update in Firebase.
+     *
+     * @param fullName The new full name for the user
+     * @param username The new username for the user
+     * @param imageUrl The URL of the profile image (new or existing)
+     */
     private void doProfileUpdate(String fullName, String username, String imageUrl) {
         String email = userProfile.getEmail();
 
@@ -199,6 +245,11 @@ public class EditProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Shows a progress dialog with the given message.
+     *
+     * @param message The message to display in the progress dialog
+     */
     private void showProgressDialog(String message) {
         progressDialog = new ProgressDialog(getContext());
         progressDialog.setMessage(message);
@@ -206,6 +257,9 @@ public class EditProfileFragment extends Fragment {
         progressDialog.show();
     }
 
+    /**
+     * Dismisses the progress dialog if it is currently showing.
+     */
     private void dismissProgressDialog() {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();

@@ -117,6 +117,12 @@ public class AddMood extends Fragment {
     private ViewFlipper viewFlipper;
     private Button backButton, nextButton;
 
+    /**
+     * Initializes the fragment and handles setup of user profile and mood event data.
+     * Checks for existing mood event data if in edit mode and restores view state.
+     *
+     * @param savedInstanceState Bundle containing the fragment's previously saved state, or null if no saved state
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,6 +144,14 @@ public class AddMood extends Fragment {
         }
     }
 
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views in the fragment
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state, or null if no saved state
+     * @return The View for the fragment's UI, or null
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -145,6 +159,13 @@ public class AddMood extends Fragment {
         return inflater.inflate(R.layout.fragment_add_mood, container, false);
     }
 
+    /**
+     * Called immediately after onCreateView() has returned, but before any saved state has been restored.
+     * Sets up all UI components, click listeners, and initializes the view state.
+     *
+     * @param view The View returned by onCreateView()
+     * @param savedInstanceState Bundle containing the fragment's previously saved state, or null if no saved state
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -232,6 +253,11 @@ public class AddMood extends Fragment {
             updatePhotoButtonsVisibility();
         });
     }
+
+    /**
+     * Updates the visibility of photo-related buttons based on whether an image is selected.
+     * Shows/hides the take photo, choose photo, and remove image buttons appropriately.
+     */
     private void updatePhotoButtonsVisibility() {
         if (selectedPhotoUri != null) {
             takePhotoButton.setVisibility(View.GONE);
@@ -273,6 +299,10 @@ public class AddMood extends Fragment {
             });
         }
     }
+    /**
+     * Navigates to the next step in the mood entry process.
+     * Updates the view flipper and button visibility accordingly.
+     */
     private void navigateToNextStep() {
         if (selectedMood == null) {
             Toast.makeText(requireContext(), "Please select a mood.", Toast.LENGTH_SHORT).show();
@@ -288,6 +318,10 @@ public class AddMood extends Fragment {
         nextButton.setVisibility(View.GONE);
     }
 
+    /**
+     * Navigates to the previous step in the mood entry process.
+     * Updates the view flipper and button visibility accordingly.
+     */
     private void navigateToPreviousStep() {
         viewFlipper.setDisplayedChild(0);
         currentFlipperIndex = 0;
@@ -296,7 +330,11 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Highlight the selected mood button, reset others.
+     * Highlights the selected mood button and deselects all others.
+     * Updates the selectedMood field with the chosen emotional state.
+     *
+     * @param view The View containing the mood buttons
+     * @param selectedButtonId The ID of the selected mood button
      */
     private void highlightMoodButton(View view, int selectedButtonId) {
         int[] moodButtonIds = {
@@ -314,7 +352,10 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Social setting (alone, one person, etc.).
+     * Sets up the social context selection buttons and their click listeners.
+     * Initializes the buttons for Alone, One Person, Two People, and Crowd options.
+     *
+     * @param view The View containing the social context buttons
      */
     private void setupSocialSettingButtons(View view) {
         int[] socialButtonIds = {
@@ -343,6 +384,12 @@ public class AddMood extends Fragment {
         }
     }
 
+    /**
+     * Highlights the selected social context button and deselects all others.
+     * Updates the socialSetting field with the chosen context.
+     *
+     * @param selectedButton The Button that was selected
+     */
     private void highlightSocialButton(Button selectedButton) {
         aloneButton.setAlpha(0.5f);
         onePersonButton.setAlpha(0.5f);
@@ -355,7 +402,8 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Public/Private post toggles.
+     * Sets up the post type selection buttons (Public/Private) and their click listeners.
+     * Initializes the buttons and their visual states.
      */
     private void setupPostTypeButtons() {
         // Default highlight = Public
@@ -379,6 +427,12 @@ public class AddMood extends Fragment {
         });
     }
 
+    /**
+     * Highlights the selected post type button and deselects the other.
+     * Updates the selectedPostType field with the chosen visibility setting.
+     *
+     * @param selectedButton The Button that was selected
+     */
     private void highlightPostTypeButton(Button selectedButton) {
         publicPostButton.setAlpha(0.5f);
         privatePostButton.setAlpha(0.5f);
@@ -386,7 +440,8 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Buttons for camera/gallery and launching AddImage dialog.
+     * Sets up the photo-related buttons and their click listeners.
+     * Initializes the take photo, choose photo, and remove image buttons.
      */
     private void setupPhotoButtons() {
         choosePhotoButton.setOnClickListener(v -> {
@@ -485,12 +540,21 @@ public class AddMood extends Fragment {
                 }
             });
 
+    /**
+     * Saves the current state of the fragment, including the view flipper index.
+     *
+     * @param outState Bundle in which to place the saved state
+     */
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("flipper_index", currentFlipperIndex);
     }
 
+    /**
+     * Sets up the location button and its click listener.
+     * Handles location permission requests and launches the location selection dialog.
+     */
     private void setupLocationButton() {
         addLocationButton.setOnClickListener(v -> {
             if (addLocationButton.getText().toString().equalsIgnoreCase("Remove Location")) {
@@ -525,6 +589,10 @@ public class AddMood extends Fragment {
         });
     }
 
+    /**
+     * Sets up the save button and its click listener.
+     * Handles validation, image upload, and mood event creation/update.
+     */
     private void setupSaveButton() {
         saveMoodButton.setOnClickListener(v -> {
             if (!validateInputs()) return;
@@ -655,6 +723,12 @@ public class AddMood extends Fragment {
         });
     }
 
+    /**
+     * Validates all user inputs before saving the mood event.
+     * Checks for required fields and proper formatting.
+     *
+     * @return true if all inputs are valid, false otherwise
+     */
     private boolean validateInputs() {
         if (selectedMood == null) {
             Toast.makeText(requireContext(), "Please select a mood before saving.", Toast.LENGTH_SHORT).show();
@@ -667,6 +741,11 @@ public class AddMood extends Fragment {
         return true;
     }
 
+    /**
+     * Deletes an image from Firebase Storage.
+     *
+     * @param filename The name of the file to delete
+     */
     private void deleteImageFromFirebase(String filename) {
         if (filename == null || filename.isEmpty()) {
             Log.e("FirebaseStorage", "Filename is null or empty. Nothing to delete.");
@@ -679,7 +758,11 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Upload the selectedPhotoUri to Firebase and return the file path.
+     * Uploads an image to Firebase Storage.
+     * Compresses the image before uploading to optimize storage usage.
+     *
+     * @param imageUri The URI of the image to upload
+     * @return The download URL of the uploaded image
      */
     private String uploadImageToFirebase(Uri imageUri) {
         try {
@@ -716,6 +799,10 @@ public class AddMood extends Fragment {
     }
 
 
+    /**
+     * Updates the UI to display an existing mood event's data.
+     * Pre-fills all fields with the mood event's current values.
+     */
     private void updateUIForExistingMood() {
         if (moodEvent == null) return;
 
@@ -755,6 +842,12 @@ public class AddMood extends Fragment {
         }
     }
 
+    /**
+     * Gets the button ID for a given mood name.
+     *
+     * @param moodName The name of the mood
+     * @return The resource ID of the corresponding mood button
+     */
     private int getMoodButtonId(String moodName) {
         switch (moodName) {
             case "Anger":     return R.id.anger_button;
@@ -769,6 +862,12 @@ public class AddMood extends Fragment {
         return -1;
     }
 
+    /**
+     * Gets the social context button for a given setting.
+     *
+     * @param setting The social setting (Alone, One Person, etc.)
+     * @return The Button corresponding to the setting
+     */
     private Button getSocialButton(String setting) {
         switch (setting) {
             case "Alone":       return aloneButton;
@@ -780,7 +879,8 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Delete button for removing the entire mood event.
+     * Sets up the delete button and its click listener.
+     * Handles confirmation dialog and mood event deletion.
      */
     private void setupDeleteButton() {
         deleteMoodButton.setOnClickListener(v -> {
@@ -829,22 +929,43 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Simple helper to update the character counter label.
+     * Updates the character counter for the trigger text input.
+     *
+     * @param counterView The TextView displaying the counter
+     * @param text The current text in the trigger input
      */
     private void updateTriggerCounter(TextView counterView, String text) {
         int charRemaining = Math.max(20 - text.length(), 0);
         counterView.setText(charRemaining + " characters left");
     }
 
+    /**
+     * Enables or disables a button.
+     *
+     * @param button The Button to enable/disable
+     * @param enable true to enable the button, false to disable it
+     */
     private void enableButton(Button button, boolean enable) {
         button.setEnabled(enable);
     }
 
+    /**
+     * Checks if the app has a specific permission.
+     *
+     * @param permission The permission to check
+     * @return true if the permission is granted, false otherwise
+     */
     private boolean hasPermission(String permission) {
         return ContextCompat.checkSelfPermission(requireContext(), permission)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
+    /**
+     * Requests a specific permission from the user.
+     *
+     * @param permission The permission to request
+     * @param requestCode The request code for the permission request
+     */
     private void requestPermission(String permission, int requestCode) {
         ActivityCompat.requestPermissions(requireActivity(),
                 new String[]{permission}, requestCode);
@@ -853,7 +974,8 @@ public class AddMood extends Fragment {
 
 
     /**
-     * Checks all needed permissions at once (location, camera, gallery).
+     * Checks and requests all necessary permissions for the app.
+     * Handles location, camera, and gallery permissions.
      */
     private void checkAndRequestPermissions() {
         List<String> permissionsNeeded = new ArrayList<>();
@@ -880,7 +1002,12 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Handle the result of requesting permissions.
+     * Handles the result of permission requests.
+     * Shows appropriate messages based on the user's choice.
+     *
+     * @param requestCode The request code of the permission request
+     * @param permissions The requested permissions
+     * @param grantResults The results of the permission requests
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -912,7 +1039,11 @@ public class AddMood extends Fragment {
     }
 
     /**
-     * Guides user to settings if they permanently denied permission.
+     * Handles the case when a permission is permanently denied.
+     * Shows a dialog guiding the user to app settings.
+     *
+     * @param permission The denied permission
+     * @param permissionName The user-friendly name of the permission
      */
     private void handlePermissionDenied(String permission, String permissionName) {
         if (!ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), permission)) {
@@ -930,6 +1061,10 @@ public class AddMood extends Fragment {
         }
     }
 
+    /**
+     * Called when the fragment becomes visible to the user.
+     * Updates the UI state and checks for new image selection.
+     */
     @Override
     public void onResume() {
         super.onResume();

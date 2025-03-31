@@ -58,12 +58,28 @@ import java.util.List;
 public class FilterFragment extends Fragment {
     private static final String TAG = "FilterFragment";
 
+    /**
+     * Interface for handling filter-related events.
+     * Implemented by parent fragments/activities to receive filter updates.
+     */
     public interface FilterListener {
+        /**
+         * Called when filter criteria are applied.
+         *
+         * @param criteria The selected filter criteria
+         */
         void onApplyFilter(FilterCriteria criteria);
 
+        /**
+         * Called when the filter is reset to default state.
+         */
         void onResetFilter();
     }
 
+    /**
+     * Data class representing the current filter criteria.
+     * Contains time period, emotional state, trigger reason, and event types.
+     */
     public static class FilterCriteria {
         public String timePeriod;
         public String emotionalState;
@@ -99,10 +115,21 @@ public class FilterFragment extends Fragment {
     public FilterFragment() {
     }
 
+    /**
+     * Sets the listener for filter-related events.
+     *
+     * @param listener The FilterListener to receive filter updates
+     */
     public void setFilterListener(FilterListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Initializes the fragment and retrieves arguments.
+     * Checks for event type filter visibility settings.
+     *
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,6 +140,14 @@ public class FilterFragment extends Fragment {
         }
     }
 
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     * @return The View for the fragment's UI
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -120,6 +155,13 @@ public class FilterFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_filter, container, false);
     }
 
+    /**
+     * Called immediately after onCreateView() has returned.
+     * Sets up all UI components, click listeners, and initializes the view state.
+     *
+     * @param view The View returned by onCreateView()
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -239,6 +281,11 @@ public class FilterFragment extends Fragment {
         resetSelections();
     }
 
+    /**
+     * Highlights the selected time period button and deselects others.
+     *
+     * @param selectedIndex The index of the selected time period button
+     */
     private void highlightSelectedTimePeriod(int selectedIndex) {
         for (int i = 0; i < timePeriodButtons.length; i++) {
             if (i == selectedIndex) {
@@ -249,6 +296,11 @@ public class FilterFragment extends Fragment {
         }
     }
 
+    /**
+     * Highlights the selected emotional state button and deselects others.
+     *
+     * @param selectedIndex The index of the selected emotional state button
+     */
     private void highlightSelectedEmotion(int selectedIndex) {
         for (int i = 0; i < emotionButtons.length; i++) {
             if (i == selectedIndex) {
@@ -259,6 +311,10 @@ public class FilterFragment extends Fragment {
         }
     }
 
+    /**
+     * Handles the visibility of event type filters based on fragment arguments.
+     * Shows/hides the event type section and related UI elements.
+     */
     private void handleEventTypesVisibility() {
         if (hideEventTypeFilters && eventTypeSection != null) {
             Log.d(TAG, "Hiding entire event type section");
@@ -280,6 +336,11 @@ public class FilterFragment extends Fragment {
         }
     }
 
+    /**
+     * Collects all selected event types from checkboxes.
+     *
+     * @return List of selected event type names
+     */
     private List<String> collectSelectedEventTypes() {
         List<String> selectedEventTypes = new ArrayList<>();
 
@@ -296,6 +357,10 @@ public class FilterFragment extends Fragment {
         return selectedEventTypes;
     }
 
+    /**
+     * Resets all filter selections to their default state.
+     * Clears all button highlights and input fields.
+     */
     private void resetSelections() {
         selectedTimePeriod = null;
         if (timePeriodButtons != null) {

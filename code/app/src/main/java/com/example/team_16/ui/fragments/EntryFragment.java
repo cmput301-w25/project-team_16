@@ -36,12 +36,24 @@ import com.example.team_16.ui.activity.HomeActivity;
 
 
 public class EntryFragment extends Fragment {
+    /**
+     * Interface for handling the "Get Started" button click event
+     */
     public interface EntryFragmentListener {
+        /**
+         * Called when the user clicks the "Get Started" button
+         */
         void onGetStartedClicked();
     }
 
     private EntryFragmentListener listener;
 
+    /**
+     * Called when the fragment is attached to its context
+     * Sets up the listener for the "Get Started" button click
+     * @param context The context the fragment is being attached to
+     * @throws ClassCastException if the context does not implement EntryFragmentListener
+     */
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -71,6 +83,10 @@ public class EntryFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Called when the fragment becomes visible to the user
+     * Updates the activity's toolbar title and navigation visibility
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -84,8 +100,9 @@ public class EntryFragment extends Fragment {
     }
 
     /**
-     * Handle back button press - show exit confirmation dialog
-     * @return true if handled, false otherwise
+     * Handles the back button press event
+     * Shows a confirmation dialog before exiting the app
+     * @return true if the back press was handled, false otherwise
      */
     public boolean handleBackPress() {
         new AlertDialog.Builder(requireContext())

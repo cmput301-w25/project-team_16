@@ -1,9 +1,22 @@
 /**
- * Represents a user's emotional state with display name, gradient color themes,
- * emoji representation, and text color styling for UI display.
- * Used across mood tracking and visualization features.
+ * Represents an emotional state in the mood tracking application.
+ * This class encapsulates the visual and textual representation of a mood,
+ * including its display name, gradient colors, emoji, and text styling.
  *
- * Note: Ensure emotional state names match expected strings for correct styling.
+ * Key Features:
+ * - Supports both base and custom emotional states
+ * - Provides gradient color themes for UI display
+ * - Includes emoji representation for visual feedback
+ * - Handles text color styling for consistent UI
+ *
+ * Usage:
+ * Emotional states are typically created through the EmotionalStateRegistry
+ * and used to represent user moods in MoodEvents.
+ *
+ * Example:
+ * <pre>
+ * EmotionalState happy = new EmotionalState("Happy", R.drawable.gradient_happy, R.color.happy_text);
+ * </pre>
  */
 
 package com.example.team_16.models;
@@ -39,16 +52,16 @@ public class EmotionalState implements Serializable {
     /**
      * Gets the display name of this emotional state.
      *
-     * @return The display name
+     * @return The name of the emotional state
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Gets the resource ID for the gradient background associated with this emotional state.
+     * Gets the resource ID for the top gradient background.
      *
-     * @return The resource ID for the gradient drawable
+     * @return The gradient resource ID
      */
     public int getGradientResourceId() {
         switch (name) {
@@ -74,10 +87,9 @@ public class EmotionalState implements Serializable {
     }
 
     /**
-     * Gets the resource ID for the bottom background associated with this emotional state.
-     * These backgrounds have a white base with 20% opacity gradient overlay.
+     * Gets the resource ID for the bottom gradient background.
      *
-     * @return The resource ID for the bottom background drawable
+     * @return The bottom gradient resource ID
      */
     public int getBottomGradientResourceId() {
         switch (name) {
@@ -104,10 +116,9 @@ public class EmotionalState implements Serializable {
     }
 
     /**
-     * Gets the text color associated with this emotional state.
-     * Colors are darker variants of the gradient start color.
+     * Gets the color resource ID for text styling.
      *
-     * @return The color as an int (including alpha)
+     * @return The text color resource ID
      */
     public int getTextColor() {
         switch (name) {
@@ -154,6 +165,13 @@ public class EmotionalState implements Serializable {
         return "";
     }
 
+    /**
+     * Compares this EmotionalState with another object for equality.
+     * Two EmotionalStates are considered equal if they have the same name.
+     *
+     * @param o The object to compare with
+     * @return true if the objects are equal, false otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -162,12 +180,22 @@ public class EmotionalState implements Serializable {
         return Objects.equals(name, that.name);
     }
 
+    /**
+     * Generates a hash code for this EmotionalState.
+     * The hash code is based on the name of the emotional state.
+     *
+     * @return The hash code for this EmotionalState
+     */
     @Override
     public int hashCode() {
         return Objects.hash(name);
     }
 
-    @NonNull
+    /**
+     * Returns a string representation of this EmotionalState.
+     *
+     * @return A string containing the name and emoji of the emotional state
+     */
     @Override
     public String toString() {
         return "EmotionalState{" +

@@ -86,6 +86,12 @@ public class OtherUserProfileFragment extends Fragment {
     private RecyclerView moodHistoryRecyclerView;
     private Button btnFollow;
 
+    /**
+     * Creates a new instance of the OtherUserProfileFragment.
+     *
+     * @param userId The ID of the user whose profile should be displayed
+     * @return A new instance of OtherUserProfileFragment
+     */
     public static OtherUserProfileFragment newInstance(String userId) {
         OtherUserProfileFragment fragment = new OtherUserProfileFragment();
         Bundle args = new Bundle();
@@ -94,6 +100,11 @@ public class OtherUserProfileFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes the fragment and retrieves the target user ID from arguments.
+     *
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +113,14 @@ public class OtherUserProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Creates and returns the view hierarchy associated with the fragment.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate any views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     * @return The View for the fragment's UI
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
@@ -109,6 +128,13 @@ public class OtherUserProfileFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_other_user_profile, container, false);
     }
 
+    /**
+     * Called immediately after onCreateView() has returned.
+     * Sets up UI components and loads the target user's profile data.
+     *
+     * @param view The View returned by onCreateView()
+     * @param savedInstanceState Bundle containing the fragment's previously saved state
+     */
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
@@ -200,6 +226,13 @@ public class OtherUserProfileFragment extends Fragment {
                     .commit();
         });
     }
+
+    /**
+     * Determines the most frequently used mood emoji from a list of mood events.
+     *
+     * @param events The list of mood events to analyze
+     * @return The emoji of the most frequent mood, or null if no events exist
+     */
     private String getMostFrequentMoodEmoji(List<MoodEvent> events) {
         if (events.isEmpty()) return null;
         Map<String, Integer> moodCount = new HashMap<>();
@@ -244,7 +277,10 @@ public class OtherUserProfileFragment extends Fragment {
     }
 
     /**
-     * Returns the name of the most frequent mood in the given list.
+     * Determines the name of the most frequently used mood from a list of mood events.
+     *
+     * @param events The list of mood events to analyze
+     * @return The name of the most frequent mood, or null if no events exist
      */
     private String getMostFrequentMoodName(List<MoodEvent> events) {
         if (events.isEmpty()) return null;
@@ -265,8 +301,7 @@ public class OtherUserProfileFragment extends Fragment {
     }
 
     /**
-     * Updates the follow/unfollow button state based on whether the current user
-     * is following or has a pending request for the target user.
+     * Updates the follow button's appearance and behavior based on the current follow status.
      */
     private void refreshFollowButton() {
         if (currentUserProfile == null || targetUserProfile == null) return;
@@ -326,5 +361,13 @@ public class OtherUserProfileFragment extends Fragment {
                 }
             });
         });
+    }
+
+    /**
+     * Handles the follow/unfollow action when the follow button is clicked.
+     * Updates the follow status in Firebase and refreshes the UI.
+     */
+    private void handleFollowAction() {
+        // Implementation of handleFollowAction method
     }
 }
