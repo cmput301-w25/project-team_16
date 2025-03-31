@@ -7,6 +7,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.auth.FirebaseAuth;
@@ -73,6 +74,13 @@ public class FirebaseDB {
     private FirebaseDB(Context context) {
         this.context = context;
         this.db = FirebaseFirestore.getInstance();
+
+        // Enable Firestore offline persistence
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
+                .build();
+        db.setFirestoreSettings(settings);
+
         this.auth = FirebaseAuth.getInstance();
         this.storage = FirebaseStorage.getInstance();
     }
@@ -209,38 +217,19 @@ public class FirebaseDB {
      * Add a mood event
      */
     public void addMoodEvent(MoodEvent moodEvent, FirebaseCallback<Boolean> callback) {
-        // If offline, generate a temporary ID
+        // Generate a UUID if no ID exists
         if (moodEvent.getId() == null || moodEvent.getId().isEmpty()) {
             moodEvent.setId(UUID.randomUUID().toString());
         }
 
+        // Use set() with the provided ID
         db.collection(MOODS_COLLECTION)
-                .add(moodEvent)
-                .addOnSuccessListener(documentReference -> {
-                    // Firebase generates an ID for the document
-                    String firebaseGeneratedId = documentReference.getId();
-
-                    // Only update if the generated ID is different from the temporary one
-                    if (!moodEvent.getId().equals(firebaseGeneratedId)) {
-                        db.collection(MOODS_COLLECTION).document(firebaseGeneratedId)
-                                .update("id", firebaseGeneratedId)
-                                .addOnSuccessListener(aVoid -> {
-                                    // Update the local event's ID to match Firebase
-                                    moodEvent.setId(firebaseGeneratedId);
-                                    callback.onCallback(true); // Notify success
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("FirebaseDB", "Error updating mood ID", e);
-                                    callback.onCallback(false); // Notify failure
-                                });
-                    } else {
-                        // No need to update if IDs are already the same
-                        callback.onCallback(true); // Notify success
-                    }
-                })
+                .document(moodEvent.getId())
+                .set(moodEvent)
+                .addOnSuccessListener(aVoid -> callback.onCallback(true))
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error adding mood event", e);
-                    callback.onCallback(false); // Notify failure
+                    callback.onCallback(false);
                 });
     }
 
@@ -319,12 +308,35 @@ public class FirebaseDB {
      * Update a mood event
      */
     public void updateMoodEvent(String eventId, MoodEvent updates, FirebaseCallback<Boolean> callback) {
+        // Convert MoodEvent to Map for update
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("emotionalState", updates.getEmotionalState());
+        updateData.put("trigger", updates.getTrigger());
+        updateData.put("socialSituation", updates.getSocialSituation());
+        updateData.put("latitude", updates.getLatitude());
+        updateData.put("longitude", updates.getLongitude());
+        updateData.put("placeName", updates.getPlaceName());
+        updateData.put("photoUrl", updates.getPhotoUrl());
+        updateData.put("photoFilename", updates.getPhotoFilename());
+        updateData.put("postType", updates.getPostType());
+        updateData.put("isPrivate", updates.isPrivate());
+        
+        // Only update timestamp if we're online
+        if (isOnline()) {
+            updateData.put("timestamp", FieldValue.serverTimestamp());
+        }
+
         db.collection(MOODS_COLLECTION).document(eventId)
-                .set(updates)
+                .update(updateData)
                 .addOnSuccessListener(aVoid -> callback.onCallback(true))
                 .addOnFailureListener(e -> {
                     Log.e("FirebaseDB", "Error updating mood event", e);
-                    callback.onCallback(false);
+                    // If offline, still consider it a success as it will be synced when online
+                    if (!isOnline()) {
+                        callback.onCallback(true);
+                    } else {
+                        callback.onCallback(false);
+                    }
                 });
     }
 
